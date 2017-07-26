@@ -20,7 +20,9 @@ const srcFolder = path.join(rootFolder, 'src/lib');
 const distFolder = path.join(rootFolder, 'dist');
 const tempLibFolder = path.join(compilationFolder, 'lib');
 const es5OutputFolder = path.join(compilationFolder, 'lib-es5');
+const es5OutputFile = require('./src/lib/tsconfig.es5.json').angularCompilerOptions.flatModuleOutFile;
 const es2015OutputFolder = path.join(compilationFolder, 'lib-es2015');
+const es2015OutputFile = require('./src/lib/tsconfig.lib.json').angularCompilerOptions.flatModuleOutFile;
 
 return Promise.resolve()
   // Copy library to temporary folder and inline html/css.
@@ -47,8 +49,8 @@ return Promise.resolve()
   // Bundle lib.
   .then(() => {
     // Base configuration.
-    const es5Entry = path.join(es5OutputFolder, `${libName}.js`);
-    const es2015Entry = path.join(es2015OutputFolder, `${libName}.js`);
+    const es5Entry = path.join(es5OutputFolder, es5OutputFile);
+    const es2015Entry = path.join(es2015OutputFolder, es2015OutputFile);
     const rollupBaseConfig = {
       moduleName: camelCase(libName),
       sourceMap: true,
