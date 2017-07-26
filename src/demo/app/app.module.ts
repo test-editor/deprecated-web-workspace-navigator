@@ -1,11 +1,13 @@
 import { NgModule }      from '@angular/core';
+import { HttpModule } from '@angular/http';
 import { BrowserModule } from '@angular/platform-browser';
-import { LibModule } from 'quickstart-lib';
+
+import { LibModule } from '@test-editor/workspace-navigator';
 
 import { AppComponent }  from './app.component';
 
 @NgModule({
-  imports:      [ BrowserModule, LibModule],
+  imports:      [ BrowserModule, HttpModule, LibModule],
   declarations: [ AppComponent ],
   bootstrap:    [ AppComponent ]
 })
