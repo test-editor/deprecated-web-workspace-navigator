@@ -3,6 +3,7 @@ sudo: false
 language: node_js
 node_js:
   - "6"
+cache: yarn
 os:
   - linux
 before_install:
@@ -15,7 +16,9 @@ install:
   - yarn install
 script:
   - npm run lint
+  - npm run build
   - npm run test:once
   # TODO: integration:aot is failing as angular complains about the metadata
+  - cd integration && yarn install; cd ..
   - npm run integration:jit
   - npm run coverage
