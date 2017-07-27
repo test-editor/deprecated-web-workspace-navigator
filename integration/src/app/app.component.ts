@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { LibService } from 'quickstart-lib';
+import { LibService } from 'test-editor-workspace-navigator';
 
 @Component({
   selector: 'integration-app',
