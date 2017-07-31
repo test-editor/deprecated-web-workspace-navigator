@@ -15,8 +15,8 @@
     "annotateForClosureCompiler": true,
     "strictMetadataEmit": true,
     "skipTemplateCodegen": true,
-    "flatModuleOutFile": "test-editor-workspace-navigator.js",
-    "flatModuleId": "test-editor-workspace-navigator",
+    "flatModuleOutFile": "workspace-navigator.js",
+    "flatModuleId": "@test-editor/workspace-navigator",
     "genDir": "../../out-tsc/lib-gen-dir/"
   }
 }
