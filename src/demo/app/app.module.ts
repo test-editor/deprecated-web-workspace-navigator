@@ -6,8 +6,15 @@ import { LibModule } from '@test-editor/workspace-navigator';
 import { AppComponent }  from './app.component';
 
 @NgModule({
-  imports:      [ BrowserModule, HttpModule, LibModule],
+  imports: [
+    BrowserModule,
+    HttpModule,
+    LibModule.forRoot({
+      serviceUrl: "http://localhost:9080/workspace",
+      authorizationHeader: "admin:admin@example.com"
+    })
+  ],
   declarations: [ AppComponent ],
-  bootstrap:    [ AppComponent ]
+  bootstrap: [ AppComponent ]
 })
 export class AppModule { }
