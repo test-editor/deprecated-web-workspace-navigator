@@ -39,7 +39,7 @@
       rxjs: {
         defaultExtension: 'js'
       },
-      'test-editor-workspace-navigator': {
+      '@test-editor/workspace-navigator': {
         main: 'index.js',
         defaultExtension: 'js',
         meta: {
