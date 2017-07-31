@@ -12,7 +12,8 @@ import { LibService } from './service/lib.service';
 
 @NgModule({
   imports: [
-    CommonModule
+    CommonModule,
+    HttpModule
   ],
   declarations: [
     NavigationComponent,
