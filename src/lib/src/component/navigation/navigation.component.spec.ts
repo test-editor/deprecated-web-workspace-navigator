@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpModule } from '@angular/http';
 
 import { WorkspaceService } from '../../service/workspace/workspace.service';
+import { WorkspaceServiceConfig } from '../../service/workspace/workspace-service-config';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
 
@@ -17,7 +18,8 @@ describe('NavigationComponent', () => {
       ],
       imports: [ HttpModule ],
       providers: [
-        WorkspaceService
+        WorkspaceService,
+        WorkspaceServiceConfig
       ]
     })
     .compileComponents();
