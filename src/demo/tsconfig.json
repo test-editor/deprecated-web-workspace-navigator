@@ -6,7 +6,7 @@
     "declaration": false,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@test-editor/workspace-navigator": [
+      "@testeditor/workspace-navigator": [
         "../lib"
       ]
     }
