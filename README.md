@@ -1,6 +1,12 @@
 # web-workspace-navigator
 
-[![Build Status](https://travis-ci.org/test-editor/web-workspace-navigator.svg?branch=master)](https://travis-ci.org/test-editor/web-workspace-navigator)
+[![NPM version][npm-image]][npm-url]
+[![Build Status][travis-image]][travis-url]
+
+[npm-image]: https://badge.fury.io/js/%40testeditor%2Fworkspace-navigator.svg
+[npm-url]: https://www.npmjs.com/package/@testeditor/workspace-navigator
+[travis-image]: https://travis-ci.org/test-editor/web-workspace-navigator.svg?branch=master
+[travis-url]: https://travis-ci.org/test-editor/web-workspace-navigator
 
 Angular component and Dropwizard service for workspace handling and navigation.
 
