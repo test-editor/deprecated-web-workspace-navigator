@@ -43,7 +43,7 @@ export class TreeViewerComponent implements OnInit {
   }
 
   isUnknown(): boolean {
-    return this.model.type !== "file" && this.model.type !== TreeViewerComponent.FOLDER;
+    return this.model.type !== TreeViewerComponent.FILE && this.model.type !== TreeViewerComponent.FOLDER;
   }
 
 }

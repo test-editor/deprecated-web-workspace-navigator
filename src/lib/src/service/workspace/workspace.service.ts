@@ -1,24 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, Response } from '@angular/http';
 import { WorkspaceElement } from './workspace-element';
+import { WorkspaceServiceConfig } from './workspace-service-config';
+
 import 'rxjs/add/operator/toPromise';
 
 @Injectable()
 export class WorkspaceService {
 
-  private workspaceUrl = 'http://localhost:9080/workspace/list-files';
+  private listFilesUrl: string;
+  private headers: Headers;
 
-  constructor(private http: Http) { }
-
-  createDummyHeader(): Headers {
-    const headers = new Headers();
-    headers.append('Authorization', 'admin:admin@example.com');
-    return headers;
+  constructor(private http: Http, config: WorkspaceServiceConfig) {
+    this.listFilesUrl = `${config.serviceUrl}/list-files`;
+    this.headers = new Headers();
+    this.headers.append('Authorization', config.authorizationHeader);
   }
 
   listFiles(): Promise<WorkspaceElement> {
-    const headers = this.createDummyHeader();
-    return this.http.get(this.workspaceUrl, { headers: headers }).toPromise()
+    return this.http.get(this.listFilesUrl, { headers: this.headers }).toPromise()
       .then(response => response.json())
       .catch(this.handleError);
   }
