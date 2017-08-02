@@ -1,5 +1,5 @@
 {
-  "name": "@test-editor/workspace-navigator",
+  "name": "@testeditor/workspace-navigator",
   "version": "0.1.0",
   "description": "Library QuickStart package.json from the documentation, supplemented with testing support",
   "main": "./bundles/workspace-navigator.umd.js",

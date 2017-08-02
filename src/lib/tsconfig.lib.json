@@ -16,7 +16,7 @@
     "strictMetadataEmit": true,
     "skipTemplateCodegen": true,
     "flatModuleOutFile": "workspace-navigator.js",
-    "flatModuleId": "@test-editor/workspace-navigator",
+    "flatModuleId": "@testeditor/workspace-navigator",
     "genDir": "../../out-tsc/lib-gen-dir/"
   }
 }

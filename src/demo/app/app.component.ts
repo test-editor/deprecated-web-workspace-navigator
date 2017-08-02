@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { LibService } from '@test-editor/workspace-navigator';
+import { LibService } from '@testeditor/workspace-navigator';
 
 @Component({
   selector: 'demo-app',
