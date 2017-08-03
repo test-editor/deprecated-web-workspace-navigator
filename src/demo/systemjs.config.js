@@ -24,6 +24,7 @@
       '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.js',
 
       // other libraries
+      '@testeditor/messaging-service': 'npm:@testeditor/messaging-service/bundles/messaging-service.umd.js',
       'rxjs': 'npm:rxjs',
     },
     // packages tells the System loader how to load when no filename and/or no extension

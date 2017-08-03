@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { MessagingService } from '@testeditor/messaging-service';
 import { WorkspaceElement } from '../../service/workspace/workspace-element';
 
 @Component({
@@ -6,7 +7,7 @@ import { WorkspaceElement } from '../../service/workspace/workspace-element';
   templateUrl: './tree-viewer.component.html',
   styleUrls: ['./tree-viewer.component.css']
 })
-export class TreeViewerComponent implements OnInit {
+export class TreeViewerComponent {
 
   // workspace element types
   static readonly FOLDER = "folder";
@@ -17,13 +18,17 @@ export class TreeViewerComponent implements OnInit {
 
   @Input() model: WorkspaceElement;
 
-  ngOnInit() {
+  constructor(private messagingService: MessagingService) {
   }
 
   onClick() {
     if (this.model.type === TreeViewerComponent.FOLDER) {
       this.model.expanded = !this.model.expanded;
     }
+  }
+
+  onDoubleClick() {
+    this.messagingService.publish('navigation.open', this.model);
   }
 
   isFolderExpanded(): boolean {

@@ -51,6 +51,9 @@ module.exports = function (config) {
       { pattern: 'node_modules/@angular/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false },
 
+      // Other dependencies
+      { pattern: 'node_modules/@testeditor/**/*.js', included: false, watched: false },
+
       { pattern: 'src/demo/systemjs-angular-loader.js', included: false, watched: false },
 
       'karma-test-shim.js', // optionally extend SystemJS mapping e.g., with barrels

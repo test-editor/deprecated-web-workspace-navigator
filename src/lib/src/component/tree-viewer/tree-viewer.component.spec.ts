@@ -1,6 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
 import { TreeViewerComponent } from './tree-viewer.component';
 import { WorkspaceElement } from '../../service/workspace/workspace-element';
@@ -28,6 +29,9 @@ describe('TreeViewerComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [
+        MessagingModule.forRoot()
+      ],
       declarations: [ TreeViewerComponent ]
     })
     .compileComponents();
@@ -97,5 +101,19 @@ describe('TreeViewerComponent', () => {
     component.model = singleFile;
     expect(component.isFile()).toBeTruthy();
   });
+
+  it('onDoubleClick() emits message', inject([MessagingService], (messagingService: MessagingService) => {
+    // given
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe('navigation.open', callback);
+    component.model = singleFile;
+  
+    // when
+    component.onDoubleClick();
+
+    // then
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(singleFile);
+  }));
 
 });

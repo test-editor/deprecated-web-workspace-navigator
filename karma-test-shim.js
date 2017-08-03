@@ -64,6 +64,10 @@ System.config({
     '@angular/http': 'npm:@angular/http/bundles/http.umd.js',
     '@angular/router': 'npm:@angular/router/bundles/router.umd.js',
     '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.js',
+
+    // Other dependencies
+    '@testeditor/messaging-service': 'npm:@testeditor/messaging-service/bundles/messaging-service.umd.js',
+
     // Testing bundles
     '@angular/core/testing': 'npm:@angular/core/bundles/core-testing.umd.js',
     '@angular/common/testing': 'npm:@angular/common/bundles/common-testing.umd.js',
