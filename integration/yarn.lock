@@ -52,6 +52,13 @@
   dependencies:
     tsickle "^0.21.0"
 
+"@testeditor/messaging-service@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@testeditor/messaging-service/-/messaging-service-1.0.0.tgz#5003d9703dbedfda73d0838a9be274e82bb21c3f"
+
+"@testeditor/workspace-navigator@../dist/":
+  version "0.1.0"
+
 "@types/jasmine@2.5.36":
   version "2.5.36"
   resolved "https://registry.yarnpkg.com/@types/jasmine/-/jasmine-2.5.36.tgz#6d804b79a57e9380d766a2680e9362c17d9556d2"
@@ -2133,9 +2140,6 @@ tar@^2.2.1:
     block-stream "*"
     fstream "^1.0.2"
     inherits "2"
-
-"@testeditor/workspace-navigator@../dist/":
-  version "1.0.0"
 
 tfunk@^3.0.1:
   version "3.1.0"

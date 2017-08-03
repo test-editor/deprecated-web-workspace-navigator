@@ -10,6 +10,30 @@
 
 Angular component and Dropwizard service for workspace handling and navigation.
 
+## Usage
+
+This library requires `@testeditor/messaging-service` to be present, install both with:
+
+    yarn add @testeditor/workspace-navigator @testeditor/messaging-service
+
+    // or
+    
+    npm install @testeditor/workspace-navigator @testeditor/messaging-service --save
+
+Also the outer application must provide a singleton of `MessageService`. In your root module add the following:
+
+    import { MessagingModule } from '@testeditor/messaging-service';
+
+    // ...
+
+    @NgModule({
+        // ...
+        imports: [
+            // ...
+            MessagingModule.forRoot()
+        ]
+    })
+
 ## Build
 
     yarn install
@@ -17,7 +41,7 @@ Angular component and Dropwizard service for workspace handling and navigation.
 
 ## Development
 
-For developing the library run
+For developing the demo can be run using
 
     npm run start
 

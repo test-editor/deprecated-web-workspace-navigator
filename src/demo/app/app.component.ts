@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MessagingService } from '@testeditor/messaging-service';
 import { LibService } from '@testeditor/workspace-navigator';
 
 @Component({
@@ -6,8 +7,13 @@ import { LibService } from '@testeditor/workspace-navigator';
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  meaning: number;
-  constructor(libService: LibService) {
-    this.meaning = libService.getMeaning();
+
+  lastModelName: string;
+
+  constructor(messagingService: MessagingService) {
+    messagingService.subscribe('navigation.open', (model) => {
+      console.log(`Received 'navigation.open' on '${model.name}'.`);
+      this.lastModelName = model.name;
+    });
   }
 }

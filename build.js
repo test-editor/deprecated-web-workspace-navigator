@@ -62,7 +62,8 @@ return Promise.resolve()
         // See https://github.com/rollup/rollup/wiki/JavaScript-API#globals for more.
         '@angular/core': 'ng.core',
         '@angular/common': 'ng.common',
-        '@angular/http': 'ng.http'
+        '@angular/http': 'ng.http',
+        '@testeditor/messaging-service': 'te.messagingService'
       },
       external: [
         // List of dependencies
@@ -70,7 +71,8 @@ return Promise.resolve()
         '@angular/core',
         '@angular/common',
         '@angular/http',
-        'rxjs/add/operator/toPromise'
+        'rxjs/add/operator/toPromise',
+        '@testeditor/messaging-service'
       ],
       plugins: [
         commonjs({
