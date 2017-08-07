@@ -30,11 +30,11 @@ import { LibService } from './service/lib.service';
     LibComponent
   ]
 })
-export class LibModule {
+export class WorkspaceNavigatorModule {
 
   static forRoot(config: WorkspaceServiceConfig): ModuleWithProviders {
     return {
-      ngModule: LibModule,
+      ngModule: WorkspaceNavigatorModule,
       providers: [
         { provide: WorkspaceServiceConfig, useValue: config },
         WorkspaceService
