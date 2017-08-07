@@ -5,8 +5,8 @@ import { HttpModule } from '@angular/http';
 import { NavigationComponent } from './component/navigation/navigation.component';
 import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.component';
 
-import { WorkspaceService } from './service/workspace/workspace.service';
-import { WorkspaceServiceConfig } from './service/workspace/workspace-service-config';
+import { PersistenceService } from './service/persistence/persistence.service';
+import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
 
 import { LibComponent } from './component/lib.component';
 import { LibService } from './service/lib.service';
@@ -30,14 +30,14 @@ import { LibService } from './service/lib.service';
     LibComponent
   ]
 })
-export class LibModule {
+export class WorkspaceNavigatorModule {
 
-  static forRoot(config: WorkspaceServiceConfig): ModuleWithProviders {
+  static forRoot(config: PersistenceServiceConfig): ModuleWithProviders {
     return {
-      ngModule: LibModule,
+      ngModule: WorkspaceNavigatorModule,
       providers: [
-        { provide: WorkspaceServiceConfig, useValue: config },
-        WorkspaceService
+        { provide: PersistenceServiceConfig, useValue: config },
+        PersistenceService
       ]
     };
   }

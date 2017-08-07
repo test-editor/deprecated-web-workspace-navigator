@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
-import { WorkspaceElement } from '../../service/workspace/workspace-element';
-import { WorkspaceService } from '../../service/workspace/workspace.service';
+import { WorkspaceElement } from '../../service/persistence/workspace-element';
+import { PersistenceService } from '../../service/persistence/persistence.service';
 
 @Component({
   selector: 'app-navigation',
@@ -13,7 +13,7 @@ export class NavigationComponent implements OnInit {
 
   workspaceRoot: WorkspaceElement;
 
-  constructor(private workspaceService: WorkspaceService) { }
+  constructor(private workspaceService: PersistenceService) { }
 
   ngOnInit() {
     this.workspaceService.listFiles().then(element => {

@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, Response } from '@angular/http';
 import { WorkspaceElement } from './workspace-element';
-import { WorkspaceServiceConfig } from './workspace-service-config';
+import { PersistenceServiceConfig } from './persistence.service.config';
 
 import 'rxjs/add/operator/toPromise';
 
 @Injectable()
-export class WorkspaceService {
+export class PersistenceService {
 
   private listFilesUrl: string;
   private headers: Headers;
 
-  constructor(private http: Http, config: WorkspaceServiceConfig) {
-    this.listFilesUrl = `${config.serviceUrl}/list-files`;
+  constructor(private http: Http, config: PersistenceServiceConfig) {
+    this.listFilesUrl = `${config.serviceUrl}/workspace/list-files`;
     this.headers = new Headers();
     this.headers.append('Authorization', config.authorizationHeader);
   }
