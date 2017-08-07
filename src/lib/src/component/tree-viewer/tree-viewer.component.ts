@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { MessagingService } from '@testeditor/messaging-service';
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
+import { PersistenceService } from '../../service/persistence/persistence.service';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -13,12 +14,9 @@ export class TreeViewerComponent {
   static readonly FOLDER = "folder";
   static readonly FILE = "file";
 
-  static readonly EVENT_SOURCE = "tree-viewer";
-  static readonly CLICK_NAV_EVENT_TYPE = "selectTreeElement";
-
   @Input() model: WorkspaceElement;
 
-  constructor(private messagingService: MessagingService) {
+  constructor(private messagingService: MessagingService, private persistenceService: PersistenceService) {
   }
 
   onClick() {
@@ -28,7 +26,10 @@ export class TreeViewerComponent {
   }
 
   onDoubleClick() {
-    this.messagingService.publish('navigation.open', this.model);
+    if (this.isFile()) {
+      let document = this.persistenceService.getDocument(this.model);
+      this.messagingService.publish('navigation.open', document);
+    }
   }
 
   isFolderExpanded(): boolean {

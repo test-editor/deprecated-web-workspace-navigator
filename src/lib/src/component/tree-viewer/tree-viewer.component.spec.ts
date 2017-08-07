@@ -1,15 +1,17 @@
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { mock, when, anything, instance } from 'ts-mockito';
+
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
 import { TreeViewerComponent } from './tree-viewer.component';
+import { PersistenceService } from '../../service/persistence/persistence.service';
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
 
 describe('TreeViewerComponent', () => {
   let component: TreeViewerComponent;
   let fixture: ComponentFixture<TreeViewerComponent>;
-  let treeview : DebugElement
 
   let singleEmptyFolder: WorkspaceElement = {
     name: 'folder', path: '', expanded: false, type: 'folder',
@@ -28,11 +30,22 @@ describe('TreeViewerComponent', () => {
   let singleFile: WorkspaceElement = { name: 'file', path: '', expanded: false, type: 'file', children: [] }
 
   beforeEach(async(() => {
+    // Mock PersistenceService
+    let persistenceServiceMock = mock(PersistenceService);
+    when(persistenceServiceMock.getDocument(anything())).thenReturn({
+      name: 'someDoc',
+      path: 'someFolder/someDoc',
+      content: Promise.resolve('dummy content')
+    });
+
     TestBed.configureTestingModule({
       imports: [
         MessagingModule.forRoot()
       ],
-      declarations: [ TreeViewerComponent ]
+      declarations: [ TreeViewerComponent ],
+      providers: [
+        { provide: PersistenceService, useValue: instance(persistenceServiceMock) }
+      ]
     })
     .compileComponents();
   }));
@@ -41,7 +54,6 @@ describe('TreeViewerComponent', () => {
     fixture = TestBed.createComponent(TreeViewerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-
   });
 
   it('should be created', () => {
@@ -59,11 +71,15 @@ describe('TreeViewerComponent', () => {
   });
 
   it('folded folder does not display sub elements', () => {
+    // given
     component.model = foldedFolderWithSubfolders;
+
+    // when
     fixture.detectChanges();
 
+    // then
     fixture.whenStable().then(() => { // wait for async actions
-      treeview = fixture.debugElement.query(By.css('.tree-view'));
+      let treeview = fixture.debugElement.query(By.css('.tree-view'));
       let treeitems = treeview.queryAll(By.css('.tree-view-item-key'));
       expect(treeitems.length).toEqual(1);
       expect(treeitems[0].nativeElement.innerText).toContain('top-folder');
@@ -74,12 +90,16 @@ describe('TreeViewerComponent', () => {
   });
 
   it('folded folder is exanded when clicked', () => {
+    // given
     component.model = foldedFolderWithSubfolders;
-    component.onClick();
-    fixture.detectChanges();
 
+    // when
+    component.onClick();
+
+    // then
+    fixture.detectChanges();
     fixture.whenStable().then(() => { // wait for async actions
-      treeview = fixture.debugElement.query(By.css('.tree-view'));
+      let treeview = fixture.debugElement.query(By.css('.tree-view'));
       let treeitems = treeview.queryAll(By.css('.tree-view-item-key'));
       expect(treeitems.length).toEqual(4);
       expect(treeitems[0].nativeElement.innerText).toContain('top-folder');
@@ -107,13 +127,13 @@ describe('TreeViewerComponent', () => {
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe('navigation.open', callback);
     component.model = singleFile;
-  
+
     // when
     component.onDoubleClick();
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(singleFile);
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({path: 'someFolder/someDoc'}));
   }));
 
 });
