@@ -12,7 +12,7 @@ import { AppComponent }  from './app.component';
     HttpModule,
     MessagingModule.forRoot(),
     WorkspaceNavigatorModule.forRoot({
-      serviceUrl: "http://localhost:9080/workspace",
+      serviceUrl: "http://localhost:9080",
       authorizationHeader: "admin:admin@example.com"
     })
   ],

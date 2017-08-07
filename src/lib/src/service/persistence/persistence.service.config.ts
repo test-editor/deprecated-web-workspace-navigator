@@ -1,4 +1,4 @@
-export class WorkspaceServiceConfig {
+export class PersistenceServiceConfig {
 
   serviceUrl: string;
   authorizationHeader: string;

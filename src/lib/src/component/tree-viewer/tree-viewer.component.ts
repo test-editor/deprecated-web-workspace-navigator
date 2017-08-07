@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { MessagingService } from '@testeditor/messaging-service';
-import { WorkspaceElement } from '../../service/workspace/workspace-element';
+import { WorkspaceElement } from '../../service/persistence/workspace-element';
 
 @Component({
   selector: 'nav-tree-viewer',

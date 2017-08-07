@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
 import { TreeViewerComponent } from './tree-viewer.component';
-import { WorkspaceElement } from '../../service/workspace/workspace-element';
+import { WorkspaceElement } from '../../service/persistence/workspace-element';
 
 describe('TreeViewerComponent', () => {
   let component: TreeViewerComponent;

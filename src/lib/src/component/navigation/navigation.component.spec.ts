@@ -4,16 +4,16 @@ import { HttpModule } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule } from '@testeditor/messaging-service';
 
-import { WorkspaceService } from '../../service/workspace/workspace.service';
-import { WorkspaceServiceConfig } from '../../service/workspace/workspace-service-config';
+import { PersistenceService } from '../../service/persistence/persistence.service';
+import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
-import { WorkspaceElement} from '../../service/workspace/workspace-element';
+import { WorkspaceElement} from '../../service/persistence/workspace-element';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
-  let workspaceService : WorkspaceService;
+  let persistenceService : PersistenceService;
   let spy : jasmine.Spy;
   let listedFiles : WorkspaceElement;
   let sidenav : DebugElement;
@@ -29,11 +29,11 @@ describe('NavigationComponent', () => {
         MessagingModule.forRoot()
       ],
       providers: [
-        WorkspaceService,
+        PersistenceService,
         {
-          provide: WorkspaceServiceConfig,
+          provide: PersistenceServiceConfig,
           useValue: {
-            serviceUrl: "http://localhost:9080/workspace",
+            serviceUrl: "http://localhost:9080",
             authorizationHeader: "admin:admin@example.com"
         }
       }
@@ -53,8 +53,8 @@ describe('NavigationComponent', () => {
       children: []
     };
     fixture.detectChanges();
-    workspaceService = fixture.debugElement.injector.get(WorkspaceService);
-    spy = spyOn(workspaceService, 'listFiles')
+    persistenceService = fixture.debugElement.injector.get(PersistenceService);
+    spy = spyOn(persistenceService, 'listFiles')
       .and.returnValue(Promise.resolve(listedFiles));
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
   });
