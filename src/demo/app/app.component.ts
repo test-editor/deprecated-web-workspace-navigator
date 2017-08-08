@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MessagingService } from '@testeditor/messaging-service';
-import { LibService } from '@testeditor/workspace-navigator';
+import { WorkspaceDocument } from '@testeditor/workspace-navigator';
 
 @Component({
   selector: 'demo-app',
@@ -8,12 +8,12 @@ import { LibService } from '@testeditor/workspace-navigator';
 })
 export class AppComponent {
 
-  lastModelName: string;
+  lastDocument: WorkspaceDocument;
 
   constructor(messagingService: MessagingService) {
-    messagingService.subscribe('navigation.open', (model) => {
+    messagingService.subscribe('navigation.open', (model: WorkspaceDocument) => {
       console.log(`Received 'navigation.open' on '${model.name}'.`);
-      this.lastModelName = model.name;
+      this.lastDocument = model;
     });
   }
 }

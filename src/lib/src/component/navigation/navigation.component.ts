@@ -13,10 +13,10 @@ export class NavigationComponent implements OnInit {
 
   workspaceRoot: WorkspaceElement;
 
-  constructor(private workspaceService: PersistenceService) { }
+  constructor(private persistenceService: PersistenceService) { }
 
   ngOnInit() {
-    this.workspaceService.listFiles().then(element => {
+    this.persistenceService.listFiles().then(element => {
       this.workspaceRoot = element;
     });
   }

@@ -34,6 +34,10 @@ Also the outer application must provide a singleton of `MessageService`. In your
         ]
     })
 
+### Events
+
+An event of type with id `navigation.open` and payload of type `WorkspaceDocument` is thrown when the user double-clicks on a file in the tree viewer.
+
 ## Build
 
     yarn install
