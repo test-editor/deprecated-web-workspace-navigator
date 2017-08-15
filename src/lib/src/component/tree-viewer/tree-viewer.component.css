@@ -33,3 +33,15 @@
 .tree-view-item-key:hover {
     background-color: #2A2D2E;
 }
+
+.active {
+    background-color: #3f3f46 !important;
+}
+
+.dirty {
+    font-style: italic;
+}
+
+.dirty::after {
+    content: '*'
+}

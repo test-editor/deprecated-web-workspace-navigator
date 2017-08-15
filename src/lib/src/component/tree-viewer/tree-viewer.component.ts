@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { MessagingService } from '@testeditor/messaging-service';
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
 import { PersistenceService } from '../../service/persistence/persistence.service';
+import * as events from './event-types';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -15,8 +16,40 @@ export class TreeViewerComponent {
   static readonly FILE = "file";
 
   @Input() model: WorkspaceElement;
+  active: boolean = false;
+  dirty: boolean = false;
 
-  constructor(private messagingService: MessagingService, private persistenceService: PersistenceService) {
+  constructor(
+    private messagingService: MessagingService,
+    private persistenceService: PersistenceService,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {
+    this.subscribeToEvents(messagingService);
+  }
+
+  private subscribeToEvents(messagingService: MessagingService): void {
+    messagingService.subscribe(events.EDITOR_ACTIVE, element => {
+      let shouldBeActive = element.path === this.model.path;
+      // don't want to trigger update for all unrelated elements
+      if (this.active !== shouldBeActive) {
+        this.active = shouldBeActive;
+        this.changeDetectorRef.detectChanges();
+      }
+    });
+    messagingService.subscribe(events.EDITOR_CLOSE, element => {
+      let isOwnElement = element.path === this.model.path;
+      if (isOwnElement) {
+        this.active = false;
+        this.changeDetectorRef.detectChanges();
+      }
+    });
+    messagingService.subscribe(events.EDITOR_DIRTY_CHANGED, element => {
+      let isOwnElement = element.path === this.model.path;
+      if (isOwnElement) {
+        this.dirty = element.dirty;
+        this.changeDetectorRef.detectChanges();
+      }
+    });
   }
 
   onClick() {
@@ -28,7 +61,7 @@ export class TreeViewerComponent {
   onDoubleClick() {
     if (this.isFile()) {
       let document = this.persistenceService.getDocument(this.model);
-      this.messagingService.publish('navigation.open', document);
+      this.messagingService.publish(events.NAVIGATION_OPEN, document);
     }
   }
 
