@@ -15,6 +15,7 @@ export class TreeViewerComponent {
   static readonly FILE = "file";
 
   @Input() model: WorkspaceElement;
+  @Input() level: number = 0;
 
   constructor(private messagingService: MessagingService, private persistenceService: PersistenceService) {
   }

@@ -1,6 +1,10 @@
 <div class="tree-view" *ngIf="model">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()">
+    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()"
+      [style.padding-left]="level * 12 + 'px'"
+      [ngClass]="{
+        'header': level == 0
+      }">
       <span class="icon glyphicon" [ngClass]="{
         'glyphicon-question-sign': isUnknown(),
         'glyphicon-folder-close': isEmptyFolder(),
@@ -13,7 +17,7 @@
   </div>
   <div *ngIf="model.expanded">
     <div *ngFor="let child of model.children">
-      <nav-tree-viewer [model]="child"></nav-tree-viewer>
+      <nav-tree-viewer [model]="child" [level]="level + 1"></nav-tree-viewer>
     </div>
   </div>
 </div>

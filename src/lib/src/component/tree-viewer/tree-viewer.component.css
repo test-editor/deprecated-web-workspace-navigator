@@ -13,12 +13,8 @@
     margin-right: 3px;
 }
 
-.tree-view div {
-    padding-left: 12px;
-}
-
-.tree-view > div {
-    padding-left: 0;
+.header {
+    background-color: #363636;
 }
 
 .tree-view div {
@@ -30,6 +26,6 @@
     cursor: pointer;
 }
 
-.tree-view-item-key:hover {
+.tree-view-item-key:not(.header):hover {
     background-color: #2A2D2E;
 }
