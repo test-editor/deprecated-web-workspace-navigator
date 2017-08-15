@@ -52,9 +52,9 @@
   dependencies:
     tsickle "^0.21.0"
 
-"@testeditor/messaging-service@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@testeditor/messaging-service/-/messaging-service-1.0.0.tgz#5003d9703dbedfda73d0838a9be274e82bb21c3f"
+"@testeditor/messaging-service@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@testeditor/messaging-service/-/messaging-service-1.1.0.tgz#452c475fcb4f42f310690b6726dc3e9dd79bd706"
 
 "@types/jasmine@2.5.36":
   version "2.5.36"

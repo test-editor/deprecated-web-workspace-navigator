@@ -63,7 +63,7 @@
     "@angular/http": "~4.3.2",
     "@angular/platform-browser": "~4.3.2",
     "@angular/platform-browser-dynamic": "~4.3.2",
-    "@testeditor/messaging-service": "^1.0.0",
+    "@testeditor/messaging-service": "^1.1.0",
     "@types/jasmine": "2.5.36",
     "@types/node": "^6.0.46",
     "camelcase": "^4.0.0",
