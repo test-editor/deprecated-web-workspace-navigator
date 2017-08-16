@@ -30,6 +30,18 @@
     cursor: pointer;
 }
 
-.tree-view-item-key:hover {
+.tree-view-item-key:not(.active):hover {
     background-color: #2A2D2E;
+}
+
+.active {
+    background-color: #3f3f46;
+}
+
+.dirty {
+    font-style: italic;
+}
+
+.dirty::after {
+    content: '*'
 }
