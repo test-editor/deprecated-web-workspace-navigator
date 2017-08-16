@@ -23,7 +23,6 @@ export class TreeViewerComponent {
 
   constructor(
     private messagingService: MessagingService,
-    private persistenceService: PersistenceService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.subscribeToEvents(messagingService);
@@ -72,8 +71,7 @@ export class TreeViewerComponent {
 
   onDoubleClick() {
     if (this.isFile()) {
-      let document = this.persistenceService.getDocument(this.model);
-      this.messagingService.publish(events.NAVIGATION_OPEN, document);
+      this.messagingService.publish(events.NAVIGATION_OPEN, { path: this.model.path });
     }
   }
 
