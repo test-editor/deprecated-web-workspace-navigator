@@ -85,6 +85,18 @@ describe('TreeViewerComponent event handling', () => {
     expect(getItemKey().classes.selected).toBeFalsy();
   });
 
+  it('"selected" is unset on non-matching "editor.active event', () => {
+    // given
+    component.selected = true;
+
+    // when
+    publishEvent(events.EDITOR_ACTIVE, { path: 'random-path' });
+
+    // then
+    expect(component.selected).toBeFalsy();
+    expect(getItemKey().classes.selected).toBeFalsy();
+  });
+
   it('"active" is set on matching "editor.active" event', () => {
     // given
     expect(component.active).toBeFalsy();

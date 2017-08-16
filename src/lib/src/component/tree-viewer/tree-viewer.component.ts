@@ -42,6 +42,10 @@ export class TreeViewerComponent implements OnDestroy {
           this.active = shouldBeActive;
           this.changeDetectorRef.detectChanges();
         }
+        if (this.selected && !shouldBeActive) {
+          this.selected = false;
+          this.changeDetectorRef.detectChanges();
+        }
       }
     ));
     this.subscriptions.push(messagingService.subscribe(
