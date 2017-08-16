@@ -6,6 +6,7 @@
   background-color: #252525;
   resize: horizontal;
   overflow: auto;
+  user-select: none;
 }
 
 .sidenav img.button {
