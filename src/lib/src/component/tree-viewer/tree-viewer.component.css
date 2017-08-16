@@ -26,6 +26,18 @@
     cursor: pointer;
 }
 
-.tree-view-item-key:not(.header):hover {
+.tree-view-item-key:not(.active):not(.header):hover {
     background-color: #2A2D2E;
+}
+
+.active {
+    background-color: #3f3f46;
+}
+
+.dirty {
+    font-style: italic;
+}
+
+.dirty::after {
+    content: '*'
 }

@@ -9,13 +9,36 @@ import { TreeViewerComponent } from './tree-viewer.component';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
 
+export function testBedSetup(): void {
+  // Mock PersistenceService
+  let persistenceServiceMock = mock(PersistenceService);
+  when(persistenceServiceMock.getDocument(anything())).thenReturn({
+    name: 'someDoc',
+    path: 'someFolder/someDoc',
+    content: Promise.resolve('dummy content')
+  });
+
+  TestBed.configureTestingModule({
+    imports: [
+      MessagingModule.forRoot()
+    ],
+    declarations: [TreeViewerComponent],
+    providers: [
+      { provide: PersistenceService, useValue: instance(persistenceServiceMock) }
+    ]
+  })
+    .compileComponents();
+}
+
 describe('TreeViewerComponent', () => {
+
   let component: TreeViewerComponent;
   let fixture: ComponentFixture<TreeViewerComponent>;
+  let messagingService: MessagingService;
 
   let singleEmptyFolder: WorkspaceElement = {
     name: 'folder', path: '', expanded: false, type: 'folder',
-    children: [ ]
+    children: []
   };
 
   let foldedFolderWithSubfolders: WorkspaceElement = {
@@ -30,29 +53,13 @@ describe('TreeViewerComponent', () => {
   let singleFile: WorkspaceElement = { name: 'file', path: '', expanded: false, type: 'file', children: [] }
 
   beforeEach(async(() => {
-    // Mock PersistenceService
-    let persistenceServiceMock = mock(PersistenceService);
-    when(persistenceServiceMock.getDocument(anything())).thenReturn({
-      name: 'someDoc',
-      path: 'someFolder/someDoc',
-      content: Promise.resolve('dummy content')
-    });
-
-    TestBed.configureTestingModule({
-      imports: [
-        MessagingModule.forRoot()
-      ],
-      declarations: [ TreeViewerComponent ],
-      providers: [
-        { provide: PersistenceService, useValue: instance(persistenceServiceMock) }
-      ]
-    })
-    .compileComponents();
+    testBedSetup();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TreeViewerComponent);
     component = fixture.componentInstance;
+    messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
   });
 
@@ -122,7 +129,7 @@ describe('TreeViewerComponent', () => {
     expect(component.isFile()).toBeTruthy();
   });
 
-  it('onDoubleClick() emits message', inject([MessagingService], (messagingService: MessagingService) => {
+  it('onDoubleClick() emits message', () => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe('navigation.open', callback);
@@ -133,7 +140,7 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({path: 'someFolder/someDoc'}));
-  }));
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: 'someFolder/someDoc' }));
+  });
 
 });
