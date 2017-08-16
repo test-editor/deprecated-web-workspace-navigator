@@ -16,6 +16,7 @@ export class TreeViewerComponent {
   static readonly FILE = "file";
 
   @Input() model: WorkspaceElement;
+  @Input() level: number = 0;
   active: boolean = false;
   dirty: boolean = false;
 
