@@ -1,2 +1,17 @@
-<my-lib></my-lib>
-<h3>Meaning is: {{meaning}}</h3>
+<h2>@testeditor/workspace-navigator</h2>
+
+<div id="navigation">
+  <app-navigation></app-navigation>
+</div>
+
+<br/>
+
+<div *ngIf="lastDocument">
+  <div id="lastDoubleClickDiv">Last double-click was on: {{lastDocument.name}}</div>
+  <div id="lastContent">
+    Last content was:<br/>
+    <pre>
+    {{ lastDocument.content | async }}
+    </pre>
+  </div>
+</div>
