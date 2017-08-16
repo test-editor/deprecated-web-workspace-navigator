@@ -1,4 +1,5 @@
-import { Component, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 import { MessagingService } from '@testeditor/messaging-service';
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
 import { PersistenceService } from '../../service/persistence/persistence.service';
@@ -9,7 +10,7 @@ import * as events from './event-types';
   templateUrl: './tree-viewer.component.html',
   styleUrls: ['./tree-viewer.component.css']
 })
-export class TreeViewerComponent {
+export class TreeViewerComponent implements OnDestroy {
 
   // workspace element types
   static readonly FOLDER = "folder";
@@ -21,6 +22,8 @@ export class TreeViewerComponent {
   dirty: boolean = false;
   selected: boolean = false;
 
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private messagingService: MessagingService,
     private persistenceService: PersistenceService,
@@ -30,36 +33,48 @@ export class TreeViewerComponent {
   }
 
   private subscribeToEvents(messagingService: MessagingService): void {
-    messagingService.subscribe(events.EDITOR_ACTIVE, element => {
-      let shouldBeActive = element.path === this.model.path;
-      // don't want to trigger update for all unrelated elements
-      if (this.active !== shouldBeActive) {
-        this.active = shouldBeActive;
-        this.changeDetectorRef.detectChanges();
+    this.subscriptions.push(messagingService.subscribe(
+      events.EDITOR_ACTIVE,
+      element => {
+        let shouldBeActive = element.path === this.model.path;
+        // don't want to trigger update for all unrelated elements
+        if (this.active !== shouldBeActive) {
+          this.active = shouldBeActive;
+          this.changeDetectorRef.detectChanges();
+        }
       }
-    });
-    messagingService.subscribe(events.EDITOR_CLOSE, element => {
-      let isOwnElement = element.path === this.model.path;
-      if (isOwnElement) {
-        this.active = false;
-        this.dirty = false;
-        this.changeDetectorRef.detectChanges();
+    ));
+    this.subscriptions.push(messagingService.subscribe(
+      events.EDITOR_CLOSE,
+      element => {
+        let isOwnElement = element.path === this.model.path;
+        if (isOwnElement) {
+          this.active = false;
+          this.dirty = false;
+          this.changeDetectorRef.detectChanges();
+        }
       }
-    });
-    messagingService.subscribe(events.EDITOR_DIRTY_CHANGED, element => {
-      let isOwnElement = element.path === this.model.path;
-      if (isOwnElement) {
-        this.dirty = element.dirty;
-        this.changeDetectorRef.detectChanges();
+    ));
+    this.subscriptions.push(messagingService.subscribe(
+      events.EDITOR_DIRTY_CHANGED,
+      element => {
+        let isOwnElement = element.path === this.model.path;
+        if (isOwnElement) {
+          this.dirty = element.dirty;
+          this.changeDetectorRef.detectChanges();
+        }
       }
-    });
-    messagingService.subscribe(events.NAVIGATION_SELECT, element => {
-      let isOwnElement = element.path === this.model.path;
-      if (!isOwnElement && this.selected) {
-        this.selected = false;
-        this.changeDetectorRef.detectChanges();
+    ));
+    this.subscriptions.push(messagingService.subscribe(
+      events.NAVIGATION_SELECT,
+      element => {
+        let isOwnElement = element.path === this.model.path;
+        if (!isOwnElement && this.selected) {
+          this.selected = false;
+          this.changeDetectorRef.detectChanges();
+        }
       }
-    });
+    ));
   }
 
   onClick() {
@@ -75,6 +90,10 @@ export class TreeViewerComponent {
       let document = this.persistenceService.getDocument(this.model);
       this.messagingService.publish(events.NAVIGATION_OPEN, document);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
   isFolderExpanded(): boolean {
