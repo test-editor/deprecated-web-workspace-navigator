@@ -41,6 +41,7 @@ export class TreeViewerComponent {
       let isOwnElement = element.path === this.model.path;
       if (isOwnElement) {
         this.active = false;
+        this.dirty = false;
         this.changeDetectorRef.detectChanges();
       }
     });

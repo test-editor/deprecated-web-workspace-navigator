@@ -112,6 +112,18 @@ describe('TreeViewerComponent event handling', () => {
     expect(getItemKey().classes.dirty).toBeFalsy();
   });
 
+  it('"dirty" is unset on matching "editor.close" event', () => {
+    // given
+    component.dirty = true;
+
+    // when
+    publishEvent(events.EDITOR_CLOSE, { path: singleFile.path });
+
+    // then
+    expect(component.dirty).toBeFalsy();
+    expect(getItemKey().classes.dirty).toBeFalsy();
+  });
+
   it('"dirty" is unaffected on non-matching "editor.dirtyS', () => {
     // given
     component.dirty = true;
