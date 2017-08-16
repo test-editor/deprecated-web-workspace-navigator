@@ -14,7 +14,7 @@ export function testBedSetup(): void {
   let persistenceServiceMock = mock(PersistenceService);
   when(persistenceServiceMock.getDocument(anything())).thenReturn({
     name: 'someDoc',
-    path: 'someFolder/someDoc',
+    path: 'single-file.txt',
     content: Promise.resolve('dummy content')
   });
 
@@ -127,20 +127,6 @@ describe('TreeViewerComponent', () => {
   it('files are not identified as folders', () => {
     component.model = singleFile;
     expect(component.isFile()).toBeTruthy();
-  });
-
-  it('onDoubleClick() emits message', () => {
-    // given
-    let callback = jasmine.createSpy('callback');
-    messagingService.subscribe('navigation.open', callback);
-    component.model = singleFile;
-
-    // when
-    component.onDoubleClick();
-
-    // then
-    expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: 'someFolder/someDoc' }));
   });
 
 });

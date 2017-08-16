@@ -19,6 +19,7 @@ export class TreeViewerComponent {
   @Input() level: number = 0;
   active: boolean = false;
   dirty: boolean = false;
+  selected: boolean = false;
 
   constructor(
     private messagingService: MessagingService,
@@ -51,12 +52,21 @@ export class TreeViewerComponent {
         this.changeDetectorRef.detectChanges();
       }
     });
+    messagingService.subscribe(events.NAVIGATION_SELECT, element => {
+      let isOwnElement = element.path === this.model.path;
+      if (!isOwnElement && this.selected) {
+        this.selected = false;
+        this.changeDetectorRef.detectChanges();
+      }
+    });
   }
 
   onClick() {
     if (this.model.type === TreeViewerComponent.FOLDER) {
       this.model.expanded = !this.model.expanded;
     }
+    this.selected = true;
+    this.messagingService.publish(events.NAVIGATION_SELECT, { path: this.model.path });
   }
 
   onDoubleClick() {

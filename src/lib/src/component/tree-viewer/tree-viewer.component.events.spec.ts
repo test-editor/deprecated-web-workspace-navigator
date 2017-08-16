@@ -44,6 +44,47 @@ describe('TreeViewerComponent event handling', () => {
     return fixture.debugElement.query(By.css('.tree-view .tree-view-item-key'));
   }
 
+  it('onClick() emits "navigation.select" message', () => {
+    // given
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_SELECT, callback);
+
+    // when
+    component.onClick();
+    fixture.detectChanges();
+
+    // then
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+    expect(getItemKey().classes.selected).toBeTruthy();
+  });
+
+  it('onDoubleClick() emits "navigation.open" message', () => {
+    // given
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_OPEN, callback);
+
+    // when
+    component.onDoubleClick();
+
+    // then
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+  });
+
+  it('"selected" is unset on non-matching "navigation.select" event', () => {
+    // given
+    component.selected = true;
+
+    // when
+    messagingService.publish(events.NAVIGATION_SELECT, { path: 'random-path' })
+    fixture.detectChanges();
+
+    // then
+    expect(component.selected).toBeFalsy();
+    expect(getItemKey().classes.selected).toBeFalsy();
+  });
+
   it('"active" is set on matching "editor.active" event', () => {
     // given
     expect(component.active).toBeFalsy();
