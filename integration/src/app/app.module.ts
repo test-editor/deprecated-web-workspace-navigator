@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { MessagingModule } from '@testeditor/messaging-service';
-import { WorkspaceNavigatorModule } from '@testeditor/workspace-navigator';
+import { PersistenceService, WorkspaceNavigatorModule } from '@testeditor/workspace-navigator';
 
 import { AppComponent }  from './app.component';
+import { PersistenceServiceMock } from './persistence.service.mock';
 
 @NgModule({
   imports: [
@@ -17,6 +18,9 @@ import { AppComponent }  from './app.component';
     })
   ],
   declarations: [ AppComponent ],
-  bootstrap: [ AppComponent ]
+  bootstrap: [ AppComponent ],
+  providers: [
+    { provide: PersistenceService, useClass: PersistenceServiceMock }
+  ]
 })
 export class AppModule { }

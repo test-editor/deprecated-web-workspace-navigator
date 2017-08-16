@@ -1,3 +1,15 @@
+#wrapper {
+  overflow: hidden;
+}
+
 #navigation {
   height: 600px;
+  float: left;
+  overflow: scroll;
+}
+
+#status {
+  float: left;
+  overflow: hidden;
+  padding-left: 20px;
 }
