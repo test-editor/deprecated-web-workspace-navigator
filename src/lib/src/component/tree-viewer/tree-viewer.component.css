@@ -20,13 +20,16 @@
 .tree-view div {
 	text-decoration: none;
     font-size: 15px;
-    color: #CCCCCC;
     display: block;
     width: 100%;
     cursor: pointer;
 }
 
-.tree-view-item-key:not(.active):not(.header):hover {
+.tree-view div:not(.selected) {
+  color: #CCCCCC;
+}
+
+.tree-view-item-key:not(.active):not(.header):not(.selected):hover {
     background-color: #2A2D2E;
 }
 
@@ -40,4 +43,9 @@
 
 .dirty::after {
     content: '*'
+}
+
+.selected:not(.header) {
+  background-color: #094771;
+  color: #ffffff;
 }
