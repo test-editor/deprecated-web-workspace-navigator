@@ -3,10 +3,10 @@
     <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()"
       [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
-        'active': active,
-        'dirty': dirty,
+        'active': model.path === uiState.activeEditorPath,
+        'dirty': uiState.isDirty(model.path),
         'header': level == 0,
-        'selected': selected
+        'selected': model.path === uiState.selectedPath
       }">
       <span class="icon glyphicon" [ngClass]="{
         'glyphicon-question-sign': isUnknown(),
@@ -18,9 +18,9 @@
       </span> {{model.name}}
     </div>
   </div>
-  <div *ngIf="model.expanded">
+  <div *ngIf="expanded">
     <div *ngFor="let child of model.children">
-      <nav-tree-viewer [model]="child" [level]="level + 1"></nav-tree-viewer>
+      <nav-tree-viewer [model]="child" [uiState]="uiState" [level]="level + 1"></nav-tree-viewer>
     </div>
   </div>
 </div>
