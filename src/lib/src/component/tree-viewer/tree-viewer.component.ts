@@ -17,7 +17,6 @@ export class TreeViewerComponent {
   @Input() uiState: UiState;
   @Input() model: WorkspaceElement;
   @Input() level: number = 0;
-  expanded: boolean = false;
 
   private subscriptions: Subscription[] = [];
 
@@ -32,11 +31,15 @@ export class TreeViewerComponent {
 
   onDoubleClick() {
     if (this.isFolder()) {
-      this.expanded = !this.expanded;
+      this.uiState.toggleExpanded(this.model.path);
     }
     if (this.isFile()) {
       this.messagingService.publish(events.NAVIGATION_OPEN, { path: this.model.path });
     }
+  }
+
+  isExpanded(): boolean {
+    return this.uiState.isExpanded(this.model.path);
   }
 
   isFile(): boolean {
@@ -48,11 +51,11 @@ export class TreeViewerComponent {
   }
 
   isFolderExpanded(): boolean {
-    return this.expanded && this.model.children.length > 0 && this.isFolder();
+    return this.isExpanded() && this.model.children.length > 0 && this.isFolder();
   }
 
   isFolderFolded(): boolean {
-    return !this.expanded && this.model.children.length > 0 && this.isFolder();
+    return !this.isExpanded() && this.model.children.length > 0 && this.isFolder();
   }
 
   isEmptyFolder(): boolean {

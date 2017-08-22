@@ -33,6 +33,7 @@ export class NavigationComponent implements OnInit {
   retrieveWorkspaceRoot(): void {
     this.persistenceService.listFiles().then(element => {
       this.workspaceRoot = element;
+      this.uiState.setExpanded(element.path, true);
     });
   }
 

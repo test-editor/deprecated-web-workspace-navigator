@@ -27,16 +27,17 @@ describe('NavigationComponent', () => {
   let spy : jasmine.Spy;
   let sidenav : DebugElement;
 
+  let listedFile: WorkspaceElement = {
+    name: "file.tcl",
+    path: "path/to/file.tcl",
+    type: ElementType.File,
+    children: []
+  };
+
   beforeEach(async(() => {
     // Mock PersistenceService
-    let listedFiles: WorkspaceElement = {
-      name: "file.tcl",
-      path: "path/to/file.tcl",
-      type: ElementType.File,
-      children: []
-    };
     persistenceService = mock(PersistenceService);
-    when(persistenceService.listFiles()).thenReturn(Promise.resolve(listedFiles));
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(listedFile));
 
     TestBed.configureTestingModule({
       declarations: [
@@ -69,7 +70,13 @@ describe('NavigationComponent', () => {
 
   it('sets workspaceRoot initially', () => {
     fixture.whenStable().then(() => {
-      expect(component.workspaceRoot.name).toEqual("file.tcl");
+      expect(component.workspaceRoot.name).toEqual(listedFile.name);
+    });
+  });
+
+  it('expands workspaceRoot initially', () => {
+    fixture.whenStable().then(() => {
+      expect(component.uiState.isExpanded(listedFile.path)).toBeTruthy();
     });
   });
 
