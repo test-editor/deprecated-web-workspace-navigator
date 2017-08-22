@@ -9,7 +9,8 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
-import { WorkspaceElement} from '../../service/persistence/workspace-element';
+import { WorkspaceElement} from '../../common/workspace-element';
+import { ElementType } from '../../common/element-type';
 import { testBedSetup } from '../tree-viewer/tree-viewer.component.spec';
 import { UiState } from '../ui-state';
 
@@ -31,7 +32,7 @@ describe('NavigationComponent', () => {
     let listedFiles: WorkspaceElement = {
       name: "file.tcl",
       path: "path/to/file.tcl",
-      type: "file",
+      type: ElementType.File,
       children: []
     };
     persistenceService = mock(PersistenceService);
@@ -81,7 +82,7 @@ describe('NavigationComponent', () => {
 
     // then
     expect(component.uiState.activeEditorPath).toEqual(examplePath);
-    expect(component.uiState.selectedPath).toBeFalsy();
+    expect(component.uiState.selectedElement).toBeFalsy();
   });
 
   it('updates the UI state when an "editor.close" event is received', () => {
@@ -117,11 +118,19 @@ describe('NavigationComponent', () => {
   });
 
   it('updates the UI state when an "navigation.select" event is received', () => {
+    // given
+    let element: WorkspaceElement = {
+      name: "file.tcl",
+      path: "path/to/file.tcl",
+      type: ElementType.File,
+      children: []
+    };
+
     // when
-    messagingService.publish(events.NAVIGATION_SELECT, { path: examplePath });
+    messagingService.publish(events.NAVIGATION_SELECT, element);
 
     // then
-    expect(component.uiState.selectedPath).toEqual(examplePath);
+    expect(component.uiState.selectedElement).toEqual(element);
   });
 
 });

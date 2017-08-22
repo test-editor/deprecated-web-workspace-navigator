@@ -1,7 +1,9 @@
+import { WorkspaceElement } from '../common/workspace-element';
+
 export class UiState {
 
-  activeEditorPath: String;
-  selectedPath: String;
+  activeEditorPath: string;
+  selectedElement: WorkspaceElement;
 
   private dirtyElements: boolean[] = [];
 

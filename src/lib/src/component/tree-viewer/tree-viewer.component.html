@@ -6,7 +6,7 @@
         'active': model.path === uiState.activeEditorPath,
         'dirty': uiState.isDirty(model.path),
         'header': level == 0,
-        'selected': model.path === uiState.selectedPath
+        'selected': model.path === uiState.selectedElement?.path
       }">
       <span class="icon glyphicon" [ngClass]="{
         'glyphicon-question-sign': isUnknown(),

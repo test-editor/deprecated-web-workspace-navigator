@@ -1,10 +1,11 @@
 import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { MessagingService } from '@testeditor/messaging-service';
-import { WorkspaceElement } from '../../service/persistence/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
+import { ElementType } from '../../common/element-type';
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { UiState } from '../ui-state';
 import * as events from '../event-types';
+import { UiState } from '../ui-state';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -12,10 +13,6 @@ import * as events from '../event-types';
   styleUrls: ['./tree-viewer.component.css']
 })
 export class TreeViewerComponent {
-
-  // workspace element types
-  static readonly FOLDER = "folder";
-  static readonly FILE = "file";
 
   @Input() uiState: UiState;
   @Input() model: WorkspaceElement;
@@ -30,7 +27,7 @@ export class TreeViewerComponent {
   ) { }
 
   onClick() {
-    this.messagingService.publish(events.NAVIGATION_SELECT, { path: this.model.path });
+    this.messagingService.publish(events.NAVIGATION_SELECT, this.model);
   }
 
   onDoubleClick() {
@@ -43,29 +40,27 @@ export class TreeViewerComponent {
   }
 
   isFile(): boolean {
-    return this.model.type === TreeViewerComponent.FILE;
+    return this.model.type === ElementType.File;
   }
 
   isFolder(): boolean {
-    return this.model.type === TreeViewerComponent.FOLDER;
+    return this.model.type === ElementType.Folder;
   }
 
   isFolderExpanded(): boolean {
-    return this.expanded && this.model.children.length > 0 && this.model.type === TreeViewerComponent.FOLDER;
+    return this.expanded && this.model.children.length > 0 && this.isFolder();
   }
 
   isFolderFolded(): boolean {
-    return !this.expanded && this.model.children.length > 0 && this.model.type === TreeViewerComponent.FOLDER;
+    return !this.expanded && this.model.children.length > 0 && this.isFolder();
   }
 
   isEmptyFolder(): boolean {
-    return this.model.children.length == 0 && this.model.type === TreeViewerComponent.FOLDER;
+    return this.model.children.length == 0 && this.isFolder();
   }
 
-
-
   isUnknown(): boolean {
-    return this.model.type !== TreeViewerComponent.FILE && this.model.type !== TreeViewerComponent.FOLDER;
+    return !(this.isFile() || this.isFolder());
   }
 
 }

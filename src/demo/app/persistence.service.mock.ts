@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { WorkspaceElement } from '@testeditor/workspace-navigator';
+import { ElementType, WorkspaceElement } from '@testeditor/workspace-navigator';
 
 @Injectable()
 export class PersistenceServiceMock {
@@ -7,34 +7,34 @@ export class PersistenceServiceMock {
   readonly data: WorkspaceElement = {
     name: "root",
     path: "",
-    type: "folder",
+    type: ElementType.Folder,
     children: [
       {
         name: "hello.tsl",
         path: "hello.tsl",
-        type: "file",
+        type: ElementType.File,
         children: []
       },
       {
         name: "world.tsl",
         path: "world.tsl",
-        type: "file",
+        type: ElementType.File,
         children: []
       },
       {
         name: "com",
         path: "com",
-        type: "folder",
+        type: ElementType.Folder,
         children: [
           {
             name: "example",
             path: "com/example",
-            type: "folder",
+            type: ElementType.Folder,
             children: [
               {
                 name: "test.tsl",
                 path: "com/example/test.tsl",
-                type: "file",
+                type: ElementType.File,
                 children: []
               }
             ]

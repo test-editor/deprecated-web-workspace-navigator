@@ -6,7 +6,7 @@ import { MessagingModule, MessagingService } from '@testeditor/messaging-service
 
 import { TreeViewerComponent } from './tree-viewer.component';
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { WorkspaceElement } from '../../service/persistence/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
 
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
@@ -195,7 +195,7 @@ describe('TreeViewerComponent', () => {
     expect(getItemKey().classes.selected).toBeFalsy();
 
     // when
-    component.uiState.selectedPath = singleFile.path;
+    component.uiState.selectedElement = singleFile;
     fixture.detectChanges();
 
     // then

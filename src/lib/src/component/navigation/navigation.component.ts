@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 
-import { WorkspaceElement } from '../../service/persistence/workspace-element';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
+import { WorkspaceElement } from '../../common/workspace-element';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 
@@ -39,7 +39,7 @@ export class NavigationComponent implements OnInit {
   subscribeToEvents(): void {
     this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
       this.uiState.activeEditorPath = element.path;
-      this.uiState.selectedPath = null;
+      this.uiState.selectedElement = null;
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.EDITOR_CLOSE, element => {
@@ -57,7 +57,7 @@ export class NavigationComponent implements OnInit {
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
-      this.uiState.selectedPath = element.path;
+      this.uiState.selectedElement = element as WorkspaceElement;
       this.changeDetectorRef.detectChanges();
     });
   }
