@@ -1,6 +1,6 @@
 import { browser, element, by } from 'protractor';
 
-describe('QuickStart Lib E2E Tests', function () {
+describe('Workspace Navigator tests', function () {
 
   beforeEach(() => browser.get(''));
 
@@ -10,12 +10,12 @@ describe('QuickStart Lib E2E Tests', function () {
     });
   });
 
-  it('should display lib', () => {
-    expect(element(by.css('h2')).getText()).toEqual('Hello Angular Library');
-  });
+  it('should display the navigation component', () => {
+    // when
+    let navigation = element(by.css('app-navigation'));
 
-  it('should display meaning', () => {
-    expect(element(by.css('h3')).getText()).toEqual('Meaning is: 42');
+    // then
+    expect(navigation).toBeTruthy();
   });
 
 });

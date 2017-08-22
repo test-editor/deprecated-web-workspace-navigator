@@ -8,9 +8,6 @@ import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.compone
 import { PersistenceService } from './service/persistence/persistence.service';
 import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
 
-import { LibComponent } from './component/lib.component';
-import { LibService } from './service/lib.service';
-
 @NgModule({
   imports: [
     CommonModule,
@@ -18,16 +15,11 @@ import { LibService } from './service/lib.service';
   ],
   declarations: [
     NavigationComponent,
-    TreeViewerComponent,
-    LibComponent
-  ],
-  providers: [
-    LibService
+    TreeViewerComponent
   ],
   exports: [
     NavigationComponent,
-    TreeViewerComponent,
-    LibComponent
+    TreeViewerComponent
   ]
 })
 export class WorkspaceNavigatorModule {

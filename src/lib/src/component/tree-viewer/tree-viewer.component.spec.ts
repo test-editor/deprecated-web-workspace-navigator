@@ -1,7 +1,6 @@
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { mock, when, anything, instance } from 'ts-mockito';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
@@ -10,24 +9,13 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { WorkspaceElement } from '../../service/persistence/workspace-element';
 
 export function testBedSetup(): void {
-  // Mock PersistenceService
-  let persistenceServiceMock = mock(PersistenceService);
-  when(persistenceServiceMock.getDocument(anything())).thenReturn({
-    name: 'someDoc',
-    path: 'single-file.txt',
-    content: Promise.resolve('dummy content')
-  });
-
   TestBed.configureTestingModule({
     imports: [
       MessagingModule.forRoot()
     ],
-    declarations: [TreeViewerComponent],
-    providers: [
-      { provide: PersistenceService, useValue: instance(persistenceServiceMock) }
-    ]
+    declarations: [TreeViewerComponent]
   })
-    .compileComponents();
+  .compileComponents();
 }
 
 describe('TreeViewerComponent', () => {

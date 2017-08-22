@@ -26,7 +26,6 @@ export class TreeViewerComponent implements OnDestroy {
 
   constructor(
     private messagingService: MessagingService,
-    private persistenceService: PersistenceService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.subscribeToEvents(messagingService);
@@ -91,8 +90,7 @@ export class TreeViewerComponent implements OnDestroy {
 
   onDoubleClick() {
     if (this.isFile()) {
-      let document = this.persistenceService.getDocument(this.model);
-      this.messagingService.publish(events.NAVIGATION_OPEN, document);
+      this.messagingService.publish(events.NAVIGATION_OPEN, { path: this.model.path });
     }
   }
 
