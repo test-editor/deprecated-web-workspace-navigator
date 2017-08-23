@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { MessagingService } from '@testeditor/messaging-service';
-import { WorkspaceDocument } from '@testeditor/workspace-navigator';
 
 import * as events from '@testeditor/workspace-navigator';
 

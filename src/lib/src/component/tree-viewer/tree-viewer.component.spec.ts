@@ -6,7 +6,10 @@ import { MessagingModule, MessagingService } from '@testeditor/messaging-service
 
 import { TreeViewerComponent } from './tree-viewer.component';
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { WorkspaceElement } from '../../service/persistence/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
+
+import { UiState } from '../ui-state';
+import * as events from '../event-types';
 
 export function testBedSetup(): void {
   TestBed.configureTestingModule({
@@ -14,8 +17,7 @@ export function testBedSetup(): void {
       MessagingModule.forRoot()
     ],
     declarations: [TreeViewerComponent]
-  })
-  .compileComponents();
+  }).compileComponents();
 }
 
 describe('TreeViewerComponent', () => {
@@ -25,20 +27,20 @@ describe('TreeViewerComponent', () => {
   let messagingService: MessagingService;
 
   let singleEmptyFolder: WorkspaceElement = {
-    name: 'folder', path: '', expanded: false, type: 'folder',
+    name: 'folder', path: '', type: 'folder',
     children: []
   };
 
   let foldedFolderWithSubfolders: WorkspaceElement = {
-    name: 'top-folder', path: '', expanded: false, type: 'folder',
+    name: 'top-folder', path: '', type: 'folder',
     children: [
-      { name: 'sub-folder-1', path: 'top-folder', expanded: false, type: 'folder', children: [] },
-      { name: 'sub-folder-2', path: 'top-folder', expanded: false, type: 'folder', children: [] },
-      { name: 'sub-file-1', path: 'top-folder', expanded: false, type: 'file', children: [] }
+      { name: 'sub-folder-1', path: 'top-folder', type: 'folder', children: [] },
+      { name: 'sub-folder-2', path: 'top-folder', type: 'folder', children: [] },
+      { name: 'sub-file-1', path: 'top-folder', type: 'file', children: [] }
     ]
   };
 
-  let singleFile: WorkspaceElement = { name: 'file', path: '', expanded: false, type: 'file', children: [] }
+  let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] }
 
   beforeEach(async(() => {
     testBedSetup();
@@ -47,9 +49,14 @@ describe('TreeViewerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TreeViewerComponent);
     component = fixture.componentInstance;
+    component.uiState = new UiState();
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
   });
+
+  function getItemKey(): DebugElement {
+    return fixture.debugElement.query(By.css('.tree-view .tree-view-item-key'));
+  }
 
   it('should be created', () => {
     expect(component).toBeTruthy();
@@ -84,12 +91,12 @@ describe('TreeViewerComponent', () => {
     });
   });
 
-  it('folded folder is exanded when clicked', () => {
+  it('folded folder is exanded when double-clicked', () => {
     // given
     component.model = foldedFolderWithSubfolders;
 
     // when
-    component.onClick();
+    component.onDoubleClick();
 
     // then
     fixture.detectChanges();
@@ -108,13 +115,91 @@ describe('TreeViewerComponent', () => {
   });
 
   it('folders are not identified as file', () => {
+    // given
     component.model = foldedFolderWithSubfolders;
+
+    // when + then
     expect(component.isFile()).toBeFalsy();
+    expect(component.isFolder()).toBeTruthy();
   });
 
   it('files are not identified as folders', () => {
+    // given
     component.model = singleFile;
+
+    // when + then
     expect(component.isFile()).toBeTruthy();
+    expect(component.isFolder()).toBeFalsy();
+  });
+
+  it('onClick() emits "navigation.select" message', () => {
+    // given
+    component.model = singleFile;
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_SELECT, callback);
+
+    // when
+    component.onClick();
+
+    // then
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+  });
+
+  it('onDoubleClick() emits "navigation.open" message', () => {
+    // given
+    component.model = singleFile;
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_OPEN, callback);
+
+    // when
+    component.onDoubleClick();
+
+    // then
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+  });
+
+  it('has css class "active" if given by the UI state', () => {
+    // given
+    component.model = singleFile;
+    fixture.detectChanges();
+    expect(getItemKey().classes.active).toBeFalsy();
+
+    // when
+    component.uiState.activeEditorPath = singleFile.path;
+    fixture.detectChanges();
+
+    // then
+    expect(getItemKey().classes.active).toBeTruthy();
+  });
+
+  it('has css class "dirty" if given by the UI state', () => {
+    // given
+    component.model = singleFile;
+    fixture.detectChanges();
+    expect(getItemKey().classes.dirty).toBeFalsy();
+
+    // when
+    component.uiState.setDirty(singleFile.path, true);
+    fixture.detectChanges();
+
+    // then
+    expect(getItemKey().classes.dirty).toBeTruthy();
+  });
+
+  it('has css class "selected" if given by the UI state', () => {
+    // given
+    component.model = singleFile;
+    fixture.detectChanges();
+    expect(getItemKey().classes.selected).toBeFalsy();
+
+    // when
+    component.uiState.selectedElement = singleFile;
+    fixture.detectChanges();
+
+    // then
+    expect(getItemKey().classes.selected).toBeTruthy();
   });
 
 });
