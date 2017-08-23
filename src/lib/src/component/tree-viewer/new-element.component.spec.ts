@@ -87,18 +87,31 @@ describe('NewElementComponent', () => {
     expect(component.getPaddingLeft()).toEqual("0px");
   });
 
-  it('calls createDocument when enter is pressed', () => {
+  it('calls createDocument with type file when enter is pressed', () => {
     // given
+    component.uiState.newElementRequest.type = ElementType.File;
     input.nativeElement.value = "something-new.txt";
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("something-new.txt")).once();
+    verify(persistenceService.createDocument("something-new.txt", "file")).once();
   });
 
-  it('calls createDocument with the proper too path when enter is pressed', () => {
+  it('calls createDocument with type folder when enter is pressed', () => {
+    // given
+    component.uiState.newElementRequest.type = ElementType.Folder;
+    input.nativeElement.value = "newFolder";
+
+    // when
+    input.triggerEventHandler('keyup.enter', {});
+
+    // then
+    verify(persistenceService.createDocument("newFolder", ElementType.Folder)).once();
+  });
+
+  it('calls createDocument with the proper path when enter is pressed', () => {
     // given
     input.nativeElement.value = "something-new.txt";
     component.uiState.newElementRequest = requestWithDummySelected;
@@ -107,7 +120,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("some/path/something-new.txt")).once();
+    verify(persistenceService.createDocument("some/path/something-new.txt", ElementType.File)).once();
   });
 
   it('removes itself and emits navigation.refresh event when createDocument returns', () => {
@@ -120,7 +133,7 @@ describe('NewElementComponent', () => {
       headers: null,
       url: null
     }));
-    when(persistenceService.createDocument(anyString())).thenReturn(Promise.resolve(response));
+    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.resolve(response));
 
     // when
     input.triggerEventHandler('keyup.enter', {});

@@ -28,9 +28,13 @@ export class PersistenceService {
       .then(response => response.json());
   }
 
-  createDocument(path: string): Promise<Response> {
+  createDocument(path: string, type: string): Promise<Response> {
     let url = `${this.serviceUrl}/documents/${path}`;
-    return this.http.post(url, "", this.requestOptions).toPromise();
+    let requestOptions = {
+      headers: this.requestOptions.headers,
+      params: { type: type }
+    };
+    return this.http.post(url, "", requestOptions).toPromise();
   }
 
 }

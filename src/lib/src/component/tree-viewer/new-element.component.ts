@@ -30,7 +30,12 @@ export class NewElementComponent implements AfterViewInit {
     let newName = this.input.nativeElement.value;
     let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
     let newPath = parent + newName;
-    this.persistenceService.createDocument(newPath).then(() => {
+    let type = this.uiState.newElementRequest.type;
+    this.sendCreateRequest(newPath, type);
+  }
+
+  private sendCreateRequest(newPath: string, type: string): void {
+    this.persistenceService.createDocument(newPath, type).then(() => {
       this.remove();
       this.messagingService.publish(events.NAVIGATION_REFRESH, {});
     });
