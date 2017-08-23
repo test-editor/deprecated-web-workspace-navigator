@@ -91,12 +91,13 @@ describe('TreeViewerComponent', () => {
     });
   });
 
-  it('folded folder is exanded when double-clicked', () => {
+  it('expands folder when UI state is set', () => {
     // given
     component.model = foldedFolderWithSubfolders;
 
     // when
-    component.onDoubleClick();
+    component.uiState.setExpanded(component.model.path, true);
+    fixture.detectChanges();
 
     // then
     fixture.detectChanges();
@@ -113,6 +114,54 @@ describe('TreeViewerComponent', () => {
       expect(component.isFolderFolded()).toBeFalsy();
     });
   });
+
+  it('sets expanded state when double-clicked', () => {
+    // given
+    component.model = foldedFolderWithSubfolders;
+    fixture.detectChanges();
+
+    // when
+    getItemKey().triggerEventHandler('dblclick', null);
+
+    // then
+    let expandedState = component.uiState.isExpanded(component.model.path);
+    expect(expandedState).toBeTruthy();
+  });
+
+  it('has chevron-right icon for unexpanded folders', () => {
+    // when
+    component.model = foldedFolderWithSubfolders;
+    fixture.detectChanges();
+    let icon = getItemKey().query(By.css('.icon'));
+
+    // then
+    expect(icon.classes["glyphicon-chevron-right"]).toBeTruthy();
+  });
+
+  it('has chevron-down icon for expanded folders', () => {
+    // when
+    component.uiState.setExpanded(foldedFolderWithSubfolders.path, true);
+    component.model = foldedFolderWithSubfolders;
+    fixture.detectChanges();
+    let icon = getItemKey().query(By.css('.icon'));
+
+    // then
+    expect(icon.classes["glyphicon-chevron-down"]).toBeTruthy();
+  });
+
+  it('sets expanded state when clicked on chevron icon', () => {
+    // given
+    component.model = foldedFolderWithSubfolders;
+    fixture.detectChanges();
+    let icon = getItemKey().query(By.css('.icon'));
+
+    // when
+    icon.triggerEventHandler('click', null);
+
+    // then
+    let expandedState = component.uiState.isExpanded(component.model.path);
+    expect(expandedState).toBeTruthy();
+  })
 
   it('folders are not identified as file', () => {
     // given

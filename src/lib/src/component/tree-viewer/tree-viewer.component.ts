@@ -38,6 +38,12 @@ export class TreeViewerComponent {
     }
   }
 
+  onIconClick() {
+    if (this.isFolder()) {
+      this.uiState.toggleExpanded(this.model.path);
+    }
+  }
+
   isExpanded(): boolean {
     return this.uiState.isExpanded(this.model.path);
   }
