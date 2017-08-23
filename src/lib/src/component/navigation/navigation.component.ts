@@ -58,6 +58,9 @@ export class NavigationComponent implements OnInit {
       this.uiState.setDirty(element.path, element.dirty);
       this.changeDetectorRef.detectChanges();
     });
+    this.messagingService.subscribe(events.NAVIGATION_REFRESH, element => {
+      this.retrieveWorkspaceRoot();
+    });
     this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
       this.uiState.selectedElement = element as WorkspaceElement;
       this.changeDetectorRef.detectChanges();

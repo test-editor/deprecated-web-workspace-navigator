@@ -4,6 +4,8 @@ import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { getDirectory } from '../../common/util/workspace-element-helper';
 import { PersistenceService } from '../../service/persistence/persistence.service';
+import { MessagingService } from '@testeditor/messaging-service';
+import * as events from '../event-types';
 
 @Component({
   selector: 'nav-new-element',
@@ -15,8 +17,10 @@ export class NewElementComponent implements AfterViewInit {
   @ViewChild("theInput") input: ElementRef;
   @Input() uiState: UiState;
 
-  constructor(private persistenceService: PersistenceService) {
-  }
+  constructor(
+    private messagingService: MessagingService,
+    private persistenceService: PersistenceService
+  ) {  }
 
   ngAfterViewInit(): void {
     this.input.nativeElement.focus();
@@ -26,7 +30,10 @@ export class NewElementComponent implements AfterViewInit {
     let newName = this.input.nativeElement.value;
     let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
     let newPath = parent + newName;
-    this.persistenceService.createDocument(newPath);
+    this.persistenceService.createDocument(newPath).then(() => {
+      this.remove();
+      this.messagingService.publish(events.NAVIGATION_REFRESH, {});
+    });
   }
 
   remove(): void {
