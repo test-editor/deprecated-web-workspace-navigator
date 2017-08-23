@@ -72,4 +72,16 @@ export class TreeViewerComponent {
     return !(this.isFile() || this.isFolder());
   }
 
+  shouldShowNewElement(): boolean {
+    if (this.uiState.newElementRequest) {
+      let selectedElement = this.uiState.newElementRequest.selectedElement
+      if (selectedElement) {
+        return selectedElement.path == this.model.path;
+      } else {
+        return this.level == 0; // display at root
+      }
+    }
+    return false;
+  }
+
 }

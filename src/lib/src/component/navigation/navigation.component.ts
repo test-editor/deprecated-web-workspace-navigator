@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
+import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
@@ -61,6 +62,20 @@ export class NavigationComponent implements OnInit {
       this.uiState.selectedElement = element as WorkspaceElement;
       this.changeDetectorRef.detectChanges();
     });
+  }
+
+  newElement(type: string): void {
+    let selectedElement = this.uiState.selectedElement;
+    if (selectedElement) {
+      if (selectedElement.type == ElementType.Folder) {
+        this.uiState.setExpanded(selectedElement.path, true);
+      }
+    }
+    this.uiState.newElementRequest = {
+      selectedElement: selectedElement,
+      type: type
+    }
+    this.changeDetectorRef.detectChanges();
   }
 
 }

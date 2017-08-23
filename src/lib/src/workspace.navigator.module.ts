@@ -1,5 +1,6 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { NavigationComponent } from './component/navigation/navigation.component';
@@ -7,15 +8,18 @@ import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.compone
 
 import { PersistenceService } from './service/persistence/persistence.service';
 import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
+import { NewElementComponent } from './component/tree-viewer/new-element.component';
 
 @NgModule({
   imports: [
     CommonModule,
+    FormsModule,
     HttpModule
   ],
   declarations: [
     NavigationComponent,
-    TreeViewerComponent
+    TreeViewerComponent,
+    NewElementComponent
   ],
   exports: [
     NavigationComponent,

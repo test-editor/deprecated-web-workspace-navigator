@@ -1,3 +1,7 @@
 <div class="sidenav noselect">
+  <div class="icon-menu">
+    <i class="icon glyphicon glyphicon-file" (click)="newElement('file')"></i>
+    <i class="icon glyphicon glyphicon-folder-close" (click)="newElement('folder')"></i>
+  </div>
   <nav-tree-viewer [model]="workspaceRoot" [uiState]="uiState"></nav-tree-viewer>
 </div>

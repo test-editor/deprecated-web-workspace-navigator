@@ -1,0 +1,3 @@
+<div class="navNewElement" [style.padding-left]="getPaddingLeft()">
+  <input [ngModel]="name" #theInput (keyup.enter)="onEnter()" (keyup.escape)="remove()" (blur)="remove()">
+</div>

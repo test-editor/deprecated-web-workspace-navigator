@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
@@ -7,6 +8,7 @@ import { mock, when, anyOfClass, instance } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
+import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
 import { WorkspaceElement} from '../../common/workspace-element';
@@ -42,9 +44,11 @@ describe('NavigationComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         NavigationComponent,
-        TreeViewerComponent
+        TreeViewerComponent,
+        NewElementComponent
       ],
       imports: [
+        FormsModule,
         HttpModule,
         MessagingModule.forRoot()
       ],
@@ -125,19 +129,11 @@ describe('NavigationComponent', () => {
   });
 
   it('updates the UI state when an "navigation.select" event is received', () => {
-    // given
-    let element: WorkspaceElement = {
-      name: "file.tcl",
-      path: "path/to/file.tcl",
-      type: ElementType.File,
-      children: []
-    };
-
     // when
-    messagingService.publish(events.NAVIGATION_SELECT, element);
+    messagingService.publish(events.NAVIGATION_SELECT, listedFile);
 
     // then
-    expect(component.uiState.selectedElement).toEqual(element);
+    expect(component.uiState.selectedElement).toEqual(listedFile);
   });
 
 });
