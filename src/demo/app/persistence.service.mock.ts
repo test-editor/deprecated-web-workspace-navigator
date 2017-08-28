@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { Response } from '@angular/http';
+
 import { ElementType, WorkspaceElement } from '@testeditor/workspace-navigator';
 
 @Injectable()
@@ -46,6 +48,11 @@ export class PersistenceServiceMock {
 
   listFiles(): Promise<WorkspaceElement> {
     return Promise.resolve(this.data);
+  }
+
+  createDocument(path: string, type: string): Promise<Response> {
+    console.log(`Received createDocument(path: '${path}', type: '${type}')`);
+    return Promise.reject("not supported by mock");
   }
 
 }
