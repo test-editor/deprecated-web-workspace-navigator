@@ -17,6 +17,7 @@ export class NavigationComponent implements OnInit {
 
   workspaceRoot: WorkspaceElement;
   uiState: UiState;
+  errorMessage: string;
 
   constructor(
     private messagingService: MessagingService,
@@ -35,6 +36,8 @@ export class NavigationComponent implements OnInit {
     this.persistenceService.listFiles().then(element => {
       this.workspaceRoot = element;
       this.uiState.setExpanded(element.path, true);
+    }).catch(() => {
+      this.errorMessage = "Could not retrieve workspace!";
     });
   }
 

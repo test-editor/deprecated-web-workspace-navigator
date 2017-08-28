@@ -17,6 +17,8 @@ export class NewElementComponent implements AfterViewInit {
   @ViewChild("theInput") input: ElementRef;
   @Input() uiState: UiState;
 
+  errorMessage: string;
+
   constructor(
     private messagingService: MessagingService,
     private persistenceService: PersistenceService
@@ -38,6 +40,8 @@ export class NewElementComponent implements AfterViewInit {
     this.persistenceService.createDocument(newPath, type).then(() => {
       this.remove();
       this.messagingService.publish(events.NAVIGATION_REFRESH, {});
+    }).catch(() => {
+      this.errorMessage = 'Error while creating element!'
     });
   }
 

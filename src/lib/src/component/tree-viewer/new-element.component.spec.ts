@@ -136,12 +136,31 @@ describe('NewElementComponent', () => {
     when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.resolve(response));
 
     // when
-    input.triggerEventHandler('keyup.enter', {});
+    component.onEnter();
 
     // then
     fixture.whenStable().then(() => {
       expect(callback).toHaveBeenCalledTimes(1);
       expect(component.uiState.newElementRequest).toBeFalsy();
+    });
+  });
+
+  it('signals an error when createDocument failed', () => {
+    // given
+    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.reject("failed"));
+
+    // when
+    component.onEnter();
+
+    // then
+    fixture.whenStable().then(() => {
+      fixture.whenStable().then(() => {
+        fixture.detectChanges();
+        expect(component.errorMessage).toBeTruthy();
+        let alert = fixture.debugElement.query(By.css(".alert"));
+        expect(alert).toBeTruthy();
+        expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
+      });
     });
   });
 
