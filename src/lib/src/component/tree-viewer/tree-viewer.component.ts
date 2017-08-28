@@ -34,7 +34,10 @@ export class TreeViewerComponent {
       this.uiState.toggleExpanded(this.model.path);
     }
     if (this.isFile()) {
-      this.messagingService.publish(events.NAVIGATION_OPEN, { path: this.model.path });
+      this.messagingService.publish(events.NAVIGATION_OPEN, {
+        name: this.model.name,
+        path: this.model.path
+      });
     }
   }
 

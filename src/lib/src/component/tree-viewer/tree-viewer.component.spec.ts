@@ -213,7 +213,10 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({
+      name: singleFile.name,
+      path: singleFile.path
+    }));
   });
 
   it('has css class "active" if given by the UI state', () => {
