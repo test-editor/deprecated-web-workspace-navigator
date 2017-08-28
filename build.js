@@ -62,6 +62,7 @@ return Promise.resolve()
         // See https://github.com/rollup/rollup/wiki/JavaScript-API#globals for more.
         '@angular/core': 'ng.core',
         '@angular/common': 'ng.common',
+        '@angular/forms': 'ng.forms',
         '@angular/http': 'ng.http',
         '@testeditor/messaging-service': 'te.messagingService'
       },
@@ -70,6 +71,7 @@ return Promise.resolve()
         // See https://github.com/rollup/rollup/wiki/JavaScript-API#external for more.
         '@angular/core',
         '@angular/common',
+        '@angular/forms',
         '@angular/http',
         'rxjs/add/operator/toPromise',
         '@testeditor/messaging-service'

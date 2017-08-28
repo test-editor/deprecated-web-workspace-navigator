@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
@@ -7,9 +8,10 @@ import { mock, when, anyOfClass, instance } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
+import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
-import { WorkspaceElement} from '../../common/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
 import { ElementType } from '../../common/element-type';
 import { testBedSetup } from '../tree-viewer/tree-viewer.component.spec';
 import { UiState } from '../ui-state';
@@ -22,10 +24,10 @@ describe('NavigationComponent', () => {
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
-  let persistenceService : PersistenceService;
+  let persistenceService: PersistenceService;
   let messagingService: MessagingService;
-  let spy : jasmine.Spy;
-  let sidenav : DebugElement;
+  let spy: jasmine.Spy;
+  let sidenav: DebugElement;
 
   let listedFile: WorkspaceElement = {
     name: "file.tcl",
@@ -42,9 +44,11 @@ describe('NavigationComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         NavigationComponent,
-        TreeViewerComponent
+        TreeViewerComponent,
+        NewElementComponent
       ],
       imports: [
+        FormsModule,
         HttpModule,
         MessagingModule.forRoot()
       ],
@@ -52,7 +56,7 @@ describe('NavigationComponent', () => {
         { provide: PersistenceService, useValue: instance(persistenceService) }
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -77,6 +81,24 @@ describe('NavigationComponent', () => {
   it('expands workspaceRoot initially', () => {
     fixture.whenStable().then(() => {
       expect(component.uiState.isExpanded(listedFile.path)).toBeTruthy();
+    });
+  });
+
+  it('displays an error when workspace could not be retrieved', () => {
+    // given
+    when(persistenceService.listFiles()).thenReturn(Promise.reject("failed"));
+
+    // when
+    component.retrieveWorkspaceRoot();
+
+    // then
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      expect(component.errorMessage).toBeTruthy();
+      let alert = fixture.debugElement.query(By.css(".alert"));
+      expect(alert).toBeTruthy();
+      expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
     });
   });
 
@@ -125,19 +147,11 @@ describe('NavigationComponent', () => {
   });
 
   it('updates the UI state when an "navigation.select" event is received', () => {
-    // given
-    let element: WorkspaceElement = {
-      name: "file.tcl",
-      path: "path/to/file.tcl",
-      type: ElementType.File,
-      children: []
-    };
-
     // when
-    messagingService.publish(events.NAVIGATION_SELECT, element);
+    messagingService.publish(events.NAVIGATION_SELECT, listedFile);
 
     // then
-    expect(component.uiState.selectedElement).toEqual(element);
+    expect(component.uiState.selectedElement).toEqual(listedFile);
   });
 
 });

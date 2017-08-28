@@ -60,3 +60,17 @@
   color: #CCCCCC;
   text-decoration: none;
 }
+
+.icon-menu {
+  padding: 5px;
+  float: right;
+}
+
+.icon {
+  color: #CCCCCC;
+  cursor: pointer;
+}
+
+.icon:hover {
+  color: #ffffff;
+}

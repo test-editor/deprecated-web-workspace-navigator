@@ -1,22 +1,29 @@
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
 import { TreeViewerComponent } from './tree-viewer.component';
+import { NewElementComponent } from './new-element.component';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { WorkspaceElement } from '../../common/workspace-element';
 
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 
-export function testBedSetup(): void {
+export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
     imports: [
-      MessagingModule.forRoot()
+      MessagingModule.forRoot(),
+      FormsModule
     ],
-    declarations: [TreeViewerComponent]
+    declarations: [
+      TreeViewerComponent,
+      NewElementComponent
+    ],
+    providers: providers
   }).compileComponents();
 }
 
@@ -206,7 +213,10 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({ path: singleFile.path }));
+    expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({
+      name: singleFile.name,
+      path: singleFile.path
+    }));
   });
 
   it('has css class "active" if given by the UI state', () => {
