@@ -6,5 +6,5 @@
     -->
   </div>
   <nav-tree-viewer [model]="workspaceRoot" [uiState]="uiState"></nav-tree-viewer>
-  <div [hidden]="!errorMessage" class="alert alert-danger">{{errorMessage}}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
 </div>

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
-import { mock, when, anyOfClass, instance } from 'ts-mockito';
+import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
@@ -92,7 +92,6 @@ describe('NavigationComponent', () => {
     component.retrieveWorkspaceRoot();
 
     // then
-    fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(component.errorMessage).toBeTruthy();
@@ -144,6 +143,32 @@ describe('NavigationComponent', () => {
 
     // then
     expect(component.uiState.isDirty(examplePath)).toBeFalsy();
+  });
+
+  it('updates the UI state when an "navigation.deleted" event is received', () => {
+    // given
+    component.uiState.setDirty(listedFile.path, true);
+    component.uiState.setExpanded(listedFile.path, true);
+    component.uiState.selectedElement = listedFile;
+
+    // when
+    messagingService.publish(events.NAVIGATION_DELETED, { name: listedFile.name, path: listedFile.path });
+
+    // then
+    expect(component.uiState.isDirty(listedFile.path)).toBeFalsy();
+    expect(component.uiState.isExpanded(listedFile.path)).toBeFalsy();
+    expect(component.uiState.selectedElement).toBeFalsy();
+  });
+
+  it('refreshes the workspace when "navigation.deleted" event is received', () => {
+    // given
+    resetCalls(persistenceService);
+
+    // when
+    messagingService.publish(events.NAVIGATION_DELETED, { name: listedFile.name, path: listedFile.path });
+
+    // then
+    verify(persistenceService.listFiles()).once();
   });
 
   it('updates the UI state when an "navigation.select" event is received', () => {

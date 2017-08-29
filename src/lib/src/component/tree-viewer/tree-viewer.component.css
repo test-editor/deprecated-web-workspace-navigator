@@ -8,24 +8,24 @@
     display: block
 }
 
-.tree-view span.icon {
+.tree-view span.icon-type {
 	font-size: 10px;
     margin-right: 3px;
 }
 
 .header {
     background-color: #363636;
+    color: #CCCCCC;
 }
 
-.tree-view div {
+.tree-view-item {
 	text-decoration: none;
-    font-size: 15px;
-    display: block;
-    width: 100%;
-    cursor: pointer;
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
 }
 
-.tree-view div:not(.selected) {
+.tree-view-item-key:not(.selected) {
   color: #CCCCCC;
 }
 
@@ -48,4 +48,30 @@
 .selected:not(.header) {
   background-color: #094771;
   color: #ffffff;
+}
+
+.alert {
+  cursor: default;
+  margin-bottom: 0px;
+}
+
+.icon-delete {
+  color: #a80f22;
+  display: none;
+  font-size: 12px;
+  float: right;
+  right: 5px;
+  top: 5px;
+}
+
+.tree-view-item:hover .icon-delete {
+  display: block;
+}
+
+.icon-delete:hover {
+  color: #d82300;
+}
+
+.delete-confirm {
+  margin-left: 40px;
 }

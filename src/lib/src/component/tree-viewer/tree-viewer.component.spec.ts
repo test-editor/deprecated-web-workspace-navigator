@@ -1,7 +1,9 @@
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Response, ResponseOptions } from '@angular/http';
 import { By } from '@angular/platform-browser';
+import { mock, instance, verify, when, anyString } from 'ts-mockito';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
@@ -27,11 +29,21 @@ export function testBedSetup(providers?: any[]): void {
   }).compileComponents();
 }
 
+export function createResponse(status: number = 200, body: string = ""): Response {
+  return new Response(new ResponseOptions({
+    body: body,
+    status: status,
+    headers: null,
+    url: null
+  }));
+}
+
 describe('TreeViewerComponent', () => {
 
   let component: TreeViewerComponent;
   let fixture: ComponentFixture<TreeViewerComponent>;
   let messagingService: MessagingService;
+  let persistenceService: PersistenceService;
 
   let singleEmptyFolder: WorkspaceElement = {
     name: 'folder', path: '', type: 'folder',
@@ -50,7 +62,10 @@ describe('TreeViewerComponent', () => {
   let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] }
 
   beforeEach(async(() => {
-    testBedSetup();
+    persistenceService = mock(PersistenceService);
+    testBedSetup([
+      { provide: PersistenceService, useValue: instance(persistenceService) }
+    ]);
   }));
 
   beforeEach(() => {
@@ -65,7 +80,7 @@ describe('TreeViewerComponent', () => {
     return fixture.debugElement.query(By.css('.tree-view .tree-view-item-key'));
   }
 
-  it('should be created', () => {
+   it('should be created', () => {
     expect(component).toBeTruthy();
   });
 
@@ -139,7 +154,7 @@ describe('TreeViewerComponent', () => {
     // when
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
-    let icon = getItemKey().query(By.css('.icon'));
+    let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
     expect(icon.classes["glyphicon-chevron-right"]).toBeTruthy();
@@ -150,7 +165,7 @@ describe('TreeViewerComponent', () => {
     component.uiState.setExpanded(foldedFolderWithSubfolders.path, true);
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
-    let icon = getItemKey().query(By.css('.icon'));
+    let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
     expect(icon.classes["glyphicon-chevron-down"]).toBeTruthy();
@@ -160,7 +175,7 @@ describe('TreeViewerComponent', () => {
     // given
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
-    let icon = getItemKey().query(By.css('.icon'));
+    let icon = getItemKey().query(By.css('.icon-type'));
 
     // when
     icon.triggerEventHandler('click', null);
@@ -259,6 +274,98 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(getItemKey().classes.selected).toBeTruthy();
+  });
+
+  it('requires confirmation before deletion', () => {
+    // given
+    component.model = singleFile;
+    component.level = 1;
+    fixture.detectChanges();
+    let deleteIcon = getItemKey().query(By.css('.icon-delete'));
+
+    // when
+    deleteIcon.nativeElement.click();
+
+    // then
+    expect(component.confirmDelete).toBeTruthy();
+    fixture.detectChanges();
+    let confirm = fixture.debugElement.query(By.css('.tree-view .confirm-delete'));
+    expect(confirm).toBeTruthy();
+    verify(persistenceService.deleteResource(anyString())).never();
+  });
+
+  it('deletes element if confirmed', () => {
+    // given
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+    component.model = singleFile;
+    component.confirmDelete = true;
+    fixture.detectChanges();
+    let confirmButton = fixture.debugElement.query(By.css('.tree-view .confirm-delete .delete-confirm'));
+
+    // when
+    confirmButton.nativeElement.click();
+
+    // then
+    expect(component.confirmDelete).toBeFalsy();
+    verify(persistenceService.deleteResource(singleFile.path)).once();
+  });
+
+  it('does not delete element when cancelled', () => {
+    // given
+    component.model = singleFile;
+    component.confirmDelete = true;
+    fixture.detectChanges();
+    let cancelButton = fixture.debugElement.query(By.css('.tree-view .confirm-delete .delete-cancel'));
+
+    // when
+    cancelButton.nativeElement.click();
+
+    // then
+    expect(component.confirmDelete).toBeFalsy();
+    verify(persistenceService.deleteResource(anyString())).never();
+  });
+
+  it('displays error when deletion failed', () => {
+    // given
+    component.model = singleFile;
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+
+    // when
+    component.onDeleteConfirm();
+
+    // then
+    fixture.whenStable().then(() => {
+      fixture.whenStable().then(() => {
+        fixture.detectChanges();
+        expect(component.errorMessage).toBeTruthy();
+        let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
+        expect(errorMessage).toBeTruthy();
+      });
+    });
+  });
+
+  it('removes confirmation and emits navigation.deleted event when deletion succeeds', () => {
+    // given
+    component.model = singleFile;
+    let response = createResponse();
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(response));
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_DELETED, callback);
+
+    // when
+    component.onDeleteConfirm();
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(component.confirmDelete).toBeFalsy();
+      expect(component.errorMessage).toBeFalsy();
+      expect(callback).toHaveBeenCalledTimes(1);
+      expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({
+        name: singleFile.name,
+        path: singleFile.path,
+        type: singleFile.type
+      }));
+    });
   });
 
 });

@@ -19,30 +19,6 @@
                         supported by Chrome and Opera */
 }
 
-.sidenav img.button {
-	opacity: 0.4;
-}
-
-.sidenav img.button:hover {
-	opacity: 0.8;
-}
-
-.sidenav li .delete {
-  display: none;
-  margin-right: 5px;
-  float: right;
-  opacity: .5;
-}
-
-.sidenav li .delete:hover {
-  opacity: 1.0;
-}
-
-/* Show delete button only when hovering over the li element. */
-.sidenav li:hover .delete {
-  display: block;
-}
-
 .sidenav input {
   border: 1px solid #111;
   padding: 5px;
@@ -63,7 +39,7 @@
 
 .icon-menu {
   padding: 5px;
-  float: right;
+  text-align: right;
 }
 
 .icon {
