@@ -1,11 +1,33 @@
 <h2>@testeditor/workspace-navigator</h2>
 
-<div id="wrapper">
-  <div id="navigation">
-    <app-navigation></app-navigation>
-  </div>
-  <div id="status">
-    <div *ngIf="lastSelected" id="lastSelectedDiv">Last select event was on: <code>{{lastSelected.path}}</code></div>
-    <div *ngIf="lastOpened" id="lastOpenedDiv">Last open event was on: <code>{{lastOpened.path}}</code></div>
-  </div>
-</div>
+<table border="0">
+  <tr>
+    <td rowspan="2">
+      <div id="navigation">
+        <app-navigation></app-navigation>
+      </div>
+    </td>
+    <td valign="top" height="100px">
+      <div id="status">
+        <div *ngIf="lastSelected" id="lastSelectedDiv">Last select event was on: <code>{{lastSelected.path}}</code></div>
+        <div *ngIf="lastOpened" id="lastOpenedDiv">Last open event was on: <code>{{lastOpened.path}}</code></div>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <div id="list">
+        <hr/>
+        <ul>
+          <li *ngFor="let path of paths">
+            {{path}} -
+            <a href="#" (click)="setDirty(path, true)">dirty</a> |
+            <a href="#" (click)="setDirty(path, false)">undirty</a> |
+            <a href="#" (click)="setActive(path)">active</a> |
+            <a href="#" (click)="close(path)">close</a>
+          </li>
+        </ul>
+      </div>
+    </td>
+  </tr>
+</table>
