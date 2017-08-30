@@ -158,4 +158,28 @@ describe('NewElementComponent', () => {
     });
   });
 
+  it('shows file icon when a new file should be created', () => {
+    // given
+    component.uiState.newElementRequest.type = ElementType.File;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let iconType = fixture.debugElement.query(By.css(".icon-type"));
+    expect(iconType.classes["glyphicon-file"]).toBeTruthy();
+  });
+
+  it('shows folder icon when a new folder should be created', () => {
+    // given
+    component.uiState.newElementRequest.type = ElementType.Folder;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let iconType = fixture.debugElement.query(By.css(".icon-type"));
+    expect(iconType.classes["glyphicon-folder-close"]).toBeTruthy();
+  });
+
 });

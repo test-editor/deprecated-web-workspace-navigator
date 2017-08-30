@@ -1,4 +1,8 @@
 <div class="navNewElement" [style.padding-left]="getPaddingLeft()">
+  <span class="icon-type glyphicon" [ngClass]="{
+    'glyphicon-folder-close': getType() == 'folder',
+    'glyphicon-file': getType() == 'file'
+  }"></span>
   <input #theInput (keyup.enter)="onEnter()" (keyup.escape)="remove()" (blur)="remove()">
   <div [hidden]="!errorMessage" class="alert alert-danger">{{errorMessage}}</div>
 </div>
