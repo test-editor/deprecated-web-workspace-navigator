@@ -154,4 +154,60 @@ describe('NavigationComponent', () => {
     expect(component.uiState.selectedElement).toEqual(listedFile);
   });
 
+  it('updates the UI state for creating a new file', () => {
+    // given
+    component.workspaceRoot = listedFile;
+    fixture.detectChanges();
+    let newFileIcon = sidenav.query(By.css('#new-file'))
+
+    // when
+    newFileIcon.nativeElement.click();
+
+    // then
+    let newElementRequest = component.uiState.newElementRequest;
+    expect(newElementRequest).toBeTruthy();
+    expect(newElementRequest.type).toEqual('file');
+  });
+
+  it('updates the UI state for creating a new folder', () => {
+    // given
+    component.workspaceRoot = listedFile;
+    fixture.detectChanges();
+    let newFolder = sidenav.query(By.css('#new-folder'))
+
+    // when
+    newFolder.nativeElement.click();
+
+    // then
+    let newElementRequest = component.uiState.newElementRequest;
+    expect(newElementRequest).toBeTruthy();
+    expect(newElementRequest.type).toEqual('folder');
+  })
+
+  it('expands selected element on creation of new element', () => {
+    // given
+    let subfolder: WorkspaceElement = {
+      name: "subfolder",
+      path: "root/subfolder",
+      type: ElementType.Folder,
+      children: []
+    }
+    component.workspaceRoot = {
+      name: "root",
+      path: "root",
+      type: ElementType.Folder,
+      children: [subfolder]
+    };
+    component.uiState.selectedElement = subfolder;
+    fixture.detectChanges();
+    expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
+
+    // when
+    component.newElement('file')
+
+    // then
+    expect(component.uiState.newElementRequest.selectedElement).toBe(subfolder);
+    expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
+  });
+
 });

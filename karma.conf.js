@@ -53,8 +53,8 @@ module.exports = function (config) {
 
       // Other dependencies
       { pattern: 'node_modules/@testeditor/**/*.js', included: false, watched: false },
-      { pattern: 'node_modules/ts-mockito/**/*.js', included: false, watched: false },      
-      { pattern: 'node_modules/lodash/**/*.js', included: false, watched: false },      
+      { pattern: 'node_modules/ts-mockito/**/*.js', included: false, watched: false },
+      { pattern: 'node_modules/lodash/**/*.js', included: false, watched: false },
 
       { pattern: 'src/demo/systemjs-angular-loader.js', included: false, watched: false },
 
@@ -70,7 +70,11 @@ module.exports = function (config) {
 
       // Paths for debugging with source maps in dev tools
       { pattern: libBase + '**/*.ts', included: false, watched: false },
-      { pattern: libBase + '**/*.js.map', included: false, watched: false }
+      { pattern: libBase + '**/*.js.map', included: false, watched: false },
+
+      // Custom styles
+      'node_modules/bootstrap/dist/css/bootstrap.min.css',
+      'node_modules/font-awesome/css/font-awesome.min.css'
     ],
 
     // Proxied base paths for loading assets
