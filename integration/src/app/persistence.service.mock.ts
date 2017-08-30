@@ -55,4 +55,9 @@ export class PersistenceServiceMock {
     return Promise.reject("not supported by mock");
   }
 
+  deleteResource(path: string): Promise<Response> {
+    console.log(`Received deleteResource(path: '${path}')`);
+    return Promise.reject("not supported by mock");
+  }
+
 }

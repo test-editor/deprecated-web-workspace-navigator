@@ -8,7 +8,7 @@
         'header': level == 0,
         'selected': model.path === uiState.selectedElement?.path
       }">
-      <span class="icon glyphicon" [ngClass]="{
+      <span class="icon-type glyphicon" [ngClass]="{
         'glyphicon-question-sign': isUnknown(),
         'glyphicon-folder-close': isEmptyFolder(),
         'glyphicon-chevron-down': isFolderExpanded(),
@@ -16,7 +16,14 @@
         'glyphicon-file': isFile()
       }" (click)="onIconClick()">
       </span> {{model.name}}
+      <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
     </div>
+    <div *ngIf="confirmDelete" class="alert alert-warning confirm-delete">
+      Are you sure you want to delete '{{model.name}}'?<br/>
+      <a href="#" class="alert-link delete-cancel" (click)="onDeleteCancel()">No</a>
+      <a href="#" class="alert-link delete-confirm" (click)="onDeleteConfirm()">Yes</a>
+    </div>
+    <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   </div>
   <div *ngIf="shouldShowNewElement()" [style.padding-left]="level * 12 + 'px'">
     <nav-new-element [uiState]="uiState"></nav-new-element>

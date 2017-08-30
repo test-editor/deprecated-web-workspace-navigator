@@ -18,11 +18,15 @@ export class TreeViewerComponent {
   @Input() model: WorkspaceElement;
   @Input() level: number = 0;
 
+  confirmDelete: boolean = false;
+  errorMessage: string;
+
   private subscriptions: Subscription[] = [];
 
   constructor(
     private messagingService: MessagingService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private persistenceService: PersistenceService
   ) { }
 
   onClick() {
@@ -45,6 +49,31 @@ export class TreeViewerComponent {
     if (this.isFolder()) {
       this.uiState.toggleExpanded(this.model.path);
     }
+  }
+
+  onDeleteIconClick(): void {
+    this.confirmDelete = true;
+  }
+
+  onDeleteConfirm(): void {
+    this.persistenceService.deleteResource(this.model.path).then(() => {
+      this.messagingService.publish(events.NAVIGATION_DELETED, this.model);
+    }).catch(() => {
+      this.handleDeleteFailed();
+    });
+    this.confirmDelete = false;
+  }
+
+  handleDeleteFailed(): void {
+    this.errorMessage = 'Error while deleting element!';
+    setTimeout(() => {
+      this.errorMessage = null;
+    }, 3000);
+  }
+
+  onDeleteCancel(): void {
+    this.errorMessage = null;
+    this.confirmDelete = false;
   }
 
   isExpanded(): boolean {

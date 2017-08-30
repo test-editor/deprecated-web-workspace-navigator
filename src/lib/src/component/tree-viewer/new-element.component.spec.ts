@@ -1,10 +1,9 @@
 import { DebugElement } from '@angular/core';
-import { Response, ResponseOptions } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
 import { mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
-import { testBedSetup } from './tree-viewer.component.spec';
+import { testBedSetup, createResponse } from './tree-viewer.component.spec';
 
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
@@ -127,12 +126,7 @@ describe('NewElementComponent', () => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_REFRESH, callback);
-    let response: Response = new Response(new ResponseOptions({
-      body: "",
-      status: 200,
-      headers: null,
-      url: null
-    }));
+    let response = createResponse();
     when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.resolve(response));
 
     // when

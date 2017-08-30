@@ -28,6 +28,7 @@ export class PersistenceService {
       .then(response => response.json());
   }
 
+  // TODO - should be renamed createResource
   createDocument(path: string, type: string): Promise<Response> {
     let url = `${this.serviceUrl}/documents/${path}`;
     let requestOptions = {
@@ -35,6 +36,11 @@ export class PersistenceService {
       params: { type: type }
     };
     return this.http.post(url, "", requestOptions).toPromise();
+  }
+
+  deleteResource(path: string): Promise<Response> {
+    let url = `${this.serviceUrl}/documents/${path}`;
+    return this.http.delete(url, this.requestOptions).toPromise();
   }
 
 }
