@@ -7,3 +7,9 @@ input {
   text-overflow: ellipsis;
   padding: 4px;
 }
+
+.icon-type {
+  font-size: 10px;
+  margin-right: 3px;
+  color: #CCCCCC;
+}

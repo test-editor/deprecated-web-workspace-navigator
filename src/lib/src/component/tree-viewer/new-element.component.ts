@@ -28,12 +28,16 @@ export class NewElementComponent implements AfterViewInit {
     this.input.nativeElement.focus();
   }
 
+  getType(): string {
+    return this.uiState.newElementRequest.type;
+  }
+
   onEnter(): void {
     let newName = this.input.nativeElement.value;
     let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
     let newPath = parent + newName;
-    let type = this.uiState.newElementRequest.type;
-    this.sendCreateRequest(newPath, type);
+    let type =
+    this.sendCreateRequest(newPath, this.getType());
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
