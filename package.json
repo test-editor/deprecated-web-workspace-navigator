@@ -1,6 +1,6 @@
 {
   "name": "@testeditor/workspace-navigator",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Angular component for workspace handling and navigation.",
   "main": "./bundles/workspace-navigator.umd.js",
   "module": "./workspace-navigator.es5.js",
