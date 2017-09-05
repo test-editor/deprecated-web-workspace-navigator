@@ -122,7 +122,7 @@ describe('NewElementComponent', () => {
     verify(persistenceService.createDocument("some/path/something-new.txt", ElementType.File)).once();
   });
 
-  it('removes itself and emits navigation.refresh event when createDocument returns', () => {
+  it('removes itself and emits navigation.refresh event when createDocument returns', async(() => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_REFRESH, callback);
@@ -137,9 +137,9 @@ describe('NewElementComponent', () => {
       expect(callback).toHaveBeenCalledTimes(1);
       expect(component.uiState.newElementRequest).toBeFalsy();
     });
-  });
+  }));
 
-  it('signals an error when createDocument failed', () => {
+  it('signals an error when createDocument failed', async(() => {
     // given
     when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.reject("failed"));
 
@@ -156,7 +156,7 @@ describe('NewElementComponent', () => {
         expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
       });
     });
-  });
+  }));
 
   it('shows file icon when a new file should be created', () => {
     // given
