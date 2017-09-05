@@ -80,7 +80,7 @@ describe('TreeViewerComponent', () => {
     return fixture.debugElement.query(By.css('.tree-view .tree-view-item-key'));
   }
 
-   it('should be created', () => {
+  it('should be created', () => {
     expect(component).toBeTruthy();
   });
 
@@ -94,7 +94,7 @@ describe('TreeViewerComponent', () => {
     expect(component.isEmptyFolder()).toBeTruthy();
   });
 
-  it('folded folder does not display sub elements', () => {
+  it('folded folder does not display sub elements', async(() => {
     // given
     component.model = foldedFolderWithSubfolders;
 
@@ -111,9 +111,9 @@ describe('TreeViewerComponent', () => {
       expect(component.isFolderExpanded()).toBeFalsy(); // make sure it is folded beforehand
       expect(component.isFolderFolded()).toBeTruthy(); // make sure it is folded beforehand
     });
-  });
+  }));
 
-  it('expands folder when UI state is set', () => {
+  it('expands folder when UI state is set', async(() => {
     // given
     component.model = foldedFolderWithSubfolders;
 
@@ -135,7 +135,7 @@ describe('TreeViewerComponent', () => {
       expect(component.isFolderExpanded()).toBeTruthy();
       expect(component.isFolderFolded()).toBeFalsy();
     });
-  });
+  }));
 
   it('sets expanded state when double-clicked', () => {
     // given
@@ -325,7 +325,7 @@ describe('TreeViewerComponent', () => {
     verify(persistenceService.deleteResource(anyString())).never();
   });
 
-  it('displays error when deletion failed', () => {
+  it('displays error when deletion failed', (done: () => void) => {
     // given
     component.model = singleFile;
     when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
@@ -340,11 +340,12 @@ describe('TreeViewerComponent', () => {
         expect(component.errorMessage).toBeTruthy();
         let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
         expect(errorMessage).toBeTruthy();
+        done();
       });
     });
   });
 
-  it('removes confirmation and emits navigation.deleted event when deletion succeeds', () => {
+  it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given
     component.model = singleFile;
     let response = createResponse();
@@ -366,6 +367,6 @@ describe('TreeViewerComponent', () => {
         type: singleFile.type
       }));
     });
-  });
+  }));
 
 });

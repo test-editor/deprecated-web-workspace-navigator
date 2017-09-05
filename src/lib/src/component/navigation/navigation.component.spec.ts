@@ -72,19 +72,19 @@ describe('NavigationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('sets workspaceRoot initially', () => {
+  it('sets workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
       expect(component.workspaceRoot.name).toEqual(listedFile.name);
     });
-  });
+  }));
 
-  it('expands workspaceRoot initially', () => {
+  it('expands workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
       expect(component.uiState.isExpanded(listedFile.path)).toBeTruthy();
     });
-  });
+  }));
 
-  it('displays an error when workspace could not be retrieved', () => {
+  it('displays an error when workspace could not be retrieved', async(() => {
     // given
     when(persistenceService.listFiles()).thenReturn(Promise.reject("failed"));
 
@@ -99,7 +99,7 @@ describe('NavigationComponent', () => {
       expect(alert).toBeTruthy();
       expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
     });
-  });
+  }));
 
   it('updates the UI state when an "editor.active" event is received', () => {
     // given
