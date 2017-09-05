@@ -36,6 +36,21 @@ describe('NavigationComponent', () => {
     children: []
   };
 
+  function createRootWithSubfolder() {
+    let subfolder: WorkspaceElement = {
+      name: "subfolder",
+      path: "root/subfolder",
+      type: ElementType.Folder,
+      children: []
+    }
+    component.workspaceRoot = {
+      name: "root",
+      path: "root",
+      type: ElementType.Folder,
+      children: [subfolder]
+    };
+  }
+
   beforeEach(async(() => {
     // Mock PersistenceService
     persistenceService = mock(PersistenceService);
@@ -211,18 +226,8 @@ describe('NavigationComponent', () => {
 
   it('expands selected element on creation of new element', () => {
     // given
-    let subfolder: WorkspaceElement = {
-      name: "subfolder",
-      path: "root/subfolder",
-      type: ElementType.Folder,
-      children: []
-    }
-    component.workspaceRoot = {
-      name: "root",
-      path: "root",
-      type: ElementType.Folder,
-      children: [subfolder]
-    };
+    createRootWithSubfolder();
+    let subfolder = component.workspaceRoot.children[0];
     component.uiState.selectedElement = subfolder;
     fixture.detectChanges();
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
@@ -233,6 +238,22 @@ describe('NavigationComponent', () => {
     // then
     expect(component.uiState.newElementRequest.selectedElement).toBe(subfolder);
     expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
+  });
+
+  it('collapses all when icon is clicked', () => {
+    // given
+    createRootWithSubfolder();
+    let subfolder = component.workspaceRoot.children[0];
+    component.uiState.setExpanded(subfolder.path, true);
+    fixture.detectChanges();
+    let collapseAllIcon = sidenav.query(By.css('#collapse-all'))
+
+    // when
+    collapseAllIcon.nativeElement.click();
+
+    // then
+    expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
+    expect(component.uiState.isExpanded(component.workspaceRoot.path)).toBeTruthy();
   });
 
 });

@@ -39,6 +39,13 @@
 
 .icon-menu {
   padding: 5px;
+}
+
+.icons-left {
+  float: left;
+}
+
+.icons-right {
   text-align: right;
 }
 

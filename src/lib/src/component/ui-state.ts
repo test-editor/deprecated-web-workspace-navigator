@@ -10,6 +10,10 @@ export class UiState {
   private expandedElements: boolean[] = [];
   private dirtyElements: boolean[] = [];
 
+  clearExpanded(): void {
+    this.expandedElements = [];
+  }
+
   isExpanded(path: string): boolean {
     return this.expandedElements[path];
   }

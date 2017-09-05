@@ -43,6 +43,17 @@ describe('UI State', () => {
     expect(state.isExpanded(examplePath)).toBeTruthy();
   });
 
+  it('should clear expanded state correctly', () => {
+    // given
+    state.setExpanded(examplePath, true);
+
+    // when
+    state.clearExpanded();
+
+    // then
+    expect(state['expandedElements']).toEqual([]);
+  });
+
   it('should be non-dirty by default', () => {
     // then
     expect(state.isDirty(examplePath)).toBeFalsy();
