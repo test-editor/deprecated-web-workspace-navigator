@@ -4,6 +4,7 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
+import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 
@@ -15,7 +16,7 @@ import * as events from '../event-types';
 
 export class NavigationComponent implements OnInit {
 
-  workspaceRoot: WorkspaceElement;
+  workspace: Workspace;
   uiState: UiState;
   errorMessage: string;
 
@@ -32,12 +33,14 @@ export class NavigationComponent implements OnInit {
     this.subscribeToEvents();
   }
 
-  retrieveWorkspaceRoot(): void {
-    this.persistenceService.listFiles().then(element => {
-      this.workspaceRoot = element;
+  retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
+    return this.persistenceService.listFiles().then(element => {
+      this.workspace = new Workspace(element);
       this.uiState.setExpanded(element.path, true);
+      return this.workspace;
     }).catch(() => {
-      this.errorMessage = "Could not retrieve workspace!";
+      this.errorMessage = 'Could not retrieve workspace!';
+      return undefined;
     });
   }
 
@@ -48,7 +51,7 @@ export class NavigationComponent implements OnInit {
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.EDITOR_CLOSE, element => {
-      if (element.path == this.uiState.activeEditorPath) {
+      if (element.path === this.uiState.activeEditorPath) {
         this.uiState.activeEditorPath = null;
         this.changeDetectorRef.detectChanges();
       }
@@ -71,8 +74,8 @@ export class NavigationComponent implements OnInit {
       this.retrieveWorkspaceRoot();
       this.changeDetectorRef.detectChanges();
     });
-    this.messagingService.subscribe(events.NAVIGATION_REFRESH, element => {
-      this.retrieveWorkspaceRoot();
+    this.messagingService.subscribe(events.NAVIGATION_CREATED, payload => {
+      this.handleNavigationCreated(payload);
     });
     this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
       this.uiState.selectedElement = element as WorkspaceElement;
@@ -80,23 +83,40 @@ export class NavigationComponent implements OnInit {
     });
   }
 
+  handleNavigationCreated(payload: any): void {
+    this.retrieveWorkspaceRoot().then(() => {
+      this.revealElement(payload.path);
+      this.selectElement(payload.path);
+    });
+  }
+
   newElement(type: string): void {
     let selectedElement = this.uiState.selectedElement;
     if (selectedElement) {
-      if (selectedElement.type == ElementType.Folder) {
+      if (selectedElement.type === ElementType.Folder) {
         this.uiState.setExpanded(selectedElement.path, true);
       }
     }
     this.uiState.newElementRequest = {
       selectedElement: selectedElement,
       type: type
-    }
+    };
     this.changeDetectorRef.detectChanges();
   }
 
   collapseAll(): void {
     this.uiState.clearExpanded();
-    this.uiState.setExpanded(this.workspaceRoot.path, true);
+    this.uiState.setExpanded(this.workspace.root.path, true);
+  }
+
+  revealElement(path: string): void {
+    let subpaths = this.workspace.getSubpaths(path);
+    subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
+  }
+
+  selectElement(path: string): void {
+    let element = this.workspace.getElement(path);
+    this.uiState.selectedElement = element;
   }
 
 }

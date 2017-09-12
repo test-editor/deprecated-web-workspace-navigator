@@ -122,11 +122,11 @@ describe('NewElementComponent', () => {
     verify(persistenceService.createDocument("some/path/something-new.txt", ElementType.File)).once();
   });
 
-  it('removes itself and emits navigation.refresh event when createDocument returns', async(() => {
+  it('removes itself and emits navigation.created event when createDocument returns', async(() => {
     // given
     let callback = jasmine.createSpy('callback');
-    messagingService.subscribe(events.NAVIGATION_REFRESH, callback);
-    let response = createResponse();
+    messagingService.subscribe(events.NAVIGATION_CREATED, callback);
+    let response = createResponse(200, 'some/path');
     when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.resolve(response));
 
     // when
@@ -135,6 +135,8 @@ describe('NewElementComponent', () => {
     // then
     fixture.whenStable().then(() => {
       expect(callback).toHaveBeenCalledTimes(1);
+      let expectedPayload = jasmine.objectContaining({ path: 'some/path' });
+      expect(callback).toHaveBeenCalledWith(expectedPayload);
       expect(component.uiState.newElementRequest).toBeFalsy();
     });
   }));

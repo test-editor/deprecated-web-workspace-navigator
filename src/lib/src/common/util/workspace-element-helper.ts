@@ -5,6 +5,7 @@ function endWithSlash(path: string) {
   return path.endsWith('/') ? path : path + '/';
 }
 
+// TODO refactor this to Workspace and use RegEx - should be much simpler
 export function getDirectory(element: WorkspaceElement): string {
   if (!element) {
     return "";
