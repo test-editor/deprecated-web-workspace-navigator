@@ -1,10 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { Workspace } from '../../common/workspace';
+import { NavigationKeyHandler } from './navigation-key-handler';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 
@@ -13,11 +14,11 @@ import * as events from '../event-types';
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.css']
 })
-
 export class NavigationComponent implements OnInit {
 
   workspace: Workspace;
   uiState: UiState;
+  keyHandler: NavigationKeyHandler;
   errorMessage: string;
 
   constructor(
@@ -26,11 +27,17 @@ export class NavigationComponent implements OnInit {
     private persistenceService: PersistenceService
   ) {
     this.uiState = new UiState();
+    this.keyHandler = new NavigationKeyHandler(this.uiState);
   }
 
   ngOnInit(): void {
     this.retrieveWorkspaceRoot();
     this.subscribeToEvents();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvents(event: KeyboardEvent): void {
+    this.keyHandler.handleKeyboardEvent(event);
   }
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
