@@ -27,7 +27,7 @@ export class NavigationComponent implements OnInit {
     private persistenceService: PersistenceService
   ) {
     this.uiState = new UiState();
-    this.keyHandler = new NavigationKeyHandler(this.uiState);
+    this.keyHandler = new NavigationKeyHandler(this.uiState, undefined);
   }
 
   ngOnInit(): void {
@@ -43,6 +43,7 @@ export class NavigationComponent implements OnInit {
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     return this.persistenceService.listFiles().then(element => {
       this.workspace = new Workspace(element);
+      this.keyHandler.workspace = this.workspace;
       this.uiState.setExpanded(element.path, true);
       return this.workspace;
     }).catch(() => {
