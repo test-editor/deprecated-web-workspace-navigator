@@ -1,3 +1,4 @@
+import { ElementType } from './element-type';
 import { WorkspaceElement } from './workspace-element';
 
 export class Workspace {
@@ -5,26 +6,42 @@ export class Workspace {
   root: WorkspaceElement;
   private pathToElement = new Map<string, WorkspaceElement>();
 
-  constructor(root: WorkspaceElement) {
-    this.root = root;
-    this.addToMap(root);
+  static getDirectory(element: WorkspaceElement): string {
+    if (element) {
+      if (element.type === ElementType.Folder) {
+        return Workspace.normalizePath(element.path);
+      } else {
+        const lastPathSegment = /\/[^\/]*$/;
+        let parent = element.path.replace(lastPathSegment, '');
+        return Workspace.normalizePath(parent);
+      }
+    } else {
+      return '';
+    }
   }
 
-  private addToMap(element: WorkspaceElement): void {
-    let path = this.normalizePath(element.path);
-    this.pathToElement.set(path, element);
-    element.children.forEach(child => this.addToMap(child));
-  }
-
-  private normalizePath(path: string): string {
+  static normalizePath(path: string): string {
     const leadingSlashes = /^\/+/;
     const trailingSlashes = /\/+$/;
     let normalized = path.replace(leadingSlashes, '').replace(trailingSlashes, '');
     return normalized;
   }
 
+  constructor(root: WorkspaceElement) {
+    this.root = root;
+    this.addToMap(root);
+  }
+
+  private addToMap(element: WorkspaceElement): void {
+    let path = Workspace.normalizePath(element.path);
+    this.pathToElement.set(path, element);
+    element.children.forEach(child => this.addToMap(child));
+  }
+
+
+
   getSubpaths(path: string): string[] {
-    let normalized = this.normalizePath(path);
+    let normalized = Workspace.normalizePath(path);
     let [first, ...rest] = normalized.split('/');
     let result = [first];
     let lastPath = first;
@@ -36,7 +53,7 @@ export class Workspace {
   }
 
   getElement(path: string): WorkspaceElement | undefined {
-    let normalized = this.normalizePath(path);
+    let normalized = Workspace.normalizePath(path);
     return this.pathToElement.get(normalized);
   }
 

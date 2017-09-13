@@ -76,3 +76,46 @@ describe('Workspace.getSubpaths()', () => {
   });
 
 });
+
+describe('Workspace.getDirectory()', () => {
+
+  let element: WorkspaceElement;
+
+  beforeEach(() => {
+    element = {
+      name: 'dummy',
+      path: 'some/random/path/dummy',
+      type: ElementType.File,
+      children: []
+    };
+  });
+
+  it('should return the directory\'s path when it\'s a directory', () => {
+    // given
+    element.path = 'some/directory/path';
+    element.type = ElementType.Folder;
+
+    // when + then
+    expect(Workspace.getDirectory(element)).toEqual('some/directory/path');
+  });
+
+  it('should return a directory\'s path when it ends with a \\', () => {
+    // given
+    element.path = 'some/directory/path/';
+    element.type = ElementType.Folder;
+
+    // when + then
+    expect(Workspace.getDirectory(element)).toEqual('some/directory/path');
+  });
+
+  it('should return the parent\'s path when element is a file', () => {
+    // when + then
+    expect(Workspace.getDirectory(element)).toEqual('some/random/path');
+  });
+
+  it('should return empty string on null', () => {
+    // when + then
+    expect(Workspace.getDirectory(null)).toEqual('');
+  });
+
+});

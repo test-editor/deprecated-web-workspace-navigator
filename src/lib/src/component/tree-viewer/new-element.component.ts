@@ -2,7 +2,7 @@ import { Component, ViewChild, Input, ElementRef, ChangeDetectorRef, AfterViewIn
 import { UiState } from '../ui-state';
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
-import { getDirectory } from '../../common/util/workspace-element-helper';
+import { Workspace } from '../../common/workspace';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import * as events from '../event-types';
@@ -34,9 +34,9 @@ export class NewElementComponent implements AfterViewInit {
 
   onEnter(): void {
     let newName = this.input.nativeElement.value;
-    let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
-    let newPath = parent + newName;
-    let type =
+    let selectedElement = this.uiState.newElementRequest.selectedElement;
+    let parent = Workspace.getDirectory(selectedElement);
+    let newPath = parent ? `${parent}/${newName}` : newName;
     this.sendCreateRequest(newPath, this.getType());
   }
 
