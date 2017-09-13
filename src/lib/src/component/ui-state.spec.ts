@@ -74,6 +74,6 @@ describe('UI State', () => {
 
     // then
     expect(state.isDirty(examplePath)).toBeFalsy();
-  })
+  });
 
 });

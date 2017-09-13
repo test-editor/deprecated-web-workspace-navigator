@@ -21,7 +21,7 @@ import * as events from '../event-types';
 
 describe('NavigationComponent', () => {
 
-  const examplePath = "some/path.txt";
+  const examplePath = 'some/path.txt';
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
@@ -31,22 +31,22 @@ describe('NavigationComponent', () => {
   let sidenav: DebugElement;
 
   let listedFile: WorkspaceElement = {
-    name: "file.tcl",
-    path: "path/to/file.tcl",
+    name: 'file.tcl',
+    path: 'path/to/file.tcl',
     type: ElementType.File,
     children: []
   };
 
   function createRootWithSubfolder() {
     let subfolder: WorkspaceElement = {
-      name: "subfolder",
-      path: "root/subfolder",
+      name: 'subfolder',
+      path: 'root/subfolder',
       type: ElementType.Folder,
       children: []
     };
     let root: WorkspaceElement = {
-      name: "root",
-      path: "root",
+      name: 'root',
+      path: 'root',
       type: ElementType.Folder,
       children: [subfolder]
     };
@@ -103,7 +103,7 @@ describe('NavigationComponent', () => {
 
   it('displays an error when workspace could not be retrieved', async(() => {
     // given
-    when(persistenceService.listFiles()).thenReturn(Promise.reject("failed"));
+    when(persistenceService.listFiles()).thenReturn(Promise.reject('failed'));
 
     // when
     component.retrieveWorkspaceRoot();
@@ -112,7 +112,7 @@ describe('NavigationComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(component.errorMessage).toBeTruthy();
-      let alert = fixture.debugElement.query(By.css(".alert"));
+      let alert = fixture.debugElement.query(By.css('.alert'));
       expect(alert).toBeTruthy();
       expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
     });
@@ -200,7 +200,7 @@ describe('NavigationComponent', () => {
     // given
     component.workspace = new Workspace(listedFile);
     fixture.detectChanges();
-    let newFileIcon = sidenav.query(By.css('#new-file'))
+    let newFileIcon = sidenav.query(By.css('#new-file'));
 
     // when
     newFileIcon.nativeElement.click();
@@ -215,7 +215,7 @@ describe('NavigationComponent', () => {
     // given
     component.workspace = new Workspace(listedFile);
     fixture.detectChanges();
-    let newFolder = sidenav.query(By.css('#new-folder'))
+    let newFolder = sidenav.query(By.css('#new-folder'));
 
     // when
     newFolder.nativeElement.click();
@@ -224,7 +224,7 @@ describe('NavigationComponent', () => {
     let newElementRequest = component.uiState.newElementRequest;
     expect(newElementRequest).toBeTruthy();
     expect(newElementRequest.type).toEqual('folder');
-  })
+  });
 
   it('expands selected element on creation of new element', () => {
     // given
@@ -235,7 +235,7 @@ describe('NavigationComponent', () => {
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
 
     // when
-    component.newElement('file')
+    component.newElement('file');
 
     // then
     expect(component.uiState.newElementRequest.selectedElement).toBe(subfolder);
@@ -248,7 +248,7 @@ describe('NavigationComponent', () => {
     let subfolder = component.workspace.root.children[0];
     component.uiState.setExpanded(subfolder.path, true);
     fixture.detectChanges();
-    let collapseAllIcon = sidenav.query(By.css('#collapse-all'))
+    let collapseAllIcon = sidenav.query(By.css('#collapse-all'));
 
     // when
     collapseAllIcon.nativeElement.click();

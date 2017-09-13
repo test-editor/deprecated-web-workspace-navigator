@@ -5,7 +5,7 @@ export class UiState {
   activeEditorPath: string;
   selectedElement: WorkspaceElement;
 
-  newElementRequest: { selectedElement: WorkspaceElement, type: string }
+  newElementRequest: { selectedElement: WorkspaceElement, type: string };
 
   private expandedElements: boolean[] = [];
   private dirtyElements: boolean[] = [];

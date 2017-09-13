@@ -35,7 +35,7 @@ export class PersistenceService {
       headers: this.requestOptions.headers,
       params: { type: type }
     };
-    return this.http.post(url, "", requestOptions).toPromise();
+    return this.http.post(url, '', requestOptions).toPromise();
   }
 
   deleteResource(path: string): Promise<Response> {

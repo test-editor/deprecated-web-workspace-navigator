@@ -29,7 +29,7 @@ export function testBedSetup(providers?: any[]): void {
   }).compileComponents();
 }
 
-export function createResponse(status: number = 200, body: string = ""): Response {
+export function createResponse(status: number = 200, body: string = ''): Response {
   return new Response(new ResponseOptions({
     body: body,
     status: status,
@@ -59,7 +59,7 @@ describe('TreeViewerComponent', () => {
     ]
   };
 
-  let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] }
+  let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] };
 
   beforeEach(async(() => {
     persistenceService = mock(PersistenceService);
@@ -157,7 +157,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["glyphicon-chevron-right"]).toBeTruthy();
+    expect(icon.classes['glyphicon-chevron-right']).toBeTruthy();
   });
 
   it('has chevron-down icon for expanded folders', () => {
@@ -168,7 +168,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["glyphicon-chevron-down"]).toBeTruthy();
+    expect(icon.classes['glyphicon-chevron-down']).toBeTruthy();
   });
 
   it('sets expanded state when clicked on chevron icon', () => {
@@ -183,7 +183,7 @@ describe('TreeViewerComponent', () => {
     // then
     let expandedState = component.uiState.isExpanded(component.model.path);
     expect(expandedState).toBeTruthy();
-  })
+  });
 
   it('folders are not identified as file', () => {
     // given
@@ -296,7 +296,7 @@ describe('TreeViewerComponent', () => {
 
   it('deletes element if confirmed', () => {
     // given
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
     component.model = singleFile;
     component.confirmDelete = true;
     fixture.detectChanges();
@@ -328,7 +328,7 @@ describe('TreeViewerComponent', () => {
   it('displays error when deletion failed', (done: () => void) => {
     // given
     component.model = singleFile;
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
 
     // when
     component.onDeleteConfirm();

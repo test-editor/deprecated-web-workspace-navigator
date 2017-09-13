@@ -8,7 +8,7 @@ function endWithSlash(path: string) {
 // TODO refactor this to Workspace and use RegEx - should be much simpler
 export function getDirectory(element: WorkspaceElement): string {
   if (!element) {
-    return "";
+    return '';
   }
   if (element.type === ElementType.Folder) {
     return endWithSlash(element.path);
@@ -18,5 +18,5 @@ export function getDirectory(element: WorkspaceElement): string {
     let parentPath = split.join('/');
     return endWithSlash(parentPath);
   }
-  throw new Error("Invalid element type: " + element.type);
+  throw new Error('Invalid element type: ' + element.type);
 }

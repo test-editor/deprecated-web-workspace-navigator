@@ -22,8 +22,8 @@ describe('NewElementComponent', () => {
 
   let requestWithDummySelected = {
     selectedElement: {
-      name: "dummy.txt",
-      path: "some/path/dummy.txt",
+      name: 'dummy.txt',
+      path: 'some/path/dummy.txt',
       type: ElementType.File,
       children: [] as WorkspaceElement[]
     },
@@ -41,8 +41,8 @@ describe('NewElementComponent', () => {
     fixture = TestBed.createComponent(NewElementComponent);
     component = fixture.componentInstance;
     component.uiState = new UiState();
-    component.uiState.newElementRequest = { selectedElement: null, type: ElementType.Folder }
-    input = fixture.debugElement.query(By.css("input"));
+    component.uiState.newElementRequest = { selectedElement: null, type: ElementType.Folder };
+    input = fixture.debugElement.query(By.css('input'));
     messagingService = TestBed.get(MessagingService);
   });
 
@@ -75,7 +75,7 @@ describe('NewElementComponent', () => {
 
   it('adds padding when nothing is selected', () => {
     // when + then
-    expect(component.getPaddingLeft()).toEqual("12px");
+    expect(component.getPaddingLeft()).toEqual('12px');
   });
 
   it('does not add padding-left when a file is selected', () => {
@@ -83,43 +83,43 @@ describe('NewElementComponent', () => {
     component.uiState.newElementRequest = requestWithDummySelected;
 
     // when + then
-    expect(component.getPaddingLeft()).toEqual("0px");
+    expect(component.getPaddingLeft()).toEqual('0px');
   });
 
   it('calls createDocument with type file when enter is pressed', () => {
     // given
     component.uiState.newElementRequest.type = ElementType.File;
-    input.nativeElement.value = "something-new.txt";
+    input.nativeElement.value = 'something-new.txt';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("something-new.txt", "file")).once();
+    verify(persistenceService.createDocument('something-new.txt', 'file')).once();
   });
 
   it('calls createDocument with type folder when enter is pressed', () => {
     // given
     component.uiState.newElementRequest.type = ElementType.Folder;
-    input.nativeElement.value = "newFolder";
+    input.nativeElement.value = 'newFolder';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("newFolder", ElementType.Folder)).once();
+    verify(persistenceService.createDocument('newFolder', ElementType.Folder)).once();
   });
 
   it('calls createDocument with the proper path when enter is pressed', () => {
     // given
-    input.nativeElement.value = "something-new.txt";
+    input.nativeElement.value = 'something-new.txt';
     component.uiState.newElementRequest = requestWithDummySelected;
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("some/path/something-new.txt", ElementType.File)).once();
+    verify(persistenceService.createDocument('some/path/something-new.txt', ElementType.File)).once();
   });
 
   it('removes itself and emits navigation.created event when createDocument returns', async(() => {
@@ -143,7 +143,7 @@ describe('NewElementComponent', () => {
 
   it('signals an error when createDocument failed', async(() => {
     // given
-    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.reject("failed"));
+    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.reject('failed'));
 
     // when
     component.onEnter();
@@ -153,7 +153,7 @@ describe('NewElementComponent', () => {
       fixture.whenStable().then(() => {
         fixture.detectChanges();
         expect(component.errorMessage).toBeTruthy();
-        let alert = fixture.debugElement.query(By.css(".alert"));
+        let alert = fixture.debugElement.query(By.css('.alert'));
         expect(alert).toBeTruthy();
         expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
       });
@@ -168,8 +168,8 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["glyphicon-file"]).toBeTruthy();
+    let iconType = fixture.debugElement.query(By.css('.icon-type'));
+    expect(iconType.classes['glyphicon-file']).toBeTruthy();
   });
 
   it('shows folder icon when a new folder should be created', () => {
@@ -180,8 +180,8 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["glyphicon-folder-close"]).toBeTruthy();
+    let iconType = fixture.debugElement.query(By.css('.icon-type'));
+    expect(iconType.classes['glyphicon-folder-close']).toBeTruthy();
   });
 
 });

@@ -8,8 +8,8 @@ describe('getDirectory()', () => {
 
   beforeEach(() => {
     element = {
-      name: "dummy",
-      path: "some/random/path/dummy",
+      name: 'dummy',
+      path: 'some/random/path/dummy',
       type: ElementType.File,
       children: []
     };
@@ -17,38 +17,38 @@ describe('getDirectory()', () => {
 
   it('should return a directory\'s path when it ends with a \\', () => {
     // given
-    element.path = "some/directory/path/"
-    element.type = ElementType.Folder
+    element.path = 'some/directory/path/';
+    element.type = ElementType.Folder;
 
     // when + then
-    expect(getDirectory(element)).toEqual(element.path)
+    expect(getDirectory(element)).toEqual(element.path);
   });
 
   it('should return append a \\ to a directory\'s path when not ending with a \\', () => {
     // given
-    element.path = "some/directory/path"
-    element.type = ElementType.Folder
+    element.path = 'some/directory/path';
+    element.type = ElementType.Folder;
 
     // when + then
-    expect(getDirectory(element)).toEqual("some/directory/path/")
+    expect(getDirectory(element)).toEqual('some/directory/path/');
   });
 
   it('should return the parent\'s path when element is a file', () => {
     // when + then
-    expect(getDirectory(element)).toEqual("some/random/path/")
+    expect(getDirectory(element)).toEqual('some/random/path/');
   });
 
   it('should return empty string on null', () => {
     // when + then
-    expect(getDirectory(null)).toEqual("")
+    expect(getDirectory(null)).toEqual('');
   });
 
   it('should throw an exception for unknown element types', () => {
     // given
-    element.type = "random"
+    element.type = 'random';
 
     // when + then
-    expect(() => getDirectory(element)).toThrowError("Invalid element type: random")
+    expect(() => getDirectory(element)).toThrowError('Invalid element type: random');
   });
 
 });

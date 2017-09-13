@@ -16,9 +16,9 @@ export class TreeViewerComponent {
 
   @Input() uiState: UiState;
   @Input() model: WorkspaceElement;
-  @Input() level: number = 0;
+  @Input() level = 0;
 
-  confirmDelete: boolean = false;
+  confirmDelete = false;
   errorMessage: string;
 
   private subscriptions: Subscription[] = [];
@@ -97,7 +97,7 @@ export class TreeViewerComponent {
   }
 
   isEmptyFolder(): boolean {
-    return this.model.children.length == 0 && this.isFolder();
+    return this.model.children.length === 0 && this.isFolder();
   }
 
   isUnknown(): boolean {
@@ -106,11 +106,11 @@ export class TreeViewerComponent {
 
   shouldShowNewElement(): boolean {
     if (this.uiState.newElementRequest) {
-      let selectedElement = this.uiState.newElementRequest.selectedElement
+      let selectedElement = this.uiState.newElementRequest.selectedElement;
       if (selectedElement) {
-        return selectedElement.path == this.model.path;
+        return selectedElement.path === this.model.path;
       } else {
-        return this.level == 0; // display at root
+        return this.level === 0; // display at root
       }
     }
     return false;

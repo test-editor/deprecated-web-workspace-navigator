@@ -14,7 +14,7 @@ import * as events from '../event-types';
 })
 export class NewElementComponent implements AfterViewInit {
 
-  @ViewChild("theInput") input: ElementRef;
+  @ViewChild('theInput') input: ElementRef;
   @Input() uiState: UiState;
 
   errorMessage: string;
@@ -58,10 +58,10 @@ export class NewElementComponent implements AfterViewInit {
   getPaddingLeft(): string {
     if (this.uiState.newElementRequest) {
       let selectedElement = this.uiState.newElementRequest.selectedElement;
-      let isFileSelected = selectedElement && selectedElement.type == ElementType.File;
-      return isFileSelected ? "0px" : "12px";
+      let isFileSelected = selectedElement && selectedElement.type === ElementType.File;
+      return isFileSelected ? '0px' : '12px';
     }
-    return "0px";
+    return '0px';
   }
 
 }
