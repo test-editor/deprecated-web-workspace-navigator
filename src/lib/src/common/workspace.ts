@@ -23,16 +23,26 @@ export class Workspace {
     return normalized;
   }
 
+  /**
+   * Calculates all the subpaths of a given path.
+   * The full path is not included in the output.
+   */
   getSubpaths(path: string): string[] {
     let normalized = this.normalizePath(path);
     let [first, ...rest] = normalized.split('/');
-    let result = [first];
-    let lastPath = first;
-    for (let segment of rest) {
-      lastPath = lastPath + '/' + segment;
-      result.push(lastPath);
+    let hasSubpaths = rest.length > 0;
+    if (hasSubpaths) {
+      let result = [first];
+      let lastPath = first;
+      for (let i = 0; i < rest.length - 1; i++) {
+        let segment = rest[i];
+        lastPath = lastPath + '/' + segment;
+        result.push(lastPath);
+      }
+      return result;
+    } else {
+      return [];
     }
-    return result;
   }
 
   getElement(path: string): WorkspaceElement | undefined {

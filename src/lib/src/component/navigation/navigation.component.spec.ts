@@ -40,13 +40,20 @@ describe('NavigationComponent', () => {
   function createRootWithSubfolder() {
     let subfolder: WorkspaceElement = {
       name: "subfolder",
-      path: "root/subfolder",
+      path: "subfolder",
       type: ElementType.Folder,
-      children: []
+      children: [
+        {
+          name: 'newFolder',
+          path: 'subfolder/newFolder',
+          type: ElementType.Folder,
+          children: []
+        }
+      ]
     };
     let root: WorkspaceElement = {
       name: "root",
-      path: "root",
+      path: "",
       type: ElementType.Folder,
       children: [subfolder]
     };
@@ -258,17 +265,19 @@ describe('NavigationComponent', () => {
     expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
   });
 
-  it('can reveal subfolder', () => {
+  it('can reveal new folder', () => {
     // given
     createRootWithSubfolder();
     let subfolder = component.workspace.root.children[0];
+    let newFolder = subfolder.children[0];
 
     // when
-    component.revealElement(subfolder.path + '/');
+    component.revealElement(newFolder.path);
 
     // then
     expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
     expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
   });
 
   it('can select subfolder', () => {
@@ -287,18 +296,34 @@ describe('NavigationComponent', () => {
     // given
     createRootWithSubfolder();
     let subfolder = component.workspace.root.children[0];
+    let newFolder = subfolder.children[0];
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.workspace.root));
     resetCalls(persistenceService);
 
     // when
-    messagingService.publish(events.NAVIGATION_CREATED, { path: subfolder.path });
+    messagingService.publish(events.NAVIGATION_CREATED, { path: newFolder.path });
 
     // then
     verify(persistenceService.listFiles()).once();
     fixture.whenStable().then(() => {
       expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
       expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
-      expect(component.uiState.selectedElement).toBe(subfolder);
+      expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
+      expect(component.uiState.selectedElement).toBe(newFolder);
+    });
+  }));
+
+  it('element is not expanded when retrieving the workspace fails', async(() => {
+    // given
+    let path = 'example.txt';
+    when(persistenceService.listFiles()).thenReturn(Promise.reject('failed'));
+
+    // when
+    messagingService.publish(events.NAVIGATION_CREATED, { path: 'some/path' });
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(component.uiState.isExpanded(path)).toBeUndefined();
     });
   }));
 

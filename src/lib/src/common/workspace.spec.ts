@@ -43,14 +43,14 @@ describe('Workspace.getSubpaths()', () => {
   // given
   let workspace = createWorkspaceWithRootFolder('root');
 
-  it('returns empty path', () => {
+  it('returns no subpaths for empty path', () => {
     // when + then
-    expect(workspace.getSubpaths('')).toEqual(['']);
+    expect(workspace.getSubpaths('')).toEqual([]);
   });
 
-  it('returns filename if just a file', () => {
+  it('returns no subpaths for simple file', () => {
     // when + then
-    expect(workspace.getSubpaths('example.tsl')).toEqual(['example.tsl']);
+    expect(workspace.getSubpaths('example.tsl')).toEqual([]);
   });
 
   it('provides all subpaths of a path', () => {
@@ -61,7 +61,7 @@ describe('Workspace.getSubpaths()', () => {
     let subpaths = workspace.getSubpaths(path);
 
     // then
-    expect(subpaths).toEqual(['some', 'some/example', 'some/example/path']);
+    expect(subpaths).toEqual(['some', 'some/example']);
   });
 
   it('normalizes the paths', () => {
@@ -72,7 +72,7 @@ describe('Workspace.getSubpaths()', () => {
     let subpaths = workspace.getSubpaths(path);
 
     // then
-    expect(subpaths).toEqual(['some', 'some/example', 'some/example/path']);
+    expect(subpaths).toEqual(['some', 'some/example']);
   });
 
 });

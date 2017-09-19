@@ -84,9 +84,11 @@ export class NavigationComponent implements OnInit {
   }
 
   handleNavigationCreated(payload: any): void {
-    this.retrieveWorkspaceRoot().then(() => {
-      this.revealElement(payload.path);
-      this.selectElement(payload.path);
+    this.retrieveWorkspaceRoot().then(workspace => {
+      if (workspace) {
+        this.revealElement(payload.path);
+        this.selectElement(payload.path);
+      }
     });
   }
 
@@ -112,6 +114,7 @@ export class NavigationComponent implements OnInit {
   revealElement(path: string): void {
     let subpaths = this.workspace.getSubpaths(path);
     subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
+    this.uiState.setExpanded(this.workspace.root.path, true);
   }
 
   selectElement(path: string): void {
