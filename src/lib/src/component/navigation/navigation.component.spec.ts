@@ -11,6 +11,7 @@ import { PersistenceServiceConfig } from '../../service/persistence/persistence.
 import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
+import { Workspace } from '../../common/workspace';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { ElementType } from '../../common/element-type';
 import { testBedSetup } from '../tree-viewer/tree-viewer.component.spec';
@@ -39,16 +40,24 @@ describe('NavigationComponent', () => {
   function createRootWithSubfolder() {
     let subfolder: WorkspaceElement = {
       name: "subfolder",
-      path: "root/subfolder",
+      path: "subfolder",
       type: ElementType.Folder,
-      children: []
-    }
-    component.workspaceRoot = {
+      children: [
+        {
+          name: 'newFolder',
+          path: 'subfolder/newFolder',
+          type: ElementType.Folder,
+          children: []
+        }
+      ]
+    };
+    let root: WorkspaceElement = {
       name: "root",
-      path: "root",
+      path: "",
       type: ElementType.Folder,
       children: [subfolder]
     };
+    component.workspace = new Workspace(root);
   }
 
   beforeEach(async(() => {
@@ -89,7 +98,7 @@ describe('NavigationComponent', () => {
 
   it('sets workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
-      expect(component.workspaceRoot.name).toEqual(listedFile.name);
+      expect(component.workspace.root.name).toEqual(listedFile.name);
     });
   }));
 
@@ -196,7 +205,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new file', () => {
     // given
-    component.workspaceRoot = listedFile;
+    component.workspace = new Workspace(listedFile);
     fixture.detectChanges();
     let newFileIcon = sidenav.query(By.css('#new-file'))
 
@@ -211,7 +220,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new folder', () => {
     // given
-    component.workspaceRoot = listedFile;
+    component.workspace = new Workspace(listedFile);
     fixture.detectChanges();
     let newFolder = sidenav.query(By.css('#new-folder'))
 
@@ -227,7 +236,7 @@ describe('NavigationComponent', () => {
   it('expands selected element on creation of new element', () => {
     // given
     createRootWithSubfolder();
-    let subfolder = component.workspaceRoot.children[0];
+    let subfolder = component.workspace.root.children[0];
     component.uiState.selectedElement = subfolder;
     fixture.detectChanges();
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
@@ -243,7 +252,7 @@ describe('NavigationComponent', () => {
   it('collapses all when icon is clicked', () => {
     // given
     createRootWithSubfolder();
-    let subfolder = component.workspaceRoot.children[0];
+    let subfolder = component.workspace.root.children[0];
     component.uiState.setExpanded(subfolder.path, true);
     fixture.detectChanges();
     let collapseAllIcon = sidenav.query(By.css('#collapse-all'))
@@ -253,7 +262,69 @@ describe('NavigationComponent', () => {
 
     // then
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
-    expect(component.uiState.isExpanded(component.workspaceRoot.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
   });
+
+  it('can reveal new folder', () => {
+    // given
+    createRootWithSubfolder();
+    let subfolder = component.workspace.root.children[0];
+    let newFolder = subfolder.children[0];
+
+    // when
+    component.revealElement(newFolder.path);
+
+    // then
+    expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
+  });
+
+  it('can select subfolder', () => {
+    // given
+    createRootWithSubfolder();
+    let subfolder = component.workspace.root.children[0];
+
+    // when
+    component.selectElement(subfolder.path + '/');
+
+    // then
+    expect(component.uiState.selectedElement).toBe(subfolder);
+  });
+
+  it('reveals and selects element when an "navigation.created" event is received', async(() => {
+    // given
+    createRootWithSubfolder();
+    let subfolder = component.workspace.root.children[0];
+    let newFolder = subfolder.children[0];
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.workspace.root));
+    resetCalls(persistenceService);
+
+    // when
+    messagingService.publish(events.NAVIGATION_CREATED, { path: newFolder.path });
+
+    // then
+    verify(persistenceService.listFiles()).once();
+    fixture.whenStable().then(() => {
+      expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
+      expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+      expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
+      expect(component.uiState.selectedElement).toBe(newFolder);
+    });
+  }));
+
+  it('element is not expanded when retrieving the workspace fails', async(() => {
+    // given
+    let path = 'example.txt';
+    when(persistenceService.listFiles()).thenReturn(Promise.reject('failed'));
+
+    // when
+    messagingService.publish(events.NAVIGATION_CREATED, { path: 'some/path' });
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(component.uiState.isExpanded(path)).toBeUndefined();
+    });
+  }));
 
 });

@@ -41,11 +41,13 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
-    this.persistenceService.createDocument(newPath, type).then(() => {
+    this.persistenceService.createDocument(newPath, type).then(response => {
       this.remove();
-      this.messagingService.publish(events.NAVIGATION_REFRESH, {});
+      this.messagingService.publish(events.NAVIGATION_CREATED, {
+        path: response.text()
+      });
     }).catch(() => {
-      this.errorMessage = 'Error while creating element!'
+      this.errorMessage = 'Error while creating element!';
     });
   }
 

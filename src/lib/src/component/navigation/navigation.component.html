@@ -1,13 +1,15 @@
 <div class="sidenav noselect">
-  <div class="icon-menu" *ngIf="workspaceRoot">
-    <div class="icons-left">
-      <i id="new-file" class="icon glyphicon glyphicon-file" (click)="newElement('file')"></i>
-      <i id="new-folder" class="icon glyphicon glyphicon-folder-close" (click)="newElement('folder')"></i>
+  <div *ngIf="workspace">
+    <div class="icon-menu">
+      <div class="icons-left">
+        <i id="new-file" class="icon glyphicon glyphicon-file" (click)="newElement('file')"></i>
+        <i id="new-folder" class="icon glyphicon glyphicon-folder-close" (click)="newElement('folder')"></i>
+      </div>
+      <div class="icons-right">
+        <i id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()"></i>
+      </div>
     </div>
-    <div class="icons-right">
-      <i id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()"></i>
-    </div>
+    <nav-tree-viewer [model]="workspace.root" [uiState]="uiState"></nav-tree-viewer>
   </div>
-  <nav-tree-viewer [model]="workspaceRoot" [uiState]="uiState"></nav-tree-viewer>
   <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
 </div>
