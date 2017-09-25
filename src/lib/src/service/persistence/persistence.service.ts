@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, Response, RequestOptionsArgs } from '@angular/http';
+import { AuthHttp } from 'angular2-jwt';
 
 import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
@@ -11,20 +12,14 @@ export class PersistenceService {
 
   private serviceUrl: string;
   private listFilesUrl: string;
-  private requestOptions: RequestOptionsArgs;
 
-  constructor(private http: Http, config: PersistenceServiceConfig) {
+  constructor(private http: AuthHttp, config: PersistenceServiceConfig) {
     this.serviceUrl = config.serviceUrl;
     this.listFilesUrl = `${config.serviceUrl}/workspace/list-files`;
-    this.requestOptions = {
-      headers: new Headers({
-        'Authorization': config.authorizationHeader
-      })
-    };
   }
 
   listFiles(): Promise<WorkspaceElement> {
-    return this.http.get(this.listFilesUrl, this.requestOptions).toPromise()
+    return this.http.get(this.listFilesUrl).toPromise()
       .then(response => response.json());
   }
 
@@ -32,7 +27,6 @@ export class PersistenceService {
   createDocument(path: string, type: string): Promise<Response> {
     let url = `${this.serviceUrl}/documents/${path}`;
     let requestOptions = {
-      headers: this.requestOptions.headers,
       params: { type: type }
     };
     return this.http.post(url, "", requestOptions).toPromise();
@@ -40,7 +34,7 @@ export class PersistenceService {
 
   deleteResource(path: string): Promise<Response> {
     let url = `${this.serviceUrl}/documents/${path}`;
-    return this.http.delete(url, this.requestOptions).toPromise();
+    return this.http.delete(url).toPromise();
   }
 
 }
