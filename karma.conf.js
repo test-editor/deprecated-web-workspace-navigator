@@ -46,6 +46,9 @@ module.exports = function (config) {
       { pattern: 'node_modules/rxjs/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/rxjs/**/*.js.map', included: false, watched: false },
 
+      // angular2-jwt
+      { pattern: 'node_modules/angular2-jwt/**/*.js', included: false, watched: false },
+
       // Paths loaded via module imports:
       // Angular itself
       { pattern: 'node_modules/@angular/**/*.js', included: false, watched: false },

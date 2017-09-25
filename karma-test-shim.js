@@ -69,6 +69,7 @@ System.config({
     '@testeditor/messaging-service': 'npm:@testeditor/messaging-service/bundles/messaging-service.umd.js',
     'ts-mockito': 'npm:ts-mockito/lib/ts-mockito.js',
     'lodash': 'npm:lodash/lodash.js',
+    'angular2-jwt': 'npm:angular2-jwt/angular2-jwt.js',
 
     // Testing bundles
     '@angular/core/testing': 'npm:@angular/core/bundles/core-testing.umd.js',
