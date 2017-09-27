@@ -20,8 +20,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
     HttpModule,
     MessagingModule.forRoot(),
     WorkspaceNavigatorModule.forRoot({
-      serviceUrl: "http://localhost:9080",
-      authorizationHeader: "admin:admin@example.com"
+      persistenceServiceUrl: "http://localhost:9080",
     })
   ],
   declarations: [ AppComponent ],

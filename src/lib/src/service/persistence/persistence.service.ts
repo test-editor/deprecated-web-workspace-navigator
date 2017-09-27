@@ -14,8 +14,8 @@ export class PersistenceService {
   private listFilesUrl: string;
 
   constructor(private http: AuthHttp, config: PersistenceServiceConfig) {
-    this.serviceUrl = config.serviceUrl;
-    this.listFilesUrl = `${config.serviceUrl}/workspace/list-files`;
+    this.serviceUrl = config.persistenceServiceUrl;
+    this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
   }
 
   listFiles(): Promise<WorkspaceElement> {

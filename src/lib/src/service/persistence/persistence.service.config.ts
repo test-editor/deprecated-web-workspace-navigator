@@ -1,6 +1,5 @@
 export class PersistenceServiceConfig {
 
-  serviceUrl: string;
-  authorizationHeader: string;
+  persistenceServiceUrl: string;
 
 }
