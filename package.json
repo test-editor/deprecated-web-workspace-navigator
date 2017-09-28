@@ -54,7 +54,8 @@
     "@angular/core": ">=4.0.0 <5.0.0",
     "@angular/forms": ">=4.0.0 <5.0.0",
     "@angular/http": ">=4.0.0 <5.0.0",
-    "@testeditor/messaging-service": "^1.0.0"
+    "@testeditor/messaging-service": "^1.0.0",
+    "angular2-jwt": "^0.2.3"
   },
   "devDependencies": {
     "@angular/common": "~4.3.2",
@@ -65,9 +66,10 @@
     "@angular/http": "~4.3.2",
     "@angular/platform-browser": "~4.3.2",
     "@angular/platform-browser-dynamic": "~4.3.2",
-    "@testeditor/messaging-service": "^1.1.0",
+    "@testeditor/messaging-service": "^1.2.0",
     "@types/jasmine": "2.5.36",
     "@types/node": "^6.0.46",
+    "angular2-jwt": "^0.2.3",
     "bootstrap": "^3.3.7",
     "camelcase": "^4.0.0",
     "concurrently": "3.4.0",

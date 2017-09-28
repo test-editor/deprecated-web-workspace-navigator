@@ -64,7 +64,8 @@ return Promise.resolve()
         '@angular/common': 'ng.common',
         '@angular/forms': 'ng.forms',
         '@angular/http': 'ng.http',
-        '@testeditor/messaging-service': 'te.messagingService'
+        '@testeditor/messaging-service': 'te.messagingService',
+        'angular2-jwt': 'angular2-jwt'
       },
       external: [
         // List of dependencies
@@ -73,6 +74,7 @@ return Promise.resolve()
         '@angular/common',
         '@angular/forms',
         '@angular/http',
+        'angular2-jwt',
         'rxjs/add/operator/toPromise',
         '@testeditor/messaging-service'
       ],

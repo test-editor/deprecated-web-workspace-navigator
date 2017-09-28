@@ -63,7 +63,9 @@
   resolved "https://registry.yarnpkg.com/@testeditor/messaging-service/-/messaging-service-1.0.0.tgz#5003d9703dbedfda73d0838a9be274e82bb21c3f"
 
 "@testeditor/workspace-navigator@../dist/":
-  version "0.6.0"
+  version "0.10.0"
+  dependencies:
+    angular2-jwt "^0.2.3"
 
 "@types/jasmine@2.5.36":
   version "2.5.36"
@@ -121,6 +123,10 @@ ajv@^4.9.1:
   dependencies:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
+
+angular2-jwt@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/angular2-jwt/-/angular2-jwt-0.2.3.tgz#54efdda3ceedba85f6a37b165f22ac22b8adf021"
 
 ansi-regex@^0.2.0, ansi-regex@^0.2.1:
   version "0.2.1"
