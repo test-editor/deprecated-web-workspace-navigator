@@ -7,6 +7,7 @@ import { testBedSetup, createResponse } from './tree-viewer.component.spec';
 
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
+import { PathValidator } from './path-validator';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { NewElementComponent } from './new-element.component';
 import { UiState } from '../ui-state';
@@ -33,6 +34,7 @@ describe('NewElementComponent', () => {
   beforeEach(async(() => {
     persistenceService = mock(PersistenceService);
     testBedSetup([
+      PathValidator,
       { provide: PersistenceService, useValue: instance(persistenceService) }
     ]);
   }));
@@ -45,6 +47,14 @@ describe('NewElementComponent', () => {
     input = fixture.debugElement.query(By.css("input"));
     messagingService = TestBed.get(MessagingService);
   });
+
+  /**
+   * Emulates jQuery's implementation
+   * https://makandracards.com/makandra/1339-check-whether-an-element-is-visible-or-hidden-with-javascript
+   */
+  function isVisible(element: DebugElement): boolean {
+    return element.nativeElement.offsetWidth > 0 && element.nativeElement.offsetHeight > 0;
+  }
 
   it('focuses on the input after view initialized', () => {
     // given
@@ -84,6 +94,33 @@ describe('NewElementComponent', () => {
 
     // when + then
     expect(component.getPaddingLeft()).toEqual("0px");
+  });
+
+  it('hides error message by default', () => {
+    // given
+    expect(component.errorMessage).toBeFalsy();
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let alert = fixture.debugElement.query(By.css(".alert"));
+    expect(isVisible(alert)).toBeFalsy();
+    expect(input.classes["input-error"]).toBeFalsy();
+  });
+
+  it('displays error message when set', () => {
+    // given
+    component.errorMessage = 'the error message to show';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let alert = fixture.debugElement.query(By.css(".alert"));
+    expect(isVisible(alert)).toBeTruthy();
+    expect(alert.nativeElement.textContent).toBe('the error message to show');
+    expect(input.classes["input-error"]).toBeTruthy();
   });
 
   it('calls createDocument with type file when enter is pressed', () => {
@@ -151,11 +188,7 @@ describe('NewElementComponent', () => {
     // then
     fixture.whenStable().then(() => {
       fixture.whenStable().then(() => {
-        fixture.detectChanges();
         expect(component.errorMessage).toBeTruthy();
-        let alert = fixture.debugElement.query(By.css(".alert"));
-        expect(alert).toBeTruthy();
-        expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
       });
     });
   }));
@@ -182,6 +215,44 @@ describe('NewElementComponent', () => {
     // then
     let iconType = fixture.debugElement.query(By.css(".icon-type"));
     expect(iconType.classes["glyphicon-folder-close"]).toBeTruthy();
+  });
+
+  it('validation for valid input does not show error message', () => {
+    // given
+    input.nativeElement.value = "valid.txt";
+
+    // when
+    input.triggerEventHandler('keyup.enter', {});
+    fixture.detectChanges();
+
+    // then
+    expect(component.errorMessage).toBeFalsy();
+  });
+
+  it('validation for invalid input shows error message', () => {
+    // given
+    input.nativeElement.value = "../invalid.txt";
+
+    // when
+    input.triggerEventHandler('keyup.enter', {});
+    fixture.detectChanges();
+
+    // then
+    let alert = fixture.debugElement.query(By.css(".alert"));
+    expect(isVisible(alert)).toBeTruthy();
+    expect(alert.nativeElement.textContent.trim()).toBe('Relative path segments such as "../" are not allowed.');
+  });
+
+  it('does not call anything on invalid input when enter is pressed', () => {
+    // given
+    input.nativeElement.value = "../invalid.txt";
+    component.uiState.newElementRequest = requestWithDummySelected;
+
+    // when
+    input.triggerEventHandler('keyup.enter', {});
+
+    // then
+    verify(persistenceService.createDocument(anyString(), anyString())).never();
   });
 
 });

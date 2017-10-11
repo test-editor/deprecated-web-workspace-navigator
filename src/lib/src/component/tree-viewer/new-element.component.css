@@ -8,6 +8,11 @@ input {
   padding: 4px;
 }
 
+.input-error {
+  border-color: #F80B0B;
+  outline: 0 none;
+}
+
 .icon-type {
   font-size: 10px;
   margin-right: 3px;

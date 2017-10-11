@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 import { NavigationComponent } from './component/navigation/navigation.component';
 import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.component';
 
+import { PathValidator } from './component/tree-viewer/path-validator';
 import { PersistenceService } from './service/persistence/persistence.service';
 import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
 import { NewElementComponent } from './component/tree-viewer/new-element.component';
@@ -33,6 +34,7 @@ export class WorkspaceNavigatorModule {
       ngModule: WorkspaceNavigatorModule,
       providers: [
         { provide: PersistenceServiceConfig, useValue: config },
+        PathValidator,
         PersistenceService
       ]
     };
