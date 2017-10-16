@@ -3,6 +3,7 @@ import { UiState } from '../ui-state';
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { getDirectory } from '../../common/util/workspace-element-helper';
+import { PathValidator } from './path-validator';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import * as events from '../event-types';
@@ -21,6 +22,7 @@ export class NewElementComponent implements AfterViewInit {
 
   constructor(
     private messagingService: MessagingService,
+    private pathValidator: PathValidator,
     private persistenceService: PersistenceService
   ) {  }
 
@@ -32,12 +34,24 @@ export class NewElementComponent implements AfterViewInit {
     return this.uiState.newElementRequest.type;
   }
 
+  onKeyup(event: any): void {
+    this.validate();
+  }
+
+  validate(): boolean {
+    let newName: string = this.input.nativeElement.value;
+    let isValid = this.pathValidator.isValid(newName);
+    this.errorMessage = isValid ? null : this.pathValidator.getMessage(newName);
+    return isValid;
+  }
+
   onEnter(): void {
-    let newName = this.input.nativeElement.value;
-    let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
-    let newPath = parent + newName;
-    let type =
-    this.sendCreateRequest(newPath, this.getType());
+    if (this.validate()) {
+      let newName = this.input.nativeElement.value;
+      let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
+      let newPath = parent + newName;
+      this.sendCreateRequest(newPath, this.getType());
+    }
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
