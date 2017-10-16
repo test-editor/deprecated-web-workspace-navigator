@@ -1,5 +1,7 @@
 import { PathValidator } from './path-validator';
 
+let longestAcceptableFileName = 'x'.repeat(255);
+
 let cases = [
   {
     input: 'test.txt',
@@ -21,6 +23,21 @@ let cases = [
     expected: false,
     description: 'should prevent dot segment in between'
   },
+  {
+    input: `some/path/${longestAcceptableFileName}`,
+    expected: true,
+    description: 'should allow 255 character file names'
+  },
+  {
+    input: `some/path/x${longestAcceptableFileName}`,
+    expected: false,
+    description: 'should prevent 256 character file names'
+  },
+  {
+    input: `some/path/ ${longestAcceptableFileName}`,
+    expected: false,
+    description: 'should prevent 256 character file names with space included'
+  }
 ];
 
 describe('PathValidator', () => {
