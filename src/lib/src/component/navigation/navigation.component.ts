@@ -106,6 +106,10 @@ export class NavigationComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
+  refresh(): void {
+    this.retrieveWorkspaceRoot();
+  }
+
   collapseAll(): void {
     this.uiState.clearExpanded();
     this.uiState.setExpanded(this.workspace.root.path, true);

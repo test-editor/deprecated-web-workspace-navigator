@@ -265,6 +265,31 @@ describe('NavigationComponent', () => {
     expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
   });
 
+  it('refreshes navigator when refresh button is clicked', async(() => {
+    // given
+    createRootWithSubfolder();
+    fixture.detectChanges();
+
+    let refreshIcon = sidenav.query(By.css('#refresh'))
+    let newFile: WorkspaceElement = {
+      name: "newFile.tcl",
+      path: "newFile.tcl",
+      type: ElementType.File,
+      children: []
+    };
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(newFile));
+    resetCalls(persistenceService);
+
+    // when
+    refreshIcon.nativeElement.click();
+
+    // then
+    verify(persistenceService.listFiles()).once();
+    fixture.whenStable().then(() => {
+      expect(component.workspace.root).toEqual(newFile);
+    });
+  }));
+
   it('can reveal new folder', () => {
     // given
     createRootWithSubfolder();
