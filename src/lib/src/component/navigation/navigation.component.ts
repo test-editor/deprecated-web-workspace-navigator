@@ -7,6 +7,8 @@ import { WorkspaceElement } from '../../common/workspace-element';
 import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
+import { TestExecutionService } from '../../service/execution/test.execution.service';
+import { ElementState } from '../../common/element-state';
 
 @Component({
   selector: 'app-navigation',
@@ -23,7 +25,8 @@ export class NavigationComponent implements OnInit {
   constructor(
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
-    private persistenceService: PersistenceService
+    private persistenceService: PersistenceService,
+    private executionService: TestExecutionService
   ) {
     this.uiState = new UiState();
   }
@@ -108,6 +111,14 @@ export class NavigationComponent implements OnInit {
 
   refresh(): void {
     this.retrieveWorkspaceRoot();
+  }
+
+  run(): void {
+    this.executionService.execute(this.uiState.selectedElement.path).then(response => {
+        if (response.status === 200) {
+          this.uiState.selectedElement.state = ElementState.Running;
+        }
+      });
   }
 
   collapseAll(): void {
