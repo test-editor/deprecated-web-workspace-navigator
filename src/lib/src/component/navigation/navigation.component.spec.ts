@@ -33,9 +33,16 @@ describe('NavigationComponent', () => {
   let spy: jasmine.Spy;
   let sidenav: DebugElement;
 
-  let listedFile: WorkspaceElement = {
+  let tclFile: WorkspaceElement = {
     name: "file.tcl",
     path: "path/to/file.tcl",
+    type: ElementType.File,
+    children: []
+  };
+
+  let nonExecutableFile: WorkspaceElement = {
+    name: 'nonExecutable.txt',
+    path: 'path/to/nonExecutable.txt',
     type: ElementType.File,
     children: []
   };
@@ -66,12 +73,12 @@ describe('NavigationComponent', () => {
   beforeEach(async(() => {
     // Mock PersistenceService
     persistenceService = mock(PersistenceService);
-    when(persistenceService.listFiles()).thenReturn(Promise.resolve(listedFile));
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(tclFile));
 
     // Mock TestExecutionService
     executionService = mock(TestExecutionService)
     let response = new Response(new ResponseOptions({status: 200}));
-    when(executionService.execute(listedFile.path)).thenReturn(Promise.resolve(response));
+    when(executionService.execute(tclFile.path)).thenReturn(Promise.resolve(response));
 
     TestBed.configureTestingModule({
       declarations: [
@@ -86,7 +93,7 @@ describe('NavigationComponent', () => {
       ],
       providers: [
         { provide: PersistenceService, useValue: instance(persistenceService) },
-        { provide: TestExecutionService, useValue: instance(executionService)}
+        { provide: TestExecutionService, useValue: instance(executionService) }
       ]
     })
       .compileComponents();
@@ -107,13 +114,13 @@ describe('NavigationComponent', () => {
 
   it('sets workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
-      expect(component.workspace.root.name).toEqual(listedFile.name);
+      expect(component.workspace.root.name).toEqual(tclFile.name);
     });
   }));
 
   it('expands workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
-      expect(component.uiState.isExpanded(listedFile.path)).toBeTruthy();
+      expect(component.uiState.isExpanded(tclFile.path)).toBeTruthy();
     });
   }));
 
@@ -180,16 +187,16 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state when an "navigation.deleted" event is received', () => {
     // given
-    component.uiState.setDirty(listedFile.path, true);
-    component.uiState.setExpanded(listedFile.path, true);
-    component.uiState.selectedElement = listedFile;
+    component.uiState.setDirty(tclFile.path, true);
+    component.uiState.setExpanded(tclFile.path, true);
+    component.uiState.selectedElement = tclFile;
 
     // when
-    messagingService.publish(events.NAVIGATION_DELETED, { name: listedFile.name, path: listedFile.path });
+    messagingService.publish(events.NAVIGATION_DELETED, { name: tclFile.name, path: tclFile.path });
 
     // then
-    expect(component.uiState.isDirty(listedFile.path)).toBeFalsy();
-    expect(component.uiState.isExpanded(listedFile.path)).toBeFalsy();
+    expect(component.uiState.isDirty(tclFile.path)).toBeFalsy();
+    expect(component.uiState.isExpanded(tclFile.path)).toBeFalsy();
     expect(component.uiState.selectedElement).toBeFalsy();
   });
 
@@ -198,7 +205,7 @@ describe('NavigationComponent', () => {
     resetCalls(persistenceService);
 
     // when
-    messagingService.publish(events.NAVIGATION_DELETED, { name: listedFile.name, path: listedFile.path });
+    messagingService.publish(events.NAVIGATION_DELETED, { name: tclFile.name, path: tclFile.path });
 
     // then
     verify(persistenceService.listFiles()).once();
@@ -206,15 +213,15 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state when an "navigation.select" event is received', () => {
     // when
-    messagingService.publish(events.NAVIGATION_SELECT, listedFile);
+    messagingService.publish(events.NAVIGATION_SELECT, tclFile);
 
     // then
-    expect(component.uiState.selectedElement).toEqual(listedFile);
+    expect(component.uiState.selectedElement).toEqual(tclFile);
   });
 
   it('updates the UI state for creating a new file', () => {
     // given
-    component.workspace = new Workspace(listedFile);
+    component.workspace = new Workspace(tclFile);
     fixture.detectChanges();
     let newFileIcon = sidenav.query(By.css('#new-file'))
 
@@ -229,7 +236,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new folder', () => {
     // given
-    component.workspace = new Workspace(listedFile);
+    component.workspace = new Workspace(tclFile);
     fixture.detectChanges();
     let newFolder = sidenav.query(By.css('#new-folder'))
 
@@ -364,9 +371,9 @@ describe('NavigationComponent', () => {
   it('invokes test execution for currently selected test file when "run" button is clicked', async(() => {
     // given
     createRootWithSubfolder();
+    component.uiState.selectedElement = tclFile;
     fixture.detectChanges();
     let runIcon = sidenav.query(By.css('#run'));
-    component.uiState.selectedElement = listedFile;
     resetCalls(executionService);
 
     // when
@@ -374,8 +381,51 @@ describe('NavigationComponent', () => {
 
     // then
     fixture.whenStable().then(() => {
-      verify(executionService.execute(listedFile.path)).once();
-      expect(listedFile.state).toEqual(ElementState.Running);
+      verify(executionService.execute(tclFile.path)).once();
+      expect(tclFile.state).toEqual(ElementState.Running);
     });
   }));
+
+  it('disables the run button when selecting a non-executable file', async(() => {
+    // given
+    component.workspace = new Workspace({
+      name: 'root',
+      path: '',
+      type: ElementType.Folder,
+      children: [ nonExecutableFile, tclFile ]
+    });
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = tclFile;
+
+    // when
+    component.selectElement(nonExecutableFile.path)
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(runIcon.properties['disabled']).toBeTruthy;
+    });
+  }));
+
+  it('enables the run button when selecting an executable file', async(() => {
+    // given
+    component.workspace = new Workspace({
+      name: 'root',
+      path: '',
+      type: ElementType.Folder,
+      children: [ nonExecutableFile, tclFile ]
+    });
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = nonExecutableFile;
+
+    // when
+    component.selectElement(tclFile.path)
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(runIcon.properties['disabled']).toBeFalsy;
+    });
+  }));
+
 });

@@ -137,4 +137,8 @@ export class NavigationComponent implements OnInit {
     this.uiState.selectedElement = element;
   }
 
+  selectionIsExecutable(): boolean {
+    return this.uiState.selectedElement != null && this.uiState.selectedElement.path.endsWith('.tcl');
+  }
+
 }

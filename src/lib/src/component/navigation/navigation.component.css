@@ -54,6 +54,16 @@
   cursor: pointer;
 }
 
-.icon:hover {
+.icon:hover:enabled {
   color: #ffffff;
+}
+
+:disabled {
+  color: #555555;
+}
+
+button {
+  background:none!important;
+  border:none;
+  padding:0!important;
 }
