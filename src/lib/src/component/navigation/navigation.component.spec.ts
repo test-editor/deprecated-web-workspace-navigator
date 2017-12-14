@@ -1,13 +1,14 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import { HttpModule, Response, ResponseOptions } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
+import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
@@ -18,6 +19,7 @@ import { testBedSetup } from '../tree-viewer/tree-viewer.component.spec';
 import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
+import { ElementState } from '../../common/element-state';
 
 describe('NavigationComponent', () => {
 
@@ -27,6 +29,7 @@ describe('NavigationComponent', () => {
   let fixture: ComponentFixture<NavigationComponent>;
   let persistenceService: PersistenceService;
   let messagingService: MessagingService;
+  let executionService: TestExecutionService;
   let spy: jasmine.Spy;
   let sidenav: DebugElement;
 
@@ -65,6 +68,11 @@ describe('NavigationComponent', () => {
     persistenceService = mock(PersistenceService);
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(listedFile));
 
+    // Mock TestExecutionService
+    executionService = mock(TestExecutionService)
+    let response = new Response(new ResponseOptions({status: 200}));
+    when(executionService.execute(listedFile.path)).thenReturn(Promise.resolve(response));
+
     TestBed.configureTestingModule({
       declarations: [
         NavigationComponent,
@@ -77,7 +85,8 @@ describe('NavigationComponent', () => {
         MessagingModule.forRoot()
       ],
       providers: [
-        { provide: PersistenceService, useValue: instance(persistenceService) }
+        { provide: PersistenceService, useValue: instance(persistenceService) },
+        { provide: TestExecutionService, useValue: instance(executionService)}
       ]
     })
       .compileComponents();
@@ -270,7 +279,7 @@ describe('NavigationComponent', () => {
     createRootWithSubfolder();
     fixture.detectChanges();
 
-    let refreshIcon = sidenav.query(By.css('#refresh'))
+    let refreshIcon = sidenav.query(By.css('#refresh'));
     let newFile: WorkspaceElement = {
       name: "newFile.tcl",
       path: "newFile.tcl",
@@ -352,4 +361,21 @@ describe('NavigationComponent', () => {
     });
   }));
 
+  it('invokes test execution for currently selected test file when "run" button is clicked', async(() => {
+    // given
+    createRootWithSubfolder();
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = listedFile;
+    resetCalls(executionService);
+
+    // when
+    runIcon.nativeElement.click();
+
+    // then
+    fixture.whenStable().then(() => {
+      verify(executionService.execute(listedFile.path)).once();
+      expect(listedFile.state).toEqual(ElementState.Running);
+    });
+  }));
 });

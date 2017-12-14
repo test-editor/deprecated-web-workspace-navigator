@@ -10,6 +10,8 @@ import { PathValidator } from './component/tree-viewer/path-validator';
 import { PersistenceService } from './service/persistence/persistence.service';
 import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
 import { NewElementComponent } from './component/tree-viewer/new-element.component';
+import { TestExecutionService } from './service/execution/test.execution.service';
+import { TestExecutionServiceConfig } from './service/execution/test.execution.service.config';
 
 @NgModule({
   imports: [
@@ -29,13 +31,15 @@ import { NewElementComponent } from './component/tree-viewer/new-element.compone
 })
 export class WorkspaceNavigatorModule {
 
-  static forRoot(config: PersistenceServiceConfig): ModuleWithProviders {
+  static forRoot(persistanceConfig: PersistenceServiceConfig, testExecutionConfig: TestExecutionServiceConfig): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [
-        { provide: PersistenceServiceConfig, useValue: config },
+        { provide: PersistenceServiceConfig, useValue: persistanceConfig },
+        { provide: TestExecutionServiceConfig, useValue: testExecutionConfig },
         PathValidator,
-        PersistenceService
+        PersistenceService,
+        TestExecutionService
       ]
     };
   }
