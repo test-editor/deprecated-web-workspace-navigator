@@ -18,9 +18,9 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
     HttpModule,
     MessagingModule.forRoot(),
     WorkspaceNavigatorModule.forRoot({
-      persistenceServiceUrl: "http://localhost:9080",
+      persistenceServiceUrl: 'http://localhost:9080',
     }, {
-      testExecutionServiceUrl: "http://localhost:9080/tests/execute"
+      testExecutionServiceUrl: 'http://localhost:9080/tests/execute'
     })
   ],
   declarations: [ AppComponent ],
