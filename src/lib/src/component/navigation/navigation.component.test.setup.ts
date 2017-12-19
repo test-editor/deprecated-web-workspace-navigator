@@ -25,14 +25,12 @@ export const nonExecutableFile: WorkspaceElement = {
 };
 
 export function mockedPersistenceService() {
-  // Mock PersistenceService
   const persistenceService = mock(PersistenceService);
   when(persistenceService.listFiles()).thenReturn(Promise.resolve(tclFile));
   return persistenceService;
 }
 
 export function mockedTestExecutionService() {
-  // Mock TestExecutionService
   const executionService = mock(TestExecutionService)
   const response = new Response(new ResponseOptions({status: 200}));
   when(executionService.execute(tclFile.path)).thenReturn(Promise.resolve(response));
