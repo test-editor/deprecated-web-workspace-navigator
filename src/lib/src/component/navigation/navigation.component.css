@@ -54,6 +54,20 @@
   cursor: pointer;
 }
 
-.icon:hover {
+.icon:hover:enabled {
   color: #ffffff;
+}
+
+.icon:hover:disabled {
+  cursor: auto;
+}
+
+.icon:disabled {
+  color: #555555;
+}
+
+button {
+  background:none!important;
+  border:none;
+  padding:0!important;
 }

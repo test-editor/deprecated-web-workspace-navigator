@@ -38,6 +38,12 @@ export class PersistenceServiceMock {
                 path: "com/example/test.tsl",
                 type: ElementType.File,
                 children: []
+              },
+              {
+                name: "test.tcl",
+                path: "com/example/test.tcl",
+                type: ElementType.File,
+                children: []
               }
             ]
           }
