@@ -22,7 +22,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
     WorkspaceNavigatorModule.forRoot({
       persistenceServiceUrl: 'http://localhost:9080',
     }, {
-      testExecutionServiceUrl: 'http://localhost:9080/execute'
+      testExecutionServiceUrl: 'http://localhost:9080/tests/execute'
     })
   ],
   declarations: [ AppComponent ],

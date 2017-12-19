@@ -14,7 +14,7 @@ describe('TestExecutionService', () => {
 
   beforeEach(() => {
     serviceConfig = new TestExecutionServiceConfig();
-    serviceConfig.testExecutionServiceUrl = 'http://example.org';
+    serviceConfig.testExecutionServiceUrl = 'http://localhost:9080/tests/execute';
     // dummy jwt token
     let authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.t-IDcSemACt8x4iTMCda8Yhe3iZaWbvV5XKSTbuAn0M';
 
@@ -36,7 +36,7 @@ describe('TestExecutionService', () => {
     mockBackend.connections.subscribe(
       (connection: MockConnection) => {
         expect(connection.request.method).toBe(RequestMethod.Put);
-        expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '/' + tclFilePath);
+        expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '?resource=' + tclFilePath);
 
         connection.mockRespond(new Response( new ResponseOptions({status: 200})));
       }
