@@ -14,7 +14,7 @@ export class TestExecutionService {
 
   execute(path: string): Promise<Response> {
     let url = `${this.serviceUrl}?resource=${path}`;
-    return this.http.put(url, '').toPromise();
+    return this.http.post(url, '').toPromise();
   }
 
 }

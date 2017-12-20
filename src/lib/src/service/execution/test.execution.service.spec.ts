@@ -35,7 +35,7 @@ describe('TestExecutionService', () => {
     let tclFilePath = 'path/to/file.tcl';
     mockBackend.connections.subscribe(
       (connection: MockConnection) => {
-        expect(connection.request.method).toBe(RequestMethod.Put);
+        expect(connection.request.method).toBe(RequestMethod.Post);
         expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '?resource=' + tclFilePath);
 
         connection.mockRespond(new Response( new ResponseOptions({status: 200})));
