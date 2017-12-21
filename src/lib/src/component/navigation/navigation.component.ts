@@ -21,6 +21,7 @@ export class NavigationComponent implements OnInit {
   workspace: Workspace;
   uiState: UiState;
   errorMessage: string;
+  notification: string;
 
   constructor(
     private messagingService: MessagingService,
@@ -114,9 +115,14 @@ export class NavigationComponent implements OnInit {
   }
 
   run(): void {
-    this.executionService.execute(this.uiState.selectedElement.path).then(response => {
+    let selectedElement = this.uiState.selectedElement;
+    this.executionService.execute(selectedElement.path).then(response => {
         if (response.status === 200) {
-          this.uiState.selectedElement.state = ElementState.Running;
+          selectedElement.state = ElementState.Running;
+          this.notification = `Execution of ${selectedElement.name} has been started.`;
+          setTimeout(() => {
+            this.notification = null;
+          }, 4000);
         }
       });
   }

@@ -13,5 +13,6 @@
     </div>
     <nav-tree-viewer [model]="workspace.root" [uiState]="uiState"></nav-tree-viewer>
   </div>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
+  <div *ngIf="errorMessage" id="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
+  <div *ngIf="notification" id="notification" class="alert alert-info">{{notification}}</div>
 </div>

@@ -7,6 +7,7 @@
   resize: horizontal;
   overflow: auto;
   user-select: none;
+  position: relative;
 }
 
 .noselect {
@@ -70,4 +71,10 @@ button {
   background:none!important;
   border:none;
   padding:0!important;
+}
+
+.sidenav .alert-info {
+  position: absolute;
+  bottom: 0;
+  width: inherit;
 }
