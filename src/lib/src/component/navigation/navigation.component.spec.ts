@@ -69,7 +69,8 @@ describe('NavigationComponent', () => {
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
-    setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED);
+    tclFile.state = ElementState.Idle;
   });
 
   it('should be created', () => {
@@ -399,6 +400,22 @@ describe('NavigationComponent', () => {
     });
   }));
 
+  it('disables the run button when selecting an already running test file', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let runIcon = sidenav.query(By.css('#run'));
+    tclFile.state = ElementState.Running;
+
+    // when
+    component.selectElement(tclFile.path);
+
+    // then
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      expect(runIcon.properties['disabled']).toBeTruthy();
+    });
+  }));
+
   it('enables the run button when selecting an executable file', async(() => {
     // given
     setupWorkspace(component, fixture);
@@ -408,9 +425,9 @@ describe('NavigationComponent', () => {
 
     // when
     component.selectElement(tclFile.path);
-    fixture.detectChanges();
 
     // then
+    fixture.detectChanges();
     fixture.whenStable().then(() => {
       expect(runIcon.properties['disabled']).toBeFalsy();
     });
@@ -498,7 +515,7 @@ describe('NavigationComponent', () => {
     component.uiState.selectedElement = tclFile;
     fixture.detectChanges();
     let runIcon = sidenav.query(By.css('#run'));
-    setTestExecutionServiceResponse(executionService, HTTP_STATUS_ERROR​​);
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_ERROR);
 
     // when
     runIcon.nativeElement.click();

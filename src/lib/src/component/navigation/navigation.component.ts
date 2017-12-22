@@ -168,8 +168,19 @@ export class NavigationComponent implements OnInit {
   }
 
   selectionIsExecutable(): boolean {
-    return (this.uiState.selectedElement === null && this.uiState.activeEditorPath !== null && this.uiState.activeEditorPath.endsWith('.tcl'))
-      || (this.uiState.selectedElement !== null && this.uiState.selectedElement.path.endsWith('.tcl'));
+    let contextElement = this.getContextElement();
+
+    return contextElement !== null && contextElement.path.endsWith('.tcl') && contextElement.state !== ElementState.Running;
+  }
+
+  private getContextElement(): WorkspaceElement {
+    if (this.uiState.selectedElement !== null) {
+      return this.uiState.selectedElement;
+    } else if (this.uiState.activeEditorPath != null) {
+      return this.workspace.getElement(this.uiState.activeEditorPath);
+    } else {
+      return null;
+    }
   }
 
   onKeyUp(event: KeyboardEvent) {
