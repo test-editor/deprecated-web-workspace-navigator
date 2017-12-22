@@ -10,6 +10,9 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { Response, ResponseOptions } from '@angular/http';
 
+export const HTTP_STATUS_CREATED = 201;
+export const HTTP_STATUS_ERROR = 500;
+
 export const tclFile: WorkspaceElement = {
   name: "file.tcl",
   path: "path/to/file.tcl",
@@ -32,9 +35,13 @@ export function mockedPersistenceService() {
 
 export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService)
-  const response = new Response(new ResponseOptions({status: 200}));
-  when(executionService.execute(tclFile.path)).thenReturn(Promise.resolve(response));
+  setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
   return executionService;
+}
+
+export function setTestExecutionServiceResponse(service: TestExecutionService, statusCode: number) {
+  const response = new Response(new ResponseOptions({status: statusCode}));
+  when(service.execute(tclFile.path)).thenReturn(Promise.resolve(response));
 }
 
 export function setupWorkspace(component: NavigationComponent, fixture: ComponentFixture<NavigationComponent>) {

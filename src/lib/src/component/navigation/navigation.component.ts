@@ -17,6 +17,7 @@ import { ElementState } from '../../common/element-state';
 })
 
 export class NavigationComponent implements OnInit {
+  readonly HTTP_STATUS_CREATED = 201;
 
   workspace: Workspace;
   uiState: UiState;
@@ -117,11 +118,16 @@ export class NavigationComponent implements OnInit {
   run(): void {
     let selectedElement = this.uiState.selectedElement;
     this.executionService.execute(selectedElement.path).then(response => {
-        if (response.status === 200) {
+        if (response.status === this.HTTP_STATUS_CREATED) {
           selectedElement.state = ElementState.Running;
           this.notification = `Execution of ${selectedElement.name} has been started.`;
           setTimeout(() => {
             this.notification = null;
+          }, 4000);
+        } else {
+          this.errorMessage = `The test ${selectedElement.name} could not be started.`;
+          setTimeout(() => {
+            this.errorMessage = null;
           }, 4000);
         }
       });

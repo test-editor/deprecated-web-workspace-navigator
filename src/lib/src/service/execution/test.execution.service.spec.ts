@@ -8,6 +8,7 @@ import { Injector, ReflectiveInjector } from '@angular/core';
 import { inject } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { fakeAsync } from '@angular/core/testing';
+import { HTTP_STATUS_CREATED } from '../../component/navigation/navigation.component.test.setup';
 
 describe('TestExecutionService', () => {
   let serviceConfig: TestExecutionServiceConfig;
@@ -38,7 +39,7 @@ describe('TestExecutionService', () => {
         expect(connection.request.method).toBe(RequestMethod.Post);
         expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '?resource=' + tclFilePath);
 
-        connection.mockRespond(new Response( new ResponseOptions({status: 200})));
+        connection.mockRespond(new Response( new ResponseOptions({status: HTTP_STATUS_CREATED})));
       }
     );
 
@@ -47,7 +48,7 @@ describe('TestExecutionService', () => {
 
     // then
     .then(response => {
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(HTTP_STATUS_CREATED);
     });
   })));
 

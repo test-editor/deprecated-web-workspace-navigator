@@ -20,7 +20,7 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR }
     from './navigation.component.test.setup';
 
 describe('NavigationComponent', () => {
@@ -65,6 +65,7 @@ describe('NavigationComponent', () => {
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
   });
 
   it('should be created', () => {
@@ -421,6 +422,32 @@ describe('NavigationComponent', () => {
     expect(notify).toBeFalsy();
     expect(component.notification).toBeFalsy();
 
+  }));
+
+  it('displays error message when test execution could not be started', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_ERROR​​);
+
+    // when
+    runIcon.nativeElement.click();
+    tick();
+
+    // then
+    fixture.detectChanges();
+    let notify = fixture.debugElement.query(By.css('#notification'));
+    expect(notify).toBeFalsy();
+
+    expect(component.errorMessage).toBeTruthy();
+    let alert = fixture.debugElement.query(By.css('#errorMessage'));
+    expect(alert).toBeTruthy();
+    expect(component.errorMessage).toEqual(`The test ${tclFile.name} could not be started.`);
+    expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
+
+    tick(4000);
   }));
 
 });
