@@ -117,16 +117,20 @@ export class NavigationComponent implements OnInit {
   }
 
   run(): void {
-    let selectedElement = this.uiState.selectedElement;
-    this.executionService.execute(selectedElement.path).then(response => {
+    let elementToBeExecuted = this.uiState.selectedElement;
+    if (elementToBeExecuted == null) {
+      elementToBeExecuted = this.workspace.getElement(this.uiState.activeEditorPath);
+    }
+
+    this.executionService.execute(elementToBeExecuted.path).then(response => {
         if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
-          selectedElement.state = ElementState.Running;
-          this.notification = `Execution of "${nameWithoutFileExtension(selectedElement)}" has been started.`;
+          elementToBeExecuted.state = ElementState.Running;
+          this.notification = `Execution of "${nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
           setTimeout(() => {
             this.notification = null;
           }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
         } else {
-          this.errorMessage = `The test "${nameWithoutFileExtension(selectedElement)}" could not be started.`;
+          this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
           setTimeout(() => {
             this.errorMessage = null;
           }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
@@ -151,7 +155,8 @@ export class NavigationComponent implements OnInit {
   }
 
   selectionIsExecutable(): boolean {
-    return this.uiState.selectedElement != null && this.uiState.selectedElement.path.endsWith('.tcl');
+    return this.uiState.activeEditorPath != null && this.uiState.activeEditorPath.endsWith('.tcl') ||
+      this.uiState.selectedElement != null && this.uiState.selectedElement.path.endsWith('.tcl');
   }
 
 }

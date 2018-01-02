@@ -345,6 +345,24 @@ describe('NavigationComponent', () => {
     expect(tclFile.state).toEqual(ElementState.Running);
   }));
 
+  it('invokes test execution for currently active test file when "run" button is clicked and no file is selected', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = null;
+    component.uiState.activeEditorPath = tclFile.path;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    resetCalls(executionService);
+
+    // when
+    runIcon.nativeElement.click();
+    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+
+    // then
+    verify(executionService.execute(tclFile.path)).once();
+    expect(tclFile.state).toEqual(ElementState.Running);
+  }));
+
   it('disables the run button when selecting a non-executable file', async(() => {
     // given
     setupWorkspace(component, fixture);
@@ -382,6 +400,32 @@ describe('NavigationComponent', () => {
     let runIcon = sidenav.query(By.css('#run'));
 
     // when
+
+    // then
+    expect(runIcon.properties['disabled']).toBeTruthy();
+  }));
+
+  it('keeps run button enabled when navigation pane looses focus', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = tclFile;
+
+    // when
+    messagingService.publish(events.EDITOR_ACTIVE, { path: tclFile.path });
+
+    // then
+    expect(runIcon.properties['disabled']).toBeFalsy();
+  }));
+
+  it('disables run button when non-executable file becomes active', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = tclFile;
+
+    // when
+    messagingService.publish(events.EDITOR_ACTIVE, { path: nonExecutableFile.path });
 
     // then
     expect(runIcon.properties['disabled']).toBeTruthy();
