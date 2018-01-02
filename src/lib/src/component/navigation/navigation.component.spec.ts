@@ -355,7 +355,7 @@ describe('NavigationComponent', () => {
 
     // then
     fixture.whenStable().then(() => {
-      expect(runIcon.properties['disabled']).toBeTruthy;
+      expect(runIcon.properties['disabled']).toBeTruthy();
     });
   }));
 
@@ -367,11 +367,12 @@ describe('NavigationComponent', () => {
     let runIcon = sidenav.query(By.css('#run'));
 
     // when
-    component.selectElement(tclFile.path)
+    component.selectElement(tclFile.path);
+    fixture.detectChanges();
 
     // then
     fixture.whenStable().then(() => {
-      expect(runIcon.properties['disabled']).toBeFalsy;
+      expect(runIcon.properties['disabled']).toBeFalsy();
     });
   }));
 
@@ -383,7 +384,7 @@ describe('NavigationComponent', () => {
     // when
 
     // then
-    expect(runIcon.properties['disabled']).toBeFalsy;
+    expect(runIcon.properties['disabled']).toBeTruthy();
   }));
 
   it('displays notification when test execution has been started', fakeAsync(() => {
