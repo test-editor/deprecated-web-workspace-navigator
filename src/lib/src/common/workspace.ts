@@ -50,4 +50,16 @@ export class Workspace {
     return this.pathToElement.get(normalized);
   }
 
+  getParent(path: string): WorkspaceElement | undefined {
+    let normalized = this.normalizePath(path);
+    if (normalized !== '') {
+      let lastSeparatorIndex = normalized.lastIndexOf('/');
+      if (lastSeparatorIndex >= 0) {
+        let parentPath = normalized.substring(0, lastSeparatorIndex);
+        return this.getElement(parentPath);
+      } else if (this.normalizePath(this.root.path) === '') {
+        return this.root;
+      }
+    }
+  }
 }
