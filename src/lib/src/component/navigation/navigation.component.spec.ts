@@ -28,6 +28,11 @@ describe('NavigationComponent', () => {
 
   const examplePath = "some/path.txt";
 
+  const KEY_RIGHT = 'ArrowRight';
+  const KEY_LEFT = 'ArrowLeft';
+  const KEY_UP = 'ArrowUp';
+  const KEY_DOWN = 'ArrowDown';
+
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
   let persistenceService: PersistenceService;
@@ -514,5 +519,191 @@ describe('NavigationComponent', () => {
 
     flush();
   }));
+
+
+  it('sets expanded state when right arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, false);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_RIGHT});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeTruthy();
+  });
+
+  it('keeps expanded state when right arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_RIGHT});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeTruthy();
+  });
+
+  it('sets collapsed state when left arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_LEFT});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeFalsy();
+  });
+
+  it('keeps collapsed state when left arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, false);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_LEFT});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeFalsy();
+  });
+
+  it('selects the next sibling element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = nonExecutableFile;
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(tclFile);
+
+  }));
+
+  it('selects the first child element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = component.workspace.getElement('subfolder');
+    component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+
+    // then
+    expect(component.uiState.selectedElement.name).toEqual('newFolder');
+
+  }));
+
+  it('selects the parent`s next sibling element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
+
+  }));
+
+  it('leaves the selection unchanged when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let lastElement = component.workspace.getElement('subfolder/file.tcl');
+    component.uiState.selectedElement = lastElement;
+    component.uiState.setExpanded(lastElement.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(lastElement);
+
+  }));
+
+
+it('selects the preceding sibling element when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = tclFile;
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
+
+}));
+
+it('selects the parent element when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+  component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+
+  // then
+  expect(component.uiState.selectedElement.name).toEqual('subfolder');
+
+}));
+
+it('selects the preceding sibling`s last child element when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = nonExecutableFile;
+  component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(component.workspace.getElement('subfolder/newFolder'));
+
+}));
+
+it('leaves the selection unchanged when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  let firstElement = component.workspace.root;
+  component.uiState.selectedElement = firstElement;
+  component.uiState.setExpanded(firstElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(firstElement);
+
+}));
+
 
 });

@@ -15,14 +15,14 @@ export const HTTP_STATUS_ERROR = 500;
 
 export const tclFile: WorkspaceElement = {
   name: "file.tcl",
-  path: "path/to/file.tcl",
+  path: "subfolder/file.tcl",
   type: ElementType.File,
   children: []
 };
 
 export const nonExecutableFile: WorkspaceElement = {
   name: 'nonExecutable.txt',
-  path: 'path/to/nonExecutable.txt',
+  path: 'subfolder/nonExecutable.txt',
   type: ElementType.File,
   children: []
 };
