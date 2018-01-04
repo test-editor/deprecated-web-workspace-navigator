@@ -369,9 +369,28 @@ describe('NavigationComponent', () => {
     let runIcon = sidenav.query(By.css('#run'));
 
     // when
-    component.selectElement(nonExecutableFile.path)
+    component.selectElement(nonExecutableFile.path);
 
     // then
+    fixture.whenStable().then(() => {
+      expect(runIcon.properties['disabled']).toBeTruthy();
+    });
+  }));
+
+  it('disables the run button when selecting a non-executable file while an executable file remains active', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let runIcon = sidenav.query(By.css('#run'));
+    component.uiState.selectedElement = null;
+    component.uiState.activeEditorPath = tclFile.path;
+    fixture.detectChanges();
+    expect(runIcon.properties['disabled']).toBeFalsy();
+
+    // when
+    component.selectElement(nonExecutableFile.path);
+
+    // then
+    fixture.detectChanges();
     fixture.whenStable().then(() => {
       expect(runIcon.properties['disabled']).toBeTruthy();
     });

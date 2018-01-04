@@ -155,8 +155,8 @@ export class NavigationComponent implements OnInit {
   }
 
   selectionIsExecutable(): boolean {
-    return this.uiState.activeEditorPath != null && this.uiState.activeEditorPath.endsWith('.tcl') ||
-      this.uiState.selectedElement != null && this.uiState.selectedElement.path.endsWith('.tcl');
+    return this.uiState.selectedElement == null && this.uiState.activeEditorPath != null && this.uiState.activeEditorPath.endsWith('.tcl')
+        || this.uiState.selectedElement != null && this.uiState.selectedElement.path.endsWith('.tcl');
   }
 
 }
