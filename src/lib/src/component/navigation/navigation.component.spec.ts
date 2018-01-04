@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule, Response, ResponseOptions } from '@angular/http';
@@ -20,7 +20,9 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService } from './navigation.component.test.setup';
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR }
+    from './navigation.component.test.setup';
+import { flush } from '@angular/core/testing';
 
 describe('NavigationComponent', () => {
 
@@ -37,7 +39,7 @@ describe('NavigationComponent', () => {
   beforeEach(async(() => {
     persistenceService = mockedPersistenceService();
     executionService = mockedTestExecutionService();
-2
+
     TestBed.configureTestingModule({
       declarations: [
         NavigationComponent,
@@ -64,6 +66,7 @@ describe('NavigationComponent', () => {
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
   });
 
   it('should be created', () => {
@@ -93,7 +96,7 @@ describe('NavigationComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(component.errorMessage).toBeTruthy();
-      let alert = fixture.debugElement.query(By.css(".alert"));
+      let alert = fixture.debugElement.query(By.css("#errorMessage"));
       expect(alert).toBeTruthy();
       expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
     });
@@ -325,7 +328,7 @@ describe('NavigationComponent', () => {
     });
   }));
 
-  it('invokes test execution for currently selected test file when "run" button is clicked', async(() => {
+  it('invokes test execution for currently selected test file when "run" button is clicked', fakeAsync(() => {
     // given
     setupWorkspace(component, fixture);
     component.uiState.selectedElement = tclFile;
@@ -335,12 +338,11 @@ describe('NavigationComponent', () => {
 
     // when
     runIcon.nativeElement.click();
+    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
 
     // then
-    fixture.whenStable().then(() => {
-      verify(executionService.execute(tclFile.path)).once();
-      expect(tclFile.state).toEqual(ElementState.Running);
-    });
+    verify(executionService.execute(tclFile.path)).once();
+    expect(tclFile.state).toEqual(ElementState.Running);
   }));
 
   it('disables the run button when selecting a non-executable file', async(() => {
@@ -382,6 +384,71 @@ describe('NavigationComponent', () => {
 
     // then
     expect(runIcon.properties['disabled']).toBeFalsy;
+  }));
+
+  it('displays notification when test execution has been started', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+
+    // when
+    runIcon.nativeElement.click();
+    tick();
+
+    // then
+    fixture.detectChanges();
+    let notify = fixture.debugElement.query(By.css('#notification'));
+    expect(notify).toBeTruthy();
+    expect(component.notification).toEqual(`Execution of "file" has been started.`);
+    expect(notify.nativeElement.innerText).toEqual(component.notification);
+
+    flush();
+  }));
+
+  it('removes notification sometime after test execution has been started', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+
+    // when
+    runIcon.nativeElement.click();
+    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+
+    // then
+    let notify = fixture.debugElement.query(By.css('#notification'));
+    expect(notify).toBeFalsy();
+    expect(component.notification).toBeFalsy();
+
+  }));
+
+  it('displays error message when test execution could not be started', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    setTestExecutionServiceResponse(executionService, HTTP_STATUS_ERROR​​);
+
+    // when
+    runIcon.nativeElement.click();
+    tick();
+
+    // then
+    fixture.detectChanges();
+    let notify = fixture.debugElement.query(By.css('#notification'));
+    expect(notify).toBeFalsy();
+
+    expect(component.errorMessage).toBeTruthy();
+    let alert = fixture.debugElement.query(By.css('#errorMessage'));
+    expect(alert).toBeTruthy();
+    expect(component.errorMessage).toEqual(`The test "file" could not be started.`);
+    expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
+
+    flush();
   }));
 
 });

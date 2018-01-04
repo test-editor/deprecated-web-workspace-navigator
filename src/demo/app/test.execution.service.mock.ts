@@ -6,6 +6,6 @@ import { Injectable } from '@angular/core';
 export class TestExecutionServiceMock {
   execute(path: string): Promise<Response> {
     console.log(`Received execute(path: '${path}')`);
-    return Promise.resolve(new Response(new ResponseOptions({ status: 200 })));
+    return Promise.resolve(new Response(new ResponseOptions({ status: 201 })));
   }
 }

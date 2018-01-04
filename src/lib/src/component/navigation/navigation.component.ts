@@ -3,7 +3,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
-import { WorkspaceElement } from '../../common/workspace-element';
+import { WorkspaceElement, nameWithoutFileExtension } from '../../common/workspace-element';
 import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
@@ -17,10 +17,13 @@ import { ElementState } from '../../common/element-state';
 })
 
 export class NavigationComponent implements OnInit {
+  static readonly HTTP_STATUS_CREATED = 201;
+  static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
   workspace: Workspace;
   uiState: UiState;
   errorMessage: string;
+  notification: string;
 
   constructor(
     private messagingService: MessagingService,
@@ -114,9 +117,19 @@ export class NavigationComponent implements OnInit {
   }
 
   run(): void {
-    this.executionService.execute(this.uiState.selectedElement.path).then(response => {
-        if (response.status === 200) {
-          this.uiState.selectedElement.state = ElementState.Running;
+    let selectedElement = this.uiState.selectedElement;
+    this.executionService.execute(selectedElement.path).then(response => {
+        if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
+          selectedElement.state = ElementState.Running;
+          this.notification = `Execution of "${nameWithoutFileExtension(selectedElement)}" has been started.`;
+          setTimeout(() => {
+            this.notification = null;
+          }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+        } else {
+          this.errorMessage = `The test "${nameWithoutFileExtension(selectedElement)}" could not be started.`;
+          setTimeout(() => {
+            this.errorMessage = null;
+          }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
         }
       });
   }
