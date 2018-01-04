@@ -22,6 +22,7 @@ import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
 import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR }
     from './navigation.component.test.setup';
+import { flush } from '@angular/core/testing';
 
 describe('NavigationComponent', () => {
 
@@ -337,7 +338,7 @@ describe('NavigationComponent', () => {
 
     // when
     runIcon.nativeElement.click();
-    tick(4000);
+    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
 
     // then
     verify(executionService.execute(tclFile.path)).once();
@@ -400,10 +401,10 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
     let notify = fixture.debugElement.query(By.css('#notification'));
     expect(notify).toBeTruthy();
-    expect(component.notification).toEqual(`Execution of ${tclFile.name} has been started.`);
+    expect(component.notification).toEqual(`Execution of "file" has been started.`);
     expect(notify.nativeElement.innerText).toEqual(component.notification);
 
-    tick(4000);
+    flush();
   }));
 
   it('removes notification sometime after test execution has been started', fakeAsync(() => {
@@ -415,7 +416,7 @@ describe('NavigationComponent', () => {
 
     // when
     runIcon.nativeElement.click();
-    tick(4000);
+    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
 
     // then
     let notify = fixture.debugElement.query(By.css('#notification'));
@@ -444,10 +445,10 @@ describe('NavigationComponent', () => {
     expect(component.errorMessage).toBeTruthy();
     let alert = fixture.debugElement.query(By.css('#errorMessage'));
     expect(alert).toBeTruthy();
-    expect(component.errorMessage).toEqual(`The test ${tclFile.name} could not be started.`);
+    expect(component.errorMessage).toEqual(`The test "file" could not be started.`);
     expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
 
-    tick(4000);
+    flush();
   }));
 
 });
