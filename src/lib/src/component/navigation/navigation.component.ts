@@ -27,6 +27,7 @@ export class NavigationComponent implements OnInit {
   readonly KEY_LEFT = 'ArrowLeft';
   readonly KEY_UP = 'ArrowUp';
   readonly KEY_DOWN = 'ArrowDown';
+  readonly KEY_ENTER = 'Enter';
 
   workspace: Workspace;
   uiState: UiState;
@@ -172,13 +173,13 @@ export class NavigationComponent implements OnInit {
     let element = this.uiState.selectedElement;
     switch (event.key) {
       case this.KEY_RIGHT: {
-        if (element.type === ElementType.Folder) {
+        if (element !== null && element.type === ElementType.Folder) {
           this.uiState.setExpanded(element.path, true);
         }
         break;
       }
       case this.KEY_LEFT: {
-        if (element.type === ElementType.Folder) {
+        if (element !== null && element.type === ElementType.Folder) {
           this.uiState.setExpanded(element.path, false);
         }
         break;
@@ -197,6 +198,16 @@ export class NavigationComponent implements OnInit {
           this.uiState.selectedElement = predecessor;
           this.changeDetectorRef.detectChanges();
         }
+        break;
+      }
+      case this.KEY_ENTER: {
+        if (element !== null && element.type === ElementType.File) {
+          this.messagingService.publish(events.NAVIGATION_OPEN, {
+            name: element.name,
+            path: element.path
+          });
+        }
+        break;
       }
     }
   }

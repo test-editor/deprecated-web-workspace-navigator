@@ -32,6 +32,7 @@ describe('NavigationComponent', () => {
   const KEY_LEFT = 'ArrowLeft';
   const KEY_UP = 'ArrowUp';
   const KEY_DOWN = 'ArrowDown';
+  const KEY_ENTER = 'Enter';
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
@@ -705,5 +706,24 @@ it('leaves the selection unchanged when the up arrow key is pressed', async(() =
 
 }));
 
+it('emits "navigation.open" message when the enter key is pressed', () => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.setExpanded(component.workspace.getElement('subfolder').path, true);
+  component.uiState.selectedElement = tclFile;
+  fixture.detectChanges();
+  let callback = jasmine.createSpy('callback');
+  messagingService.subscribe(events.NAVIGATION_OPEN, callback);
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_ENTER})
+
+  // then
+  expect(callback).toHaveBeenCalledTimes(1);
+  expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({
+    name: tclFile.name,
+    path: tclFile.path
+  }));
+});
 
 });
