@@ -2,8 +2,8 @@ import { WorkspaceElement } from '../common/workspace-element';
 
 export class UiState {
 
-  activeEditorPath: string;
-  selectedElement: WorkspaceElement;
+  activeEditorPath: string = null;
+  selectedElement: WorkspaceElement = null;
 
   newElementRequest: { selectedElement: WorkspaceElement, type: string }
 
