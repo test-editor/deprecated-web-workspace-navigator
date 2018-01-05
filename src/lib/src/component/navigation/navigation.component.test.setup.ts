@@ -82,6 +82,6 @@ export function setupWorkspace(component: NavigationComponent, fixture: Componen
     type: ElementType.Folder,
     children: [subfolder]
   };
-  component.workspace = new Workspace(root);
+  component.setWorkspace(new Workspace(root));
   fixture.detectChanges();
 }

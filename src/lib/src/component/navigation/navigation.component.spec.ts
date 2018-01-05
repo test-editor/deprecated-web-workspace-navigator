@@ -23,16 +23,11 @@ import { ElementState } from '../../common/element-state';
 import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement }
     from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
+import { KeyActions } from '../../common/key.actions';
 
 describe('NavigationComponent', () => {
 
   const examplePath = "some/path.txt";
-
-  const KB_EXPAND_NODE = 'ArrowRight';
-  const KB_COLLAPSE_NODE = 'ArrowLeft';
-  const KB_NAVIGATE_PREVIOUS = 'ArrowUp';
-  const KB_NAVIGATE_NEXT = 'ArrowDown';
-  const KB_OPEN_FILE = 'Enter';
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
@@ -81,7 +76,7 @@ describe('NavigationComponent', () => {
 
   it('sets workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
-      expect(component.workspace.root.name).toEqual(tclFile.name);
+      expect(component.getWorkspace().root.name).toEqual(tclFile.name);
     });
   }));
 
@@ -188,7 +183,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new file', () => {
     // given
-    component.workspace = new Workspace(tclFile);
+    component.setWorkspace(new Workspace(tclFile));
     fixture.detectChanges();
     let newFileIcon = sidenav.query(By.css('#new-file'))
 
@@ -203,7 +198,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new folder', () => {
     // given
-    component.workspace = new Workspace(tclFile);
+    component.setWorkspace(new Workspace(tclFile));
     fixture.detectChanges();
     let newFolder = sidenav.query(By.css('#new-folder'))
 
@@ -219,7 +214,7 @@ describe('NavigationComponent', () => {
   it('expands selected element on creation of new element', () => {
     // given
     setupWorkspace(component, fixture);
-    let subfolder = component.workspace.root.children[0];
+    let subfolder = component.getWorkspace().root.children[0];
     component.uiState.selectedElement = subfolder;
     fixture.detectChanges();
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
@@ -235,7 +230,7 @@ describe('NavigationComponent', () => {
   it('collapses all when icon is clicked', () => {
     // given
     setupWorkspace(component, fixture);
-    let subfolder = component.workspace.root.children[0];
+    let subfolder = component.getWorkspace().root.children[0];
     component.uiState.setExpanded(subfolder.path, true);
     fixture.detectChanges();
     let collapseAllIcon = sidenav.query(By.css('#collapse-all'))
@@ -245,7 +240,7 @@ describe('NavigationComponent', () => {
 
     // then
     expect(component.uiState.isExpanded(subfolder.path)).toBeFalsy();
-    expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(component.getWorkspace().root.path)).toBeTruthy();
   });
 
   it('refreshes navigator when refresh button is clicked', async(() => {
@@ -268,14 +263,14 @@ describe('NavigationComponent', () => {
     // then
     verify(persistenceService.listFiles()).once();
     fixture.whenStable().then(() => {
-      expect(component.workspace.root).toEqual(newFile);
+      expect(component.getWorkspace().root).toEqual(newFile);
     });
   }));
 
   it('can reveal new folder', () => {
     // given
     setupWorkspace(component, fixture);
-    let subfolder = component.workspace.root.children[0];
+    let subfolder = component.getWorkspace().root.children[0];
     let newFolder = subfolder.children[0];
 
     // when
@@ -283,14 +278,14 @@ describe('NavigationComponent', () => {
 
     // then
     expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
-    expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+    expect(component.uiState.isExpanded(component.getWorkspace().root.path)).toBeTruthy();
     expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
   });
 
   it('can select subfolder', () => {
     // given
     setupWorkspace(component, fixture);
-    let subfolder = component.workspace.root.children[0];
+    let subfolder = component.getWorkspace().root.children[0];
 
     // when
     component.selectElement(subfolder.path + '/');
@@ -302,9 +297,9 @@ describe('NavigationComponent', () => {
   it('reveals and selects element when an "navigation.created" event is received', async(() => {
     // given
     setupWorkspace(component, fixture);
-    let subfolder = component.workspace.root.children[0];
+    let subfolder = component.getWorkspace().root.children[0];
     let newFolder = subfolder.children[0];
-    when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.workspace.root));
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.getWorkspace().root));
     resetCalls(persistenceService);
 
     // when
@@ -314,7 +309,7 @@ describe('NavigationComponent', () => {
     verify(persistenceService.listFiles()).once();
     fixture.whenStable().then(() => {
       expect(component.uiState.isExpanded(subfolder.path)).toBeTruthy();
-      expect(component.uiState.isExpanded(component.workspace.root.path)).toBeTruthy();
+      expect(component.uiState.isExpanded(component.getWorkspace().root.path)).toBeTruthy();
       expect(component.uiState.isExpanded(newFolder.path)).toBeFalsy();
       expect(component.uiState.selectedElement).toBe(newFolder);
     });
@@ -525,13 +520,13 @@ describe('NavigationComponent', () => {
   it('sets expanded state when right arrow key is pressed', () => {
     // given
     setupWorkspace(component, fixture);
-    let element = component.workspace.getElement('subfolder');
+    let element = component.getWorkspace().getElement('subfolder');
     component.uiState.selectedElement = element;
     component.uiState.setExpanded(element.path, false);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -541,13 +536,13 @@ describe('NavigationComponent', () => {
   it('keeps expanded state when right arrow key is pressed', () => {
     // given
     setupWorkspace(component, fixture);
-    let element = component.workspace.getElement('subfolder');
+    let element = component.getWorkspace().getElement('subfolder');
     component.uiState.selectedElement = element;
     component.uiState.setExpanded(element.path, true);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -557,13 +552,13 @@ describe('NavigationComponent', () => {
   it('sets collapsed state when left arrow key is pressed', () => {
     // given
     setupWorkspace(component, fixture);
-    let element = component.workspace.getElement('subfolder');
+    let element = component.getWorkspace().getElement('subfolder');
     component.uiState.selectedElement = element;
     component.uiState.setExpanded(element.path, true);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -573,13 +568,13 @@ describe('NavigationComponent', () => {
   it('keeps collapsed state when left arrow key is pressed', () => {
     // given
     setupWorkspace(component, fixture);
-    let element = component.workspace.getElement('subfolder');
+    let element = component.getWorkspace().getElement('subfolder');
     component.uiState.selectedElement = element;
     component.uiState.setExpanded(element.path, false);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -593,7 +588,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement).toEqual(succeedingSiblingOfTclFile);
@@ -603,12 +598,12 @@ describe('NavigationComponent', () => {
   it('selects the first child element when the down arrow key is pressed', async(() => {
     // given
     setupWorkspace(component, fixture);
-    component.uiState.selectedElement = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = component.getWorkspace().getElement('subfolder');
     component.uiState.setExpanded(component.uiState.selectedElement.path, true);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement.name).toEqual('newFolder');
@@ -618,11 +613,11 @@ describe('NavigationComponent', () => {
   it('selects the parent`s next sibling element when the down arrow key is pressed', async(() => {
     // given
     setupWorkspace(component, fixture);
-    component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+    component.uiState.selectedElement = component.getWorkspace().getElement('subfolder/newFolder');
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
@@ -637,7 +632,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement).toEqual(lastElement);
@@ -652,7 +647,7 @@ it('selects the preceding sibling element when the up arrow key is pressed', asy
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
@@ -662,12 +657,12 @@ it('selects the preceding sibling element when the up arrow key is pressed', asy
 it('selects the parent element when the up arrow key is pressed on the first child', async(() => {
   // given
   setupWorkspace(component, fixture);
-  component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+  component.uiState.selectedElement = component.getWorkspace().getElement('subfolder/newFolder');
   component.uiState.setExpanded(component.uiState.selectedElement.path, true);
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement.name).toEqual('subfolder');
@@ -682,23 +677,23 @@ it('selects the preceding sibling`s last child element when the up arrow key is 
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
-  expect(component.uiState.selectedElement).toEqual(component.workspace.getElement('subfolder/newFolder'));
+  expect(component.uiState.selectedElement).toEqual(component.getWorkspace().getElement('subfolder/newFolder'));
 
 }));
 
 it('leaves the selection unchanged when the up arrow key is pressed on the first element', async(() => {
   // given
   setupWorkspace(component, fixture);
-  let firstElement = component.workspace.root;
+  let firstElement = component.getWorkspace().root;
   component.uiState.selectedElement = firstElement;
   component.uiState.setExpanded(firstElement.path, true);
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement).toEqual(firstElement);
@@ -708,14 +703,14 @@ it('leaves the selection unchanged when the up arrow key is pressed on the first
 it('emits "navigation.open" message when the enter key is pressed', () => {
   // given
   setupWorkspace(component, fixture);
-  component.uiState.setExpanded(component.workspace.getElement('subfolder').path, true);
+  component.uiState.setExpanded(component.getWorkspace().getElement('subfolder').path, true);
   component.uiState.selectedElement = tclFile;
   fixture.detectChanges();
   let callback = jasmine.createSpy('callback');
   messagingService.subscribe(events.NAVIGATION_OPEN, callback);
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_OPEN_FILE})
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.OPEN_FILE})
 
   // then
   expect(callback).toHaveBeenCalledTimes(1);
