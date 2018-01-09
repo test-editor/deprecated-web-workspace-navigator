@@ -132,7 +132,7 @@ describe('Workspace.getParent()', () => {
       });
 
 
-      it('returns undefined if the normalized path is empty', () => {
+      it('returns undefined for parent of empty path', () => {
         // given
         let workspace = createWorkspaceWithRootFolder('/');
         // when

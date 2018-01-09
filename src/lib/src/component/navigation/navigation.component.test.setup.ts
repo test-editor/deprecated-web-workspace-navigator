@@ -14,8 +14,8 @@ export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_ERROR = 500;
 
 export const tclFile: WorkspaceElement = {
-  name: "file.tcl",
-  path: "subfolder/file.tcl",
+  name: 'file.tcl',
+  path: 'subfolder/file.tcl',
   type: ElementType.File,
   children: []
 };
@@ -23,6 +23,20 @@ export const tclFile: WorkspaceElement = {
 export const nonExecutableFile: WorkspaceElement = {
   name: 'nonExecutable.txt',
   path: 'subfolder/nonExecutable.txt',
+  type: ElementType.File,
+  children: []
+};
+
+export const succeedingSiblingOfTclFile: WorkspaceElement = {
+  name: 'siblingOf.file.tcl',
+  path: 'subfolder/siblingOf.file.tcl',
+  type: ElementType.File,
+  children: []
+};
+
+export const lastElement: WorkspaceElement = {
+  name: 'last.element',
+  path: 'subfolder/last.element',
   type: ElementType.File,
   children: []
 };
@@ -46,8 +60,8 @@ export function setTestExecutionServiceResponse(service: TestExecutionService, s
 
 export function setupWorkspace(component: NavigationComponent, fixture: ComponentFixture<NavigationComponent>) {
   const subfolder: WorkspaceElement = {
-    name: "subfolder",
-    path: "subfolder",
+    name: 'subfolder',
+    path: 'subfolder',
     type: ElementType.Folder,
     children: [
       {
@@ -57,12 +71,14 @@ export function setupWorkspace(component: NavigationComponent, fixture: Componen
         children: []
       },
       nonExecutableFile,
-      tclFile
+      tclFile,
+      succeedingSiblingOfTclFile,
+      lastElement
     ]
   };
   const root: WorkspaceElement = {
-    name: "root",
-    path: "",
+    name: 'root',
+    path: '',
     type: ElementType.Folder,
     children: [subfolder]
   };

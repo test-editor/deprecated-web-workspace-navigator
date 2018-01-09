@@ -20,7 +20,7 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement }
     from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 
@@ -28,11 +28,11 @@ describe('NavigationComponent', () => {
 
   const examplePath = "some/path.txt";
 
-  const KEY_RIGHT = 'ArrowRight';
-  const KEY_LEFT = 'ArrowLeft';
-  const KEY_UP = 'ArrowUp';
-  const KEY_DOWN = 'ArrowDown';
-  const KEY_ENTER = 'Enter';
+  const KB_EXPAND_NODE = 'ArrowRight';
+  const KB_COLLAPSE_NODE = 'ArrowLeft';
+  const KB_NAVIGATE_PREVIOUS = 'ArrowUp';
+  const KB_NAVIGATE_NEXT = 'ArrowDown';
+  const KB_OPEN_FILE = 'Enter';
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
@@ -531,7 +531,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_RIGHT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -547,7 +547,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_RIGHT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -563,7 +563,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_LEFT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -579,7 +579,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_LEFT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
 
     // then
     let expandedState = component.uiState.isExpanded(element.path);
@@ -589,14 +589,14 @@ describe('NavigationComponent', () => {
   it('selects the next sibling element when the down arrow key is pressed', async(() => {
     // given
     setupWorkspace(component, fixture);
-    component.uiState.selectedElement = nonExecutableFile;
+    component.uiState.selectedElement = tclFile;
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
 
     // then
-    expect(component.uiState.selectedElement).toEqual(tclFile);
+    expect(component.uiState.selectedElement).toEqual(succeedingSiblingOfTclFile);
 
   }));
 
@@ -608,7 +608,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement.name).toEqual('newFolder');
@@ -622,23 +622,22 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
 
   }));
 
-  it('leaves the selection unchanged when the down arrow key is pressed', async(() => {
+  it('leaves the selection unchanged when the down arrow key is pressed on the last element', async(() => {
     // given
     setupWorkspace(component, fixture);
-    let lastElement = component.workspace.getElement('subfolder/file.tcl');
     component.uiState.selectedElement = lastElement;
     component.uiState.setExpanded(lastElement.path, true);
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_DOWN});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
 
     // then
     expect(component.uiState.selectedElement).toEqual(lastElement);
@@ -653,14 +652,14 @@ it('selects the preceding sibling element when the up arrow key is pressed', asy
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
 
 }));
 
-it('selects the parent element when the up arrow key is pressed', async(() => {
+it('selects the parent element when the up arrow key is pressed on the first child', async(() => {
   // given
   setupWorkspace(component, fixture);
   component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
@@ -668,7 +667,7 @@ it('selects the parent element when the up arrow key is pressed', async(() => {
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement.name).toEqual('subfolder');
@@ -683,14 +682,14 @@ it('selects the preceding sibling`s last child element when the up arrow key is 
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement).toEqual(component.workspace.getElement('subfolder/newFolder'));
 
 }));
 
-it('leaves the selection unchanged when the up arrow key is pressed', async(() => {
+it('leaves the selection unchanged when the up arrow key is pressed on the first element', async(() => {
   // given
   setupWorkspace(component, fixture);
   let firstElement = component.workspace.root;
@@ -699,7 +698,7 @@ it('leaves the selection unchanged when the up arrow key is pressed', async(() =
   fixture.detectChanges();
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_UP});
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
 
   // then
   expect(component.uiState.selectedElement).toEqual(firstElement);
@@ -716,7 +715,7 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
   messagingService.subscribe(events.NAVIGATION_OPEN, callback);
 
   // when
-  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KEY_ENTER})
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_OPEN_FILE})
 
   // then
   expect(callback).toHaveBeenCalledTimes(1);

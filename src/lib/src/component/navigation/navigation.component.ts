@@ -185,7 +185,7 @@ export class NavigationComponent implements OnInit {
         break;
       }
       case this.KEY_DOWN: {
-        let successor = this.next(this.uiState.selectedElement);
+        let successor = this.nextVisible(this.uiState.selectedElement);
         if (successor != null) {
           this.uiState.selectedElement = successor;
           this.changeDetectorRef.detectChanges();
@@ -193,7 +193,7 @@ export class NavigationComponent implements OnInit {
         break;
       }
       case this.KEY_UP: {
-        let predecessor = this.previous(this.uiState.selectedElement);
+        let predecessor = this.previousVisible(this.uiState.selectedElement);
         if (predecessor != null) {
           this.uiState.selectedElement = predecessor;
           this.changeDetectorRef.detectChanges();
@@ -212,7 +212,7 @@ export class NavigationComponent implements OnInit {
     }
   }
 
-  private next(element: WorkspaceElement): WorkspaceElement {
+  private nextVisible(element: WorkspaceElement): WorkspaceElement {
     if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
       return element.children[0];
     }
@@ -232,7 +232,7 @@ export class NavigationComponent implements OnInit {
     return null;
   }
 
-  private previous(element: WorkspaceElement): WorkspaceElement {
+  private previousVisible(element: WorkspaceElement): WorkspaceElement {
     let parent = this.workspace.getParent(element.path);
     if (parent != null) {
       let elementIndex = parent.children.indexOf(element);
