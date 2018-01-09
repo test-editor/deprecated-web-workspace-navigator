@@ -20,6 +20,15 @@ export class NavigationComponent implements OnInit {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
+  /**
+   * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+   */
+  readonly KEY_RIGHT = 'ArrowRight';
+  readonly KEY_LEFT = 'ArrowLeft';
+  readonly KEY_UP = 'ArrowUp';
+  readonly KEY_DOWN = 'ArrowDown';
+  readonly KEY_ENTER = 'Enter';
+
   workspace: Workspace;
   uiState: UiState;
   errorMessage: string;
@@ -157,6 +166,87 @@ export class NavigationComponent implements OnInit {
   selectionIsExecutable(): boolean {
     return (this.uiState.selectedElement === null && this.uiState.activeEditorPath !== null && this.uiState.activeEditorPath.endsWith('.tcl'))
         || (this.uiState.selectedElement !== null && this.uiState.selectedElement.path.endsWith('.tcl'));
+  }
+
+  onKeyUp(event: KeyboardEvent) {
+    console.log('KeyUp event received:\n' + event);
+    let element = this.uiState.selectedElement;
+    switch (event.key) {
+      case this.KEY_RIGHT: {
+        if (element !== null && element.type === ElementType.Folder) {
+          this.uiState.setExpanded(element.path, true);
+        }
+        break;
+      }
+      case this.KEY_LEFT: {
+        if (element !== null && element.type === ElementType.Folder) {
+          this.uiState.setExpanded(element.path, false);
+        }
+        break;
+      }
+      case this.KEY_DOWN: {
+        let successor = this.nextVisible(this.uiState.selectedElement);
+        if (successor != null) {
+          this.uiState.selectedElement = successor;
+          this.changeDetectorRef.detectChanges();
+        }
+        break;
+      }
+      case this.KEY_UP: {
+        let predecessor = this.previousVisible(this.uiState.selectedElement);
+        if (predecessor != null) {
+          this.uiState.selectedElement = predecessor;
+          this.changeDetectorRef.detectChanges();
+        }
+        break;
+      }
+      case this.KEY_ENTER: {
+        if (element !== null && element.type === ElementType.File) {
+          this.messagingService.publish(events.NAVIGATION_OPEN, {
+            name: element.name,
+            path: element.path
+          });
+        }
+        break;
+      }
+    }
+  }
+
+  private nextVisible(element: WorkspaceElement): WorkspaceElement {
+    if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
+      return element.children[0];
+    }
+
+    let parent = this.workspace.getParent(element.path);
+    while (parent != null) {
+      let elementIndex = parent.children.indexOf(element);
+      if (elementIndex + 1 < parent.children.length) { // implicitly assuming elementIndex > -1
+        return parent.children[elementIndex + 1];
+      }
+      // last element on this level: get parent's next sibling instead
+      element = parent;
+      parent = this.workspace.getParent(parent.path);
+    }
+
+    // element is last one overall / has no successor
+    return null;
+  }
+
+  private previousVisible(element: WorkspaceElement): WorkspaceElement {
+    let parent = this.workspace.getParent(element.path);
+    if (parent != null) {
+      let elementIndex = parent.children.indexOf(element);
+      if (elementIndex === 0) {
+        return parent;
+      } else {
+        let predecessor = parent.children[elementIndex - 1];
+        while (predecessor.type === ElementType.Folder && this.uiState.isExpanded(predecessor.path)) {
+          predecessor = predecessor.children[predecessor.children.length - 1];
+        }
+        return predecessor;
+      }
+    }
+    return null;
   }
 
 }

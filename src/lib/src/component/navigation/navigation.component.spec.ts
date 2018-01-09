@@ -20,13 +20,19 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement }
     from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 
 describe('NavigationComponent', () => {
 
   const examplePath = "some/path.txt";
+
+  const KB_EXPAND_NODE = 'ArrowRight';
+  const KB_COLLAPSE_NODE = 'ArrowLeft';
+  const KB_NAVIGATE_PREVIOUS = 'ArrowUp';
+  const KB_NAVIGATE_NEXT = 'ArrowDown';
+  const KB_OPEN_FILE = 'Enter';
 
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
@@ -514,5 +520,209 @@ describe('NavigationComponent', () => {
 
     flush();
   }));
+
+
+  it('sets expanded state when right arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, false);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeTruthy();
+  });
+
+  it('keeps expanded state when right arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_EXPAND_NODE});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeTruthy();
+  });
+
+  it('sets collapsed state when left arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeFalsy();
+  });
+
+  it('keeps collapsed state when left arrow key is pressed', () => {
+    // given
+    setupWorkspace(component, fixture);
+    let element = component.workspace.getElement('subfolder');
+    component.uiState.selectedElement = element;
+    component.uiState.setExpanded(element.path, false);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_COLLAPSE_NODE});
+
+    // then
+    let expandedState = component.uiState.isExpanded(element.path);
+    expect(expandedState).toBeFalsy();
+  });
+
+  it('selects the next sibling element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(succeedingSiblingOfTclFile);
+
+  }));
+
+  it('selects the first child element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = component.workspace.getElement('subfolder');
+    component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+
+    // then
+    expect(component.uiState.selectedElement.name).toEqual('newFolder');
+
+  }));
+
+  it('selects the parent`s next sibling element when the down arrow key is pressed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
+
+  }));
+
+  it('leaves the selection unchanged when the down arrow key is pressed on the last element', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = lastElement;
+    component.uiState.setExpanded(lastElement.path, true);
+    fixture.detectChanges();
+
+    // when
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_NEXT});
+
+    // then
+    expect(component.uiState.selectedElement).toEqual(lastElement);
+
+  }));
+
+
+it('selects the preceding sibling element when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = tclFile;
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(nonExecutableFile);
+
+}));
+
+it('selects the parent element when the up arrow key is pressed on the first child', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = component.workspace.getElement('subfolder/newFolder');
+  component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+
+  // then
+  expect(component.uiState.selectedElement.name).toEqual('subfolder');
+
+}));
+
+it('selects the preceding sibling`s last child element when the up arrow key is pressed', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.selectedElement = nonExecutableFile;
+  component.uiState.setExpanded(component.uiState.selectedElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(component.workspace.getElement('subfolder/newFolder'));
+
+}));
+
+it('leaves the selection unchanged when the up arrow key is pressed on the first element', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+  let firstElement = component.workspace.root;
+  component.uiState.selectedElement = firstElement;
+  component.uiState.setExpanded(firstElement.path, true);
+  fixture.detectChanges();
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_NAVIGATE_PREVIOUS});
+
+  // then
+  expect(component.uiState.selectedElement).toEqual(firstElement);
+
+}));
+
+it('emits "navigation.open" message when the enter key is pressed', () => {
+  // given
+  setupWorkspace(component, fixture);
+  component.uiState.setExpanded(component.workspace.getElement('subfolder').path, true);
+  component.uiState.selectedElement = tclFile;
+  fixture.detectChanges();
+  let callback = jasmine.createSpy('callback');
+  messagingService.subscribe(events.NAVIGATION_OPEN, callback);
+
+  // when
+  sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KB_OPEN_FILE})
+
+  // then
+  expect(callback).toHaveBeenCalledTimes(1);
+  expect(callback).toHaveBeenCalledWith(jasmine.objectContaining({
+    name: tclFile.name,
+    path: tclFile.path
+  }));
+});
 
 });

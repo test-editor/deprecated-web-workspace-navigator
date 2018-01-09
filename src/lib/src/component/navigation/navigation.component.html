@@ -11,7 +11,7 @@
         <button id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()" title="collapse all"></button>
       </div>
     </div>
-    <nav-tree-viewer [model]="workspace.root" [uiState]="uiState"></nav-tree-viewer>
+    <nav-tree-viewer tabindex="0" [model]="workspace.root" [uiState]="uiState" (keyup)="onKeyUp($event)"></nav-tree-viewer>
   </div>
   <div *ngIf="errorMessage" id="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <div *ngIf="notification" id="notification" class="alert alert-info">{{notification}}</div>
