@@ -24,6 +24,7 @@ import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, m
     from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
+import { WindowService } from '../../service/browserObjectModel/window.service';
 
 describe('NavigationComponent', () => {
 
@@ -54,7 +55,8 @@ describe('NavigationComponent', () => {
       ],
       providers: [
         { provide: PersistenceService, useValue: instance(persistenceService) },
-        { provide: TestExecutionService, useValue: instance(executionService) }
+        { provide: TestExecutionService, useValue: instance(executionService) },
+        { provide: WindowService, useValue: null}
       ]
     })
       .compileComponents();

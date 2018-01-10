@@ -6,6 +6,7 @@ import { ElementType } from '../../common/element-type';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import * as events from '../event-types';
 import { UiState } from '../ui-state';
+import { WindowService } from '../../service/browserObjectModel/window.service';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -28,7 +29,8 @@ export class TreeViewerComponent {
   constructor(
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
-    private persistenceService: PersistenceService
+    private persistenceService: PersistenceService,
+    private windowReference: WindowService
   ) { }
 
   onClick() {
@@ -40,6 +42,14 @@ export class TreeViewerComponent {
       this.uiState.toggleExpanded(this.model.path);
     }
     if (this.isFile()) {
+      this.openFile();
+    }
+  }
+
+  openFile() {
+    if (this.isImage()) {
+      this.windowReference.open(new URL('http://example.org/dummy-url')); // TODO request actual URL from persistence service
+    } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
         name: this.model.name,
         path: this.model.path
