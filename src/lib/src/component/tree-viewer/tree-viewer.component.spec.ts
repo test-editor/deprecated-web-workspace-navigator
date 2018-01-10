@@ -369,4 +369,51 @@ describe('TreeViewerComponent', () => {
     });
   }));
 
+  ['bmp', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'BMP', 'Png', 'jPeG'].forEach((extension) => {
+    it(`recognizes '${extension}' as image file name extension`, () => {
+      // given
+      let imageFilename = `image.${extension}`;
+      component.model = {
+        name: imageFilename, path: imageFilename, type: 'file', children: []
+      };
+
+      // when
+      let actual = component.isImage();
+
+      // then
+      expect(actual).toBeTruthy();
+    });
+  });
+
+  ['fileWithoutExtension', 'test.tcl', 'image.png.bak', 'i-am-no-jpeg'].forEach((filename) => {
+    it(`does not recognize '${filename}' as image`, () => {
+      // given
+      component.model = {
+        name: filename, path: filename, type: 'file', children: []
+      };
+
+      // when
+      let actual = component.isImage();
+
+      // then
+      expect(actual).toBeFalsy();
+    });
+  });
+
+  it('has picture icon for image files', () => {
+    // given
+    let imageFilename = 'image.jpg';
+    component.model = {
+      name: imageFilename, path: imageFilename, type: 'file', children: []
+    };
+    expect(component.isImage()).toBeTruthy();
+
+    // when
+    fixture.detectChanges();
+    let icon = getItemKey().query(By.css('.icon-type'));
+
+    // then
+    expect(icon.classes['glyphicon-picture']).toBeTruthy();
+  });
+
 });

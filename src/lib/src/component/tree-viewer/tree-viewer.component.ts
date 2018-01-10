@@ -14,6 +14,8 @@ import { UiState } from '../ui-state';
 })
 export class TreeViewerComponent {
 
+  private static readonly IMAGE_EXTENSIONS = ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.svg'];
+
   @Input() uiState: UiState;
   @Input() model: WorkspaceElement;
   @Input() level: number = 0;
@@ -114,6 +116,12 @@ export class TreeViewerComponent {
       }
     }
     return false;
+  }
+
+  isImage(): boolean {
+    return TreeViewerComponent.IMAGE_EXTENSIONS.some((extension) => {
+      return this.model.path.toLowerCase().endsWith(extension);
+    }, this);
   }
 
 }
