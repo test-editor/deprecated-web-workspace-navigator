@@ -50,7 +50,7 @@ export class Workspace {
     return this.pathToElement.get(normalized);
   }
 
-  getParent(path: string): WorkspaceElement | undefined {
+  getParent(path: string): WorkspaceElement {
     let normalized = this.normalizePath(path);
     if (normalized !== '') {
       let lastSeparatorIndex = normalized.lastIndexOf('/');
@@ -61,5 +61,6 @@ export class Workspace {
         return this.root;
       }
     }
+    return null;
   }
 }

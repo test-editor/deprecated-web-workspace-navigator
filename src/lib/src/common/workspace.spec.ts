@@ -1,6 +1,7 @@
 import { ElementType } from './element-type';
 import { Workspace } from './workspace';
 import { WorkspaceElement } from './workspace-element';
+import { grandChild, createWorkspaceWithSubElements, middleChild } from './workspace.spec.data';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -11,38 +12,6 @@ function createWorkspaceWithRootFolder(path: string): Workspace {
   };
   return new Workspace(element);
 }
-
-const firstChild: WorkspaceElement = {
-  name: 'firstChild',
-  path: 'root/firstChild',
-  type: ElementType.File,
-  children: []
-};
-const grandChild: WorkspaceElement = {
-  name: 'grandChild',
-  path: 'root/middleChild/grandChild',
-  type: ElementType.File,
-  children: []
-};
-const middleChild: WorkspaceElement = {
-  name: 'middleChild',
-  path: 'root/middleChild',
-  type: ElementType.Folder,
-  children: [grandChild]
-};
-const lastChild: WorkspaceElement = {
-  name: 'lastChild',
-  path: 'root/lastChild',
-  type: ElementType.File,
-  children: []
-};
-const workspaceWithSubElements = new Workspace({
-  name: 'folder',
-  path: 'root',
-  type: ElementType.Folder,
-  children: [firstChild, middleChild, lastChild]
-});
-
 
 describe('Workspace', () => {
 
@@ -117,28 +86,29 @@ describe('Workspace.getParent()', () => {
         // given
         let path = grandChild.path;
         // when
-        let actualParent = workspaceWithSubElements.getParent(path);
+        let actualParent = createWorkspaceWithSubElements().getParent(path);
         // then
         expect(actualParent).toEqual(middleChild);
       });
 
-      it('returns undefined for the root element', () => {
+      it('returns null for the root element', () => {
         // given
-        let path = workspaceWithSubElements.root.path;
+        let workspace = createWorkspaceWithSubElements();
+        let path = workspace.root.path;
         // when
-        let actualParent = workspaceWithSubElements.getParent(path);
+        let actualParent = workspace.getParent(path);
         // then
-        expect(actualParent).toBeUndefined();
+        expect(actualParent).toBeNull();
       });
 
 
-      it('returns undefined for parent of empty path', () => {
+      it('returns null for parent of empty path', () => {
         // given
         let workspace = createWorkspaceWithRootFolder('/');
         // when
         let actualParent = workspace.getParent('');
         // then
-        expect(actualParent).toBeUndefined();
+        expect(actualParent).toBeNull();
       });
 
       it('returns root, if root´s normalized path is the empty string, for a path not containing any slashes', () => {

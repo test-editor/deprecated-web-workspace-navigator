@@ -9,6 +9,8 @@ import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { ElementState } from '../../common/element-state';
+import { KeyActions } from '../../common/key.actions';
+import { WorkspaceNavigationHelper } from '../../common/util/workspace.navigation.helper';
 
 @Component({
   selector: 'app-navigation',
@@ -20,17 +22,9 @@ export class NavigationComponent implements OnInit {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  /**
-   * See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
-   */
-  readonly KEY_RIGHT = 'ArrowRight';
-  readonly KEY_LEFT = 'ArrowLeft';
-  readonly KEY_UP = 'ArrowUp';
-  readonly KEY_DOWN = 'ArrowDown';
-  readonly KEY_ENTER = 'Enter';
-
-  workspace: Workspace;
+  private workspace: Workspace;
   uiState: UiState;
+  workspaceNavigationHelper: WorkspaceNavigationHelper;
   errorMessage: string;
   notification: string;
 
@@ -41,6 +35,7 @@ export class NavigationComponent implements OnInit {
     private executionService: TestExecutionService
   ) {
     this.uiState = new UiState();
+    this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
   }
 
   ngOnInit(): void {
@@ -50,13 +45,22 @@ export class NavigationComponent implements OnInit {
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     return this.persistenceService.listFiles().then(element => {
-      this.workspace = new Workspace(element);
+      this.setWorkspace(new Workspace(element));
       this.uiState.setExpanded(element.path, true);
       return this.workspace;
     }).catch(() => {
       this.errorMessage = 'Could not retrieve workspace!';
       return undefined;
     });
+  }
+
+  setWorkspace(workspace: Workspace) {
+    this.workspace = workspace;
+    this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
+  }
+
+  getWorkspace() {
+    return this.workspace;
   }
 
   subscribeToEvents(): void {
@@ -132,19 +136,19 @@ export class NavigationComponent implements OnInit {
     }
 
     this.executionService.execute(elementToBeExecuted.path).then(response => {
-        if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
-          elementToBeExecuted.state = ElementState.Running;
-          this.notification = `Execution of "${nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
-          setTimeout(() => {
-            this.notification = null;
-          }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
-        } else {
-          this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
-          setTimeout(() => {
-            this.errorMessage = null;
-          }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
-        }
-      });
+      if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
+        elementToBeExecuted.state = ElementState.Running;
+        this.notification = `Execution of "${nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
+        setTimeout(() => {
+          this.notification = null;
+        }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+      } else {
+        this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
+        setTimeout(() => {
+          this.errorMessage = null;
+        }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+      }
+    });
   }
 
   collapseAll(): void {
@@ -165,88 +169,56 @@ export class NavigationComponent implements OnInit {
 
   selectionIsExecutable(): boolean {
     return (this.uiState.selectedElement === null && this.uiState.activeEditorPath !== null && this.uiState.activeEditorPath.endsWith('.tcl'))
-        || (this.uiState.selectedElement !== null && this.uiState.selectedElement.path.endsWith('.tcl'));
+      || (this.uiState.selectedElement !== null && this.uiState.selectedElement.path.endsWith('.tcl'));
   }
 
   onKeyUp(event: KeyboardEvent) {
     console.log('KeyUp event received:\n' + event);
     let element = this.uiState.selectedElement;
     switch (event.key) {
-      case this.KEY_RIGHT: {
-        if (element !== null && element.type === ElementType.Folder) {
-          this.uiState.setExpanded(element.path, true);
-        }
-        break;
-      }
-      case this.KEY_LEFT: {
-        if (element !== null && element.type === ElementType.Folder) {
-          this.uiState.setExpanded(element.path, false);
-        }
-        break;
-      }
-      case this.KEY_DOWN: {
-        let successor = this.nextVisible(this.uiState.selectedElement);
-        if (successor != null) {
-          this.uiState.selectedElement = successor;
-          this.changeDetectorRef.detectChanges();
-        }
-        break;
-      }
-      case this.KEY_UP: {
-        let predecessor = this.previousVisible(this.uiState.selectedElement);
-        if (predecessor != null) {
-          this.uiState.selectedElement = predecessor;
-          this.changeDetectorRef.detectChanges();
-        }
-        break;
-      }
-      case this.KEY_ENTER: {
-        if (element !== null && element.type === ElementType.File) {
-          this.messagingService.publish(events.NAVIGATION_OPEN, {
-            name: element.name,
-            path: element.path
-          });
-        }
-        break;
-      }
+      case KeyActions.EXPAND_NODE: return this.expandNode(element);
+      case KeyActions.COLLAPSE_NODE: return this.collapseNode(element);
+      case KeyActions.NAVIGATE_NEXT: return this.selectSuccessor(element);
+      case KeyActions.NAVIGATE_PREVIOUS: return this.selectPredecessor(element);
+      case KeyActions.OPEN_FILE: return this.openFile(element);
     }
   }
 
-  private nextVisible(element: WorkspaceElement): WorkspaceElement {
-    if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
-      return element.children[0];
+  private expandNode(element: WorkspaceElement): void {
+    if (element !== null && element.type === ElementType.Folder) {
+      this.uiState.setExpanded(element.path, true);
     }
-
-    let parent = this.workspace.getParent(element.path);
-    while (parent != null) {
-      let elementIndex = parent.children.indexOf(element);
-      if (elementIndex + 1 < parent.children.length) { // implicitly assuming elementIndex > -1
-        return parent.children[elementIndex + 1];
-      }
-      // last element on this level: get parent's next sibling instead
-      element = parent;
-      parent = this.workspace.getParent(parent.path);
-    }
-
-    // element is last one overall / has no successor
-    return null;
   }
 
-  private previousVisible(element: WorkspaceElement): WorkspaceElement {
-    let parent = this.workspace.getParent(element.path);
-    if (parent != null) {
-      let elementIndex = parent.children.indexOf(element);
-      if (elementIndex === 0) {
-        return parent;
-      } else {
-        let predecessor = parent.children[elementIndex - 1];
-        while (predecessor.type === ElementType.Folder && this.uiState.isExpanded(predecessor.path)) {
-          predecessor = predecessor.children[predecessor.children.length - 1];
-        }
-        return predecessor;
-      }
+  private collapseNode(element: WorkspaceElement): void {
+    if (element !== null && element.type === ElementType.Folder) {
+      this.uiState.setExpanded(element.path, false);
     }
-    return null;
+  }
+
+  private selectPredecessor(element: WorkspaceElement): void {
+    let predecessor = this.workspaceNavigationHelper.previousVisible(element);
+    if (predecessor != null) {
+      this.uiState.selectedElement = predecessor;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  private selectSuccessor(element: WorkspaceElement): void {
+    let successor = this.workspaceNavigationHelper.nextVisible(element);
+    if (successor != null) {
+      this.uiState.selectedElement = successor;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
+  private openFile(element: WorkspaceElement): void {
+    if (element !== null && element.type === ElementType.File) {
+      this.messagingService.publish(events.NAVIGATION_OPEN, {
+        name: element.name,
+        path: element.path
+      });
+    }
   }
 
 }
