@@ -13,7 +13,8 @@
         'glyphicon-folder-close': isEmptyFolder(),
         'glyphicon-chevron-down': isFolderExpanded(),
         'glyphicon-chevron-right': isFolderFolded(),
-        'glyphicon-file': isFile()
+        'glyphicon-file': isFile(),
+        'glyphicon-picture': isImage()
       }" (click)="onIconClick()">
       </span> {{model.name}}
       <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
