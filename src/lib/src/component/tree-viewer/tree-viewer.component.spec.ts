@@ -16,6 +16,7 @@ import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
+import { ElementState } from '../../common/element-state';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -435,6 +436,30 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(icon.classes['glyphicon-picture']).toBeTruthy();
+  });
+
+  it('shows spinning icon for running tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.attributes['class']).toEqual('fa fa-spinner fa-spin');
+  });
+
+  it('does not show spinning icon for idle tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon).toBeFalsy();
   });
 
 });

@@ -1,7 +1,6 @@
 <div class="tree-view" *ngIf="model">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()"
-      [style.padding-left]="level * 12 + 'px'"
+    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
         'active': model.path === uiState.activeEditorPath,
         'dirty': uiState.isDirty(model.path),
@@ -17,7 +16,12 @@
         'glyphicon-picture': isImage()
       }" (click)="onIconClick()">
       </span> {{model.name}}
-      <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
+      <span class="right-align">
+        <span id="test-state-running" [ngClass]="{
+          'fa-spinner fa-spin': isRunning(),
+          'fa fa-fw': true}"></span>
+        <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
+      </span>
     </div>
     <div *ngIf="confirmDelete" class="alert alert-warning confirm-delete">
       Are you sure you want to delete '{{model.name}}'?<br/>

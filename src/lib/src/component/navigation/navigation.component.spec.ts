@@ -211,7 +211,7 @@ describe('NavigationComponent', () => {
     let newElementRequest = component.uiState.newElementRequest;
     expect(newElementRequest).toBeTruthy();
     expect(newElementRequest.type).toEqual('folder');
-  })
+  });
 
   it('expands selected element on creation of new element', () => {
     // given

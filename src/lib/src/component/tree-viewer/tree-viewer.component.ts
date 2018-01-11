@@ -7,6 +7,7 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import * as events from '../event-types';
 import { UiState } from '../ui-state';
 import { WindowService } from '../../service/browserObjectModel/window.service';
+import { ElementState } from '../../common/element-state';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -132,6 +133,10 @@ export class TreeViewerComponent {
     return TreeViewerComponent.IMAGE_EXTENSIONS.some((extension) => {
       return this.model.path.toLowerCase().endsWith(extension);
     }, this);
+  }
+
+  isRunning(): boolean {
+    return this.model.state === ElementState.Running;
   }
 
 }
