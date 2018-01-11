@@ -243,14 +243,15 @@ describe('TreeViewerComponent', () => {
   it('onDoubleClick() on image file opens it in a new tab/window', () => {
     // given
     component.model = imageFile;
-    let expectedURL = new URL('http://example.org/dummy-url');
+    let expectedURL = `http://example.org/documents/${component.model.path}`;
+    when(persistenceService.getURL(component.model.path)).thenReturn(expectedURL);
 
     // when
     component.onDoubleClick();
 
     // then
     verify(windowService.open(anything())).once();
-    expect(capture(windowService.open).first()[0]).toEqual(expectedURL);
+    expect(capture(windowService.open).first()[0]).toEqual(new URL(expectedURL));
     // verify(windowService.open(expectedURL)).once(); // <-- does not work for whatever reason :\
   });
 

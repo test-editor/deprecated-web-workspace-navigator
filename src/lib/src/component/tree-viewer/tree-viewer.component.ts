@@ -48,7 +48,7 @@ export class TreeViewerComponent {
 
   openFile() {
     if (this.isImage()) {
-      this.windowReference.open(new URL('http://example.org/dummy-url')); // TODO request actual URL from persistence service
+      this.windowReference.open(new URL(this.persistenceService.getURL(this.model.path)));
     } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
         name: this.model.name,
