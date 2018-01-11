@@ -48,6 +48,12 @@ export class PersistenceServiceMock {
             ]
           }
         ]
+      },
+      {
+        name: 'test-editor.png',
+        path: 'test-editor.png',
+        type: ElementType.File,
+        children: []
       }
     ]
   }
@@ -64,6 +70,12 @@ export class PersistenceServiceMock {
   deleteResource(path: string): Promise<Response> {
     console.log(`Received deleteResource(path: '${path}')`);
     return Promise.reject("not supported by mock");
+  }
+
+  getURL(path: string): string {
+    console.log(`Received getURL(path: '${path}')`);
+    // return the URL of an arbitrary image for the demo mock
+    return 'http://testeditor.org/wp-content/uploads/2014/05/05-narrow-de-300x187.png';
   }
 
 }

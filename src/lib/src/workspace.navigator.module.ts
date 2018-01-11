@@ -12,6 +12,8 @@ import { PersistenceServiceConfig } from './service/persistence/persistence.serv
 import { NewElementComponent } from './component/tree-viewer/new-element.component';
 import { TestExecutionService } from './service/execution/test.execution.service';
 import { TestExecutionServiceConfig } from './service/execution/test.execution.service.config';
+import { WindowService } from './service/browserObjectModel/window.service';
+import { DefaultWindowService } from './service/browserObjectModel/default.window.service';
 
 @NgModule({
   imports: [
@@ -37,6 +39,7 @@ export class WorkspaceNavigatorModule {
       providers: [
         { provide: PersistenceServiceConfig, useValue: persistanceConfig },
         { provide: TestExecutionServiceConfig, useValue: testExecutionConfig },
+        { provide: WindowService, useClass: DefaultWindowService},
         PathValidator,
         PersistenceService,
         TestExecutionService

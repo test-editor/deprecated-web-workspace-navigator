@@ -3,7 +3,7 @@ import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Response, ResponseOptions } from '@angular/http';
 import { By } from '@angular/platform-browser';
-import { mock, instance, verify, when, anyString } from 'ts-mockito';
+import { mock, instance, verify, when, anyString, anything, deepEqual, strictEqual, capture } from 'ts-mockito';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
@@ -14,6 +14,8 @@ import { WorkspaceElement } from '../../common/workspace-element';
 
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
+import { WindowService } from '../../service/browserObjectModel/window.service';
+import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -44,6 +46,7 @@ describe('TreeViewerComponent', () => {
   let fixture: ComponentFixture<TreeViewerComponent>;
   let messagingService: MessagingService;
   let persistenceService: PersistenceService;
+  let windowService: WindowService;
 
   let singleEmptyFolder: WorkspaceElement = {
     name: 'folder', path: '', type: 'folder',
@@ -59,12 +62,15 @@ describe('TreeViewerComponent', () => {
     ]
   };
 
-  let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] }
+  let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] };
+  let imageFile: WorkspaceElement = { name: 'image.jpg', path: 'image.jpg', type: 'file', children: [] };
 
   beforeEach(async(() => {
     persistenceService = mock(PersistenceService);
+    windowService = mock(DefaultWindowService);
     testBedSetup([
-      { provide: PersistenceService, useValue: instance(persistenceService) }
+      { provide: PersistenceService, useValue: instance(persistenceService) },
+      { provide: WindowService, useValue: instance(windowService)}
     ]);
   }));
 
@@ -232,6 +238,21 @@ describe('TreeViewerComponent', () => {
       name: singleFile.name,
       path: singleFile.path
     }));
+  });
+
+  it('onDoubleClick() on image file opens it in a new tab/window', () => {
+    // given
+    component.model = imageFile;
+    let expectedURL = `http://example.org/documents/${component.model.path}`;
+    when(persistenceService.getURL(component.model.path)).thenReturn(expectedURL);
+
+    // when
+    component.onDoubleClick();
+
+    // then
+    verify(windowService.open(anything())).once();
+    expect(capture(windowService.open).first()[0]).toEqual(new URL(expectedURL));
+    // verify(windowService.open(expectedURL)).once(); // <-- does not work for whatever reason :\
   });
 
   it('has css class "active" if given by the UI state', () => {
