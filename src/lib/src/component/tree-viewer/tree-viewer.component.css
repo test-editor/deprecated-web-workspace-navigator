@@ -74,3 +74,11 @@
 .delete-confirm {
   margin-left: 40px;
 }
+
+.test-success {
+  color: #23d800;
+}
+
+.test-failure {
+  color: #d82300
+}

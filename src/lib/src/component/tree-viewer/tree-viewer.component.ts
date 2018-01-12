@@ -135,8 +135,7 @@ export class TreeViewerComponent {
     }, this);
   }
 
-  isRunning(): boolean {
-    return this.model.state === ElementState.Running;
-  }
-
+  isRunning(): boolean { return this.model.state === ElementState.Running; }
+  lastRunSuccessful(): boolean { return this.model.state === ElementState.LastRunSuccessful; }
+  lastRunFailed(): boolean { return this.model.state === ElementState.LastRunFailed; }
 }

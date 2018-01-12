@@ -450,7 +450,33 @@ describe('TreeViewerComponent', () => {
     expect(icon.classes['fa-spinner']).toBeTruthy();
   });
 
-  it('does not show spinning icon for idle tests', () => {
+  it('shows appropriate indicator icon for failed tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-circle']).toBeTruthy();
+    expect(icon.classes['test-failure']).toBeTruthy();
+  });
+
+  it('shows appropriate indicator icon for successful tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-circle']).toBeTruthy();
+    expect(icon.classes['test-success']).toBeTruthy();
+  });
+
+  it('does not show any icon for idle tests without success/failure info', () => {
     // given
     component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle };
 
@@ -460,6 +486,9 @@ describe('TreeViewerComponent', () => {
     // then
     let icon = getItemKey().query(By.css('#test-state-running'));
     expect(icon.classes['fa-spinner']).toBeFalsy();
+    expect(icon.classes['fa-circle']).toBeFalsy();
+    expect(icon.classes['test-success']).toBeFalsy();
+    expect(icon.classes['test-failure']).toBeFalsy();
   });
 
 });
