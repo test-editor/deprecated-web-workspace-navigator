@@ -1,28 +1,29 @@
 .tree-view {
-	font-family: system-ui,Segoe WPC,Segoe UI,HelveticaNeue-Light,Ubuntu,Droid Sans,sans-serif;
-	font-size: 13px;
-	line-height: 22px;
+  font-family: system-ui, Segoe WPC, Segoe UI, HelveticaNeue-Light, Ubuntu, Droid Sans, sans-serif;
+  font-size: 13px;
+  line-height: 22px;
 }
 
-.tree-view-item {
-    display: block
-}
-
-.tree-view span.icon-type {
-	font-size: 10px;
+.tree-view .icon-type {
+  font-size: 10px;
   margin-right: 3px;
 }
 
 .header {
-    background-color: #363636;
-    color: #CCCCCC;
+  background-color: #363636;
+  color: #CCCCCC;
 }
 
 .tree-view-item {
-	text-decoration: none;
-  font-size: 15px;
-  width: 100%;
   cursor: pointer;
+  font-size: 15px;
+  text-decoration: none;
+  width: 100%;
+}
+
+.tree-view-item-key {
+  display: flex;
+  justify-content: space-between;
 }
 
 .tree-view-item-key:not(.selected) {
@@ -30,19 +31,19 @@
 }
 
 .tree-view-item-key:not(.active):not(.header):not(.selected):hover {
-    background-color: #2A2D2E;
+  background-color: #2A2D2E;
 }
 
 .active {
-    background-color: #3f3f46;
+  background-color: #3f3f46;
 }
 
 .dirty {
-    font-style: italic;
+  font-style: italic;
 }
 
 .dirty::after {
-    content: '*'
+  content: '*'
 }
 
 .selected:not(.header) {
@@ -52,20 +53,18 @@
 
 .alert {
   cursor: default;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .icon-delete {
   color: #a80f22;
-  display: none;
   font-size: 12px;
-  float: right;
   right: 5px;
-  top: 5px;
+  visibility: hidden;
 }
 
 .tree-view-item:hover .icon-delete {
-  display: block;
+  visibility: visible;
 }
 
 .icon-delete:hover {

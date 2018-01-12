@@ -447,7 +447,7 @@ describe('TreeViewerComponent', () => {
 
     // then
     let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.attributes['class']).toEqual('fa fa-spinner fa-spin');
+    expect(icon.classes['fa-spinner']).toBeTruthy();
   });
 
   it('does not show spinning icon for idle tests', () => {
@@ -459,7 +459,7 @@ describe('TreeViewerComponent', () => {
 
     // then
     let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon).toBeFalsy();
+    expect(icon.classes['fa-spinner']).toBeFalsy();
   });
 
 });
