@@ -491,4 +491,19 @@ describe('TreeViewerComponent', () => {
     expect(icon.classes['test-failure']).toBeFalsy();
   });
 
+  it('does not show any icon for non-executable files', () => {
+    // given
+    component.model = { name: 'file.txt', path: 'file.txt', type: 'file', children: [] };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-spinner']).toBeFalsy();
+    expect(icon.classes['fa-circle']).toBeFalsy();
+    expect(icon.classes['test-success']).toBeFalsy();
+    expect(icon.classes['test-failure']).toBeFalsy();
+  });
+
 });
