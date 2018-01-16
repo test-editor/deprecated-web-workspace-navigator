@@ -16,6 +16,7 @@ import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
+import { ElementState } from '../../common/element-state';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -435,6 +436,74 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(icon.classes['glyphicon-picture']).toBeTruthy();
+  });
+
+  it('shows spinning icon for running tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-spinner']).toBeTruthy();
+  });
+
+  it('shows appropriate indicator icon for failed tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-circle']).toBeTruthy();
+    expect(icon.classes['test-failure']).toBeTruthy();
+  });
+
+  it('shows appropriate indicator icon for successful tests', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-circle']).toBeTruthy();
+    expect(icon.classes['test-success']).toBeTruthy();
+  });
+
+  it('does not show any icon for idle tests without success/failure info', () => {
+    // given
+    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-spinner']).toBeFalsy();
+    expect(icon.classes['fa-circle']).toBeFalsy();
+    expect(icon.classes['test-success']).toBeFalsy();
+    expect(icon.classes['test-failure']).toBeFalsy();
+  });
+
+  it('does not show any icon for non-executable files', () => {
+    // given
+    component.model = { name: 'file.txt', path: 'file.txt', type: 'file', children: [] };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    let icon = getItemKey().query(By.css('#test-state-running'));
+    expect(icon.classes['fa-spinner']).toBeFalsy();
+    expect(icon.classes['fa-circle']).toBeFalsy();
+    expect(icon.classes['test-success']).toBeFalsy();
+    expect(icon.classes['test-failure']).toBeFalsy();
   });
 
 });

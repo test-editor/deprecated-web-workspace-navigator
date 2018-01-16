@@ -1,14 +1,15 @@
 <div class="tree-view" *ngIf="model">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()"
-      [style.padding-left]="level * 12 + 'px'"
+    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
         'active': model.path === uiState.activeEditorPath,
         'dirty': uiState.isDirty(model.path),
         'header': level == 0,
         'selected': model.path === uiState.selectedElement?.path
       }">
-      <span class="icon-type glyphicon" [ngClass]="{
+
+      <div>
+        <span class="icon-type glyphicon" [ngClass]="{
         'glyphicon-question-sign': isUnknown(),
         'glyphicon-folder-close': isEmptyFolder(),
         'glyphicon-chevron-down': isFolderExpanded(),
@@ -16,11 +17,23 @@
         'glyphicon-file': isFile(),
         'glyphicon-picture': isImage()
       }" (click)="onIconClick()">
-      </span> {{model.name}}
-      <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
+        </span>
+        <span>{{model.name}}</span>
+      </div>
+
+      <div>
+        <span id="test-state-running" class="fa fa-fw" [ngClass]="{
+          'fa-spinner fa-spin': isRunning(),
+          'fa-circle': lastRunSuccessful() || lastRunFailed(),
+          'test-success': lastRunSuccessful(),
+          'test-failure': lastRunFailed()}"></span>
+        <span *ngIf="level != 0" class="icon-delete glyphicon glyphicon-remove" (click)="onDeleteIconClick()"></span>
+      </div>
+      
     </div>
     <div *ngIf="confirmDelete" class="alert alert-warning confirm-delete">
-      Are you sure you want to delete '{{model.name}}'?<br/>
+      Are you sure you want to delete '{{model.name}}'?
+      <br/>
       <a href="#" class="alert-link delete-cancel" (click)="onDeleteCancel()">No</a>
       <a href="#" class="alert-link delete-confirm" (click)="onDeleteConfirm()">Yes</a>
     </div>
