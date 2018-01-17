@@ -10,6 +10,7 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { Response, ResponseOptions } from '@angular/http';
 
+export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_ERROR = 500;
 

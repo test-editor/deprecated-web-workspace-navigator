@@ -13,7 +13,8 @@ export class TestExecutionService {
   }
 
   execute(path: string): Promise<Response> {
-    let url = `${this.serviceUrl}?resource=${path}`;
+    let encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    let url = `${this.serviceUrl}?resource=${encodedPath}`;
     return this.http.post(url, '').toPromise();
   }
 
