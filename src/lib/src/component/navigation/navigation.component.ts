@@ -11,6 +11,9 @@ import { TestExecutionService } from '../../service/execution/test.execution.ser
 import { ElementState } from '../../common/element-state';
 import { KeyActions } from '../../common/key.actions';
 import { WorkspaceNavigationHelper } from '../../common/util/workspace.navigation.helper';
+import { Observable } from 'rxjs/Observable';
+import { Subscriber } from 'rxjs/Subscriber';
+import { Response } from '@angular/http';
 
 @Component({
   selector: 'app-navigation',
@@ -142,6 +145,7 @@ export class NavigationComponent implements OnInit {
         setTimeout(() => {
           this.notification = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+        this.monitorTestStatus(elementToBeExecuted);
       } else {
         this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
         setTimeout(() => {
@@ -192,6 +196,41 @@ export class NavigationComponent implements OnInit {
       case KeyActions.NAVIGATE_NEXT: return this.selectSuccessor(element);
       case KeyActions.NAVIGATE_PREVIOUS: return this.selectPredecessor(element);
       case KeyActions.OPEN_FILE: return this.openFile(element);
+    }
+  }
+
+  private monitorTestStatus(element: WorkspaceElement): void {
+    let self = this;
+    let observableTestStatus = new Observable<string>(observer => {
+      self.executionService.status(element.path).then(response => {
+        self.evaluateGetStatusResponseAndRepeat(element.path, response, observer, self);
+      });
+    });
+
+    observableTestStatus.subscribe(status => { this.setTestStatus(element, status); });
+  }
+
+  private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {
+    let status = lastResponse.text();
+    if (!lastResponse.ok) {
+      observer.complete();
+    } else if (status !== 'RUNNING') {
+      observer.next(status);
+      observer.complete();
+    } else {
+      observer.next(status);
+      self.executionService.status(testPath).then(response => {
+        self.evaluateGetStatusResponseAndRepeat(testPath, response, observer, self);
+      });
+    }
+  }
+
+  private setTestStatus(element: WorkspaceElement, status: string): void {
+    switch (status) {
+      case 'RUNNING': element.state = ElementState.Running; break;
+      case 'SUCCESS': element.state = ElementState.LastRunSuccessful; break;
+      case 'FAILED': element.state = ElementState.LastRunFailed; break;
+      case 'IDLE': default: element.state = ElementState.Idle;
     }
   }
 

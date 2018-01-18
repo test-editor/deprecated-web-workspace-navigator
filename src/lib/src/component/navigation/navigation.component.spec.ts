@@ -25,6 +25,8 @@ import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, m
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
 import { WindowService } from '../../service/browserObjectModel/window.service';
+import { discardPeriodicTasks } from '@angular/core/testing';
+import { flushMicrotasks } from '@angular/core/testing';
 
 describe('NavigationComponent', () => {
 
@@ -346,7 +348,7 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.execute(tclFile.path)).once();
-    expect(tclFile.state).toEqual(ElementState.Running);
+    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
   }));
 
   it('invokes test execution for currently active test file when "run" button is clicked and no file is selected', fakeAsync(() => {
@@ -364,7 +366,24 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.execute(tclFile.path)).once();
-    expect(tclFile.state).toEqual(ElementState.Running);
+    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
+  }));
+
+  it('monitors test status when execution is started', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.uiState.selectedElement = tclFile;
+    fixture.detectChanges();
+    let runIcon = sidenav.query(By.css('#run'));
+    resetCalls(executionService);
+
+    // when
+    runIcon.nativeElement.click();
+    flush();
+
+    // then
+    verify(executionService.status(tclFile.path)).thrice(); // mock returns 'RUNNING' twice, then 'SUCCESS'
+    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
   }));
 
   it('disables the run button when selecting a non-executable file', async(() => {
