@@ -36,7 +36,8 @@ export class PersistenceService {
   }
 
   getURL(path: string): string {
-    return `${this.serviceUrl}/documents/${path}`;
+    let encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    return `${this.serviceUrl}/documents/${encodedPath}`;
   }
 
 }
