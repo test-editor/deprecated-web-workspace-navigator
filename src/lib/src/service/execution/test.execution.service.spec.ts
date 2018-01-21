@@ -59,7 +59,13 @@ describe('TestExecutionService', () => {
     mockBackend.connections.subscribe(
       (connection: MockConnection) => {
         expect(connection.request.method).toBe(RequestMethod.Get);
-        expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '/status/wait?resource=path/to/file.tcl');
+        let expectedURL = new URL(serviceConfig.testExecutionServiceUrl);
+        let actualURL = new URL(connection.request.url);
+        expect(actualURL.protocol).toBe(expectedURL.protocol);
+        expect(actualURL.host).toBe(expectedURL.host);
+        expect(actualURL.pathname).toBe('/tests/status');
+        expect(actualURL.searchParams.get('wait')).toBe('true');
+        expect(actualURL.searchParams.get('resource')).toBe(tclFilePath);
 
         connection.mockRespond(new Response( new ResponseOptions({
           body: 'IDLE',

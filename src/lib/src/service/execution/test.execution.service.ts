@@ -8,7 +8,7 @@ import { ElementState } from '../../common/element-state';
 @Injectable()
 export class TestExecutionService {
 
-  private static readonly statusURLPath = '/status/wait';
+  private static readonly statusURLPath = '/status';
   private static readonly executeURLPath = '/execute';
   private serviceUrl: string;
 
@@ -21,7 +21,7 @@ export class TestExecutionService {
   }
 
   status(path: string): Promise<Response> {
-    return this.http.get(this.getURL(path, TestExecutionService.statusURLPath)).toPromise();
+    return this.http.get(this.getURL(path, TestExecutionService.statusURLPath) + '&wait=true').toPromise();
   }
 
   private getURL(workspaceElementPath: string, urlPath: string = ''): string {
