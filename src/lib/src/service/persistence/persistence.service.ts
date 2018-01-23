@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response, RequestOptionsArgs } from '@angular/http';
+import { Http, Headers, Response, RequestOptionsArgs, ResponseContentType } from '@angular/http';
 import { AuthHttp } from 'angular2-jwt';
 
 import { WorkspaceElement } from '../../common/workspace-element';
@@ -33,6 +33,10 @@ export class PersistenceService {
 
   deleteResource(path: string): Promise<Response> {
     return this.http.delete(this.getURL(path)).toPromise();
+  }
+
+  getBinaryResource(path: string): Promise<Response> {
+    return this.http.get(this.getURL(path), { responseType: ResponseContentType.Blob}).toPromise();
   }
 
   getURL(path: string): string {
