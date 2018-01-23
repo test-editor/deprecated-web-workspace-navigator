@@ -49,7 +49,10 @@ export class TreeViewerComponent {
 
   openFile() {
     if (this.isImage()) {
-      this.windowReference.open(new URL(this.persistenceService.getURL(this.model.path)));
+      this.persistenceService.getBinaryResource(this.model.path).then((response) => {
+        let url = new URL(URL.createObjectURL(response.blob()));
+        this.windowReference.open(url);
+      });
     } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
         name: this.model.name,

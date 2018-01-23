@@ -71,7 +71,7 @@ describe('TreeViewerComponent', () => {
     windowService = mock(DefaultWindowService);
     testBedSetup([
       { provide: PersistenceService, useValue: instance(persistenceService) },
-      { provide: WindowService, useValue: instance(windowService)}
+      { provide: WindowService, useValue: instance(windowService) }
     ]);
   }));
 
@@ -241,20 +241,23 @@ describe('TreeViewerComponent', () => {
     }));
   });
 
-  it('onDoubleClick() on image file opens it in a new tab/window', () => {
+  it('onDoubleClick() on image file opens it in a new tab/window', async(() => {
     // given
     component.model = imageFile;
-    let expectedURL = `http://example.org/documents/${component.model.path}`;
-    when(persistenceService.getURL(component.model.path)).thenReturn(expectedURL);
+    let response = mock(Response);
+    // some random bytes to stand in for an actual png
+    let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
+    when(response.blob()).thenReturn(imageBlob);
+    when(persistenceService.getBinaryResource(component.model.path)).thenReturn(Promise.resolve(instance(response)));
 
     // when
     component.onDoubleClick();
 
     // then
-    verify(windowService.open(anything())).once();
-    expect(capture(windowService.open).first()[0]).toEqual(new URL(expectedURL));
-    // verify(windowService.open(expectedURL)).once(); // <-- does not work for whatever reason :\
-  });
+    fixture.whenStable().then(() => {
+      verify(windowService.open(anything())).once();
+    });
+  }));
 
   it('has css class "active" if given by the UI state', () => {
     // given
