@@ -13,7 +13,7 @@ describe('WorkspaceNavigationHelper', () => {
   beforeEach(() => {
     uiState = new UiState();
     helper = new WorkspaceNavigationHelper(workspace, uiState);
-    uiState.setExpanded(workspace.root.path, true);
+    uiState.setExpanded(workspace.getRootPath(), true);
     uiState.setExpanded(middleChild.path, true);
     uiState.setExpanded(grandChild.path, true);
   });

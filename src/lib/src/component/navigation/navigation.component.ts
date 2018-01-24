@@ -27,7 +27,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  private workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
   uiState: UiState;
   workspaceNavigationHelper: WorkspaceNavigationHelper;
@@ -38,7 +37,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
-    private executionService: TestExecutionService
+    private executionService: TestExecutionService,
+    private workspace: Workspace
   ) {
     this.uiState = new UiState();
     this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
@@ -56,7 +56,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     return this.persistenceService.listFiles().then(element => {
-      this.setWorkspace(new Workspace(element));
+      this.reloadWorkspace();
       this.uiState.setExpanded(element.path, true);
       this.updateTestStates();
       return this.workspace;
@@ -79,8 +79,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
   }
 
-  setWorkspace(workspace: Workspace) {
-    this.workspace = workspace;
+  reloadWorkspace() {
+    this.workspace.load();
     this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
   }
 
@@ -179,13 +179,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   collapseAll(): void {
     this.uiState.clearExpanded();
-    this.uiState.setExpanded(this.workspace.root.path, true);
+    this.uiState.setExpanded(this.workspace.getRootPath(), true);
   }
 
   revealElement(path: string): void {
     let subpaths = this.workspace.getSubpaths(path);
     subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
-    this.uiState.setExpanded(this.workspace.root.path, true);
+    this.uiState.setExpanded(this.workspace.getRootPath(), true);
   }
 
   selectElement(path: string): void {

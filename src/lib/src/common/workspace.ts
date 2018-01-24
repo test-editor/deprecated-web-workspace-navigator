@@ -1,13 +1,32 @@
 import { WorkspaceElement } from './workspace-element';
+import { Injectable } from '@angular/core';
+import { PersistenceService } from '../service/persistence/persistence.service';
+import { TestExecutionService } from '../service/execution/test.execution.service';
 
+@Injectable()
 export class Workspace {
 
-  root: WorkspaceElement;
+  private root: WorkspaceElement = null;
   private pathToElement = new Map<string, WorkspaceElement>();
 
-  constructor(root: WorkspaceElement) {
-    this.root = root;
-    this.addToMap(root);
+  constructor(private persistenceService: PersistenceService, private executionService: TestExecutionService) {
+    this.load();
+  }
+
+  public load(): void {
+    this.persistenceService.listFiles().then(this.doLoad);
+  }
+
+  private invalidate(): void {
+
+  }
+
+  private doLoad(newRoot: WorkspaceElement): void {
+    if (this.root !== null) {
+      this.invalidate();
+    }
+    this.root = newRoot;
+    this.addToMap(this.root);
   }
 
   private addToMap(element: WorkspaceElement): void {
@@ -62,5 +81,9 @@ export class Workspace {
       }
     }
     return null;
+  }
+
+  getRootPath(): string {
+    return this.root.path;
   }
 }

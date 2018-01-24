@@ -188,7 +188,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new file', () => {
     // given
-    component.setWorkspace(new Workspace(tclFile));
+    component.reloadWorkspace(new Workspace(tclFile));
     fixture.detectChanges();
     let newFileIcon = sidenav.query(By.css('#new-file'));
 
@@ -203,7 +203,7 @@ describe('NavigationComponent', () => {
 
   it('updates the UI state for creating a new folder', () => {
     // given
-    component.setWorkspace(new Workspace(tclFile));
+    component.reloadWorkspace(new Workspace(tclFile));
     fixture.detectChanges();
     let newFolder = sidenav.query(By.css('#new-folder'))
 

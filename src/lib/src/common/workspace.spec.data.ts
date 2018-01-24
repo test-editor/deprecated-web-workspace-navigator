@@ -1,6 +1,9 @@
 import { WorkspaceElement } from './workspace-element';
 import { ElementType } from './element-type';
 import { Workspace } from './workspace';
+import { PersistenceService } from '../../src/service/persistence/persistence.service';
+import { mock, instance, when } from 'ts-mockito/lib/ts-mockito';
+import { TestExecutionService } from '../../src/service/execution/test.execution.service';
 
 export const firstChild: WorkspaceElement = {
   name: 'firstChild',
@@ -33,6 +36,13 @@ export const lastChild: WorkspaceElement = {
   children: []
 };
 
+export const root: WorkspaceElement = {
+  name: 'folder',
+  path: 'root',
+  type: ElementType.Folder,
+  children: [firstChild, middleChild, lastChild]
+};
+
 /**
  * + root
  *   - firstChild
@@ -42,10 +52,8 @@ export const lastChild: WorkspaceElement = {
  *   - lastChild
  */
 export function createWorkspaceWithSubElements(): Workspace {
-  return new Workspace({
-    name: 'folder',
-    path: 'root',
-    type: ElementType.Folder,
-    children: [firstChild, middleChild, lastChild]
-  });
+  const mockPersistenceService = mock(PersistenceService);
+  when(mockPersistenceService.listFiles).thenReturn(() => Promise.resolve(root));
+  const mockExecutionService = mock(TestExecutionService);
+  return new Workspace(instance(mockPersistenceService), instance(mock(TestExecutionService)));
 };
