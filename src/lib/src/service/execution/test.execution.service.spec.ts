@@ -9,6 +9,7 @@ import { inject } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { fakeAsync } from '@angular/core/testing';
 import { HTTP_STATUS_CREATED, HTTP_STATUS_OK } from '../../component/navigation/navigation.component.test.setup';
+import { ElementState } from '../../common/element-state';
 
 describe('TestExecutionService', () => {
   let serviceConfig: TestExecutionServiceConfig;
@@ -83,4 +84,33 @@ describe('TestExecutionService', () => {
       expect(response.text()).toBe('IDLE');
     });
   })));
+
+  it('Translates server response to "statusAll" request to properly typed map', fakeAsync(inject([XHRBackend, TestExecutionService],
+    (mockBackend: MockBackend, executionService: TestExecutionService) => {
+      // given
+      mockBackend.connections.subscribe(
+        (connection: MockConnection) => {
+          expect(connection.request.method).toBe(RequestMethod.Get);
+          expect(connection.request.url).toBe(serviceConfig.testExecutionServiceUrl + '/status/all');
+
+          connection.mockRespond(new Response(new ResponseOptions({
+            status: HTTP_STATUS_OK,
+            body: '[{"path":"failedTest.tcl","status":"FAILED"},\
+{"path":"runningTest.tcl","status":"RUNNING"},{"path":"successfulTest.tcl","status":"SUCCESS"}]'
+          })));
+        }
+      );
+
+      // when
+      executionService.statusAll()
+
+      // then
+      .then(statusUpdates => {
+        expect(statusUpdates instanceof Map).toBeTruthy();
+        expect(statusUpdates.size).toEqual(3);
+        expect(statusUpdates.get('failedTest.tcl')).toEqual(ElementState.LastRunFailed);
+        expect(statusUpdates.get('runningTest.tcl')).toEqual(ElementState.Running);
+        expect(statusUpdates.get('successfulTest.tcl')).toEqual(ElementState.LastRunSuccessful);
+      });
+    })));
 });

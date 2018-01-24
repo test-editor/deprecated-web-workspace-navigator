@@ -1,9 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
-import { WorkspaceElement, nameWithoutFileExtension } from '../../common/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
 import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
@@ -23,7 +23,7 @@ import { Subject } from 'rxjs/Subject';
   styleUrls: ['./navigation.component.css']
 })
 
-export class NavigationComponent implements OnInit {
+export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
@@ -163,13 +163,13 @@ export class NavigationComponent implements OnInit {
     this.executionService.execute(elementToBeExecuted.path).then(response => {
       if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
         elementToBeExecuted.state = ElementState.Running;
-        this.notification = `Execution of "${nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
+        this.notification = `Execution of "${WorkspaceElement.nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
         setTimeout(() => {
           this.notification = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
         this.monitorTestStatus(elementToBeExecuted);
       } else {
-        this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
+        this.errorMessage = `The test "${WorkspaceElement.nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
         setTimeout(() => {
           this.errorMessage = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
@@ -228,7 +228,7 @@ export class NavigationComponent implements OnInit {
         self.evaluateGetStatusResponseAndRepeat(element.path, response, observer, self);
       });
     });
-    observableTestStatus.takeUntil(this.stopPolling).subscribe(status => { this.setTestStatus(element, status); });
+    observableTestStatus.takeUntil(this.stopPolling).subscribe( status => this.setTestStatus(element, status) );
   }
 
   private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {
@@ -238,7 +238,7 @@ export class NavigationComponent implements OnInit {
     } else if (status !== 'RUNNING') {
       observer.next(status);
       observer.complete();
-    } else {
+    } else if (!observer.closed) {
       observer.next(status);
       self.executionService.status(testPath).then(response => {
         self.evaluateGetStatusResponseAndRepeat(testPath, response, observer, self);

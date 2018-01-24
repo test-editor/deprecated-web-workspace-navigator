@@ -42,6 +42,15 @@ export const lastElement: WorkspaceElement = {
   children: []
 };
 
+export const responseBeforeTermination = new Response(new ResponseOptions({
+  status: HTTP_STATUS_OK,
+  body: 'RUNNING'
+}));
+const responseAfterTermination = new Response(new ResponseOptions({
+  status: HTTP_STATUS_OK,
+  body: 'SUCCESS'
+}));
+
 export function mockedPersistenceService() {
   const persistenceService = mock(PersistenceService);
   when(persistenceService.listFiles()).thenReturn(Promise.resolve(tclFile));
@@ -51,7 +60,7 @@ export function mockedPersistenceService() {
 export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService);
   setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
-  setTestStatusServiceResponse(executionService, HTTP_STATUS_OK);
+  setTestStatusServiceResponse(executionService);
   return executionService;
 }
 
@@ -60,19 +69,16 @@ export function setTestExecutionServiceResponse(service: TestExecutionService, s
   when(service.execute(tclFile.path)).thenReturn(Promise.resolve(response));
 }
 
-export function setTestStatusServiceResponse(service: TestExecutionService, statusCode: number) {
-  const responseBeforeTermination = new Response(new ResponseOptions({
-    status: statusCode,
-    body: 'RUNNING'
-  }));
-  const responseAfterTermination = new Response(new ResponseOptions({
-    status: statusCode,
-    body: 'SUCCESS'
-  }));
+export function setTestStatusServiceResponse(service: TestExecutionService) {
   when(service.status(tclFile.path))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseAfterTermination));
+}
+
+export function setAsyncTestStatusServiceRunningResponse(service: TestExecutionService, delayMillis: number) {
+  when(service.status(tclFile.path))
+      .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
 }
 
 export function setupWorkspace(component: NavigationComponent, fixture: ComponentFixture<NavigationComponent>) {

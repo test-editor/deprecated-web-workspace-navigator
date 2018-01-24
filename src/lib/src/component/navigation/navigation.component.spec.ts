@@ -20,8 +20,8 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement }
-    from './navigation.component.test.setup';
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, setAsyncTestStatusServiceRunningResponse, responseBeforeTermination }
+  from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
 import { WindowService } from '../../service/browserObjectModel/window.service';
@@ -759,28 +759,75 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
   }));
 });
 
-it('restores test status when refresh button is clicked', async(() => {
-  // given
-  setupWorkspace(component, fixture);
+  it('re-retrieves test status when the workspace is refreshed', async(() => {
+    // given
+    setupWorkspace(component, fixture);
+    let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().root);
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
+    when(executionService.statusAll()).thenReturn(Promise.resolve(
+      new Map<string, ElementState>([[tclFile.path, ElementState.LastRunFailed]])));
+    when(executionService.status(tclFile.path)).thenReturn(Promise.resolve(
+      new Response(new ResponseOptions({ body: 'FAILED' }))));
 
-  let refreshIcon = sidenav.query(By.css('#refresh'));
-  let newFile: WorkspaceElement = {
-    name: 'newFile.tcl', path: 'newFile.tcl', type: ElementType.File, state: ElementState.Running, children: []
-  };
+    // when
+    component.refresh();
 
-  when(persistenceService.listFiles()).thenReturn(Promise.resolve({
-    name: 'newFile.tcl', path: 'newFile.tcl', type: ElementType.File, children: []
+    // then
+    fixture.whenStable().then(() => {
+      let updatedTclFile = component.getWorkspace().getElement('subfolder/file.tcl');
+      expect(updatedTclFile).not.toBe(tclFile);
+      expect(component.getWorkspace().getElement('subfolder/file.tcl').state).toEqual(ElementState.LastRunFailed);
+    });
   }));
-  when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>([['newFile.tcl', ElementState.Running]])));
-  when(executionService.status('newFile.tcl')).thenReturn(Promise.resolve(new Response(new ResponseOptions({body: 'SUCCESS'}))));
 
-  // when
-  refreshIcon.nativeElement.click();
+  it('stops all polling for test status on component destruction', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.selectElement(tclFile.path);
+    fixture.detectChanges();
+    let responseDelayMillis = 10;
+    setAsyncTestStatusServiceRunningResponse(executionService, responseDelayMillis);
+    component.run();
+    tick(responseDelayMillis);
+    verify(executionService.status(tclFile.path)).twice();
+    resetCalls(executionService);
 
-  // then
-  fixture.whenStable().then(() => {
-    expect(component.getWorkspace().getElement('newFile.tcl').state).toEqual(ElementState.Running);
-  });
-}));
+    // when
+    component.ngOnDestroy();
+
+    // then
+    flush();
+    verify(executionService.status(tclFile.path)).never();
+  }));
+
+  it('restarts polling for running tests on refresh', fakeAsync(() => {
+    // given
+    setupWorkspace(component, fixture);
+    component.selectElement(tclFile.path);
+    fixture.detectChanges();
+    let responseDelayMillis = 10;
+    setAsyncTestStatusServiceRunningResponse(executionService, responseDelayMillis);
+    let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().root);
+    when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
+    when(executionService.statusAll()).thenReturn(Promise.resolve(
+      new Map<string, ElementState>([[tclFile.path, ElementState.Running]])));
+    component.run();
+    tick(responseDelayMillis);
+    verify(executionService.status(tclFile.path)).twice();
+    resetCalls(executionService);
+    verify(executionService.status(tclFile.path)).never();
+
+    // when
+    component.refresh();
+
+    // then
+    tick(responseDelayMillis);
+    verify(executionService.status(tclFile.path)).twice();
+    let updatedTclFile = component.getWorkspace().getElement(tclFile.path);
+    expect(updatedTclFile).not.toBe(tclFile);
+    expect(updatedTclFile.state).toEqual(ElementState.Running);
+    component.ngOnDestroy();
+    flush();
+  }));
 
 });
