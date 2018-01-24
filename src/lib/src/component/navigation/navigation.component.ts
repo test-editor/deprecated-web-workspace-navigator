@@ -50,11 +50,24 @@ export class NavigationComponent implements OnInit {
     return this.persistenceService.listFiles().then(element => {
       this.setWorkspace(new Workspace(element));
       this.uiState.setExpanded(element.path, true);
+      this.executionService.getStatusAll().then(testStates => {
+        testStates.forEach(testStatus => {
+          this.workspace.getElement(testStatus.path).state = this.getElementState(testStatus.status);
+        });
+      });
       return this.workspace;
     }).catch(() => {
       this.errorMessage = 'Could not retrieve workspace!';
       return undefined;
     });
+  }
+
+  private getElementState(status: string): ElementState {
+    switch (status) {
+      case 'RUNNING': return ElementState.Running;
+      case 'SUCCESS': return ElementState.LastRunSuccessful;
+      case 'FAILED': return ElementState.LastRunFailed;
+    }
   }
 
   setWorkspace(workspace: Workspace) {

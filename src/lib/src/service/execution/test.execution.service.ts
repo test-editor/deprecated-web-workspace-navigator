@@ -4,12 +4,14 @@ import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { ElementState } from '../../common/element-state';
+import { TestStatusInfo } from '../../common/test-status-info';
 
 @Injectable()
 export class TestExecutionService {
 
   private static readonly statusURLPath = '/status';
   private static readonly executeURLPath = '/execute';
+  private static readonly statusAllURLPath = '/status/all';
   private serviceUrl: string;
 
   constructor(private http: AuthHttp, config: TestExecutionServiceConfig) {
@@ -29,4 +31,7 @@ export class TestExecutionService {
     return `${this.serviceUrl}${urlPath}?resource=${encodedPath}`;
   }
 
+  getStatusAll(): Promise<TestStatusInfo[]> {
+    return this.http.get(`${this.serviceUrl}${TestExecutionService.statusAllURLPath}`).toPromise().then(response => response.json());
+  }
 }

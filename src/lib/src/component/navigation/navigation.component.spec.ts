@@ -190,7 +190,7 @@ describe('NavigationComponent', () => {
     // given
     component.setWorkspace(new Workspace(tclFile));
     fixture.detectChanges();
-    let newFileIcon = sidenav.query(By.css('#new-file'))
+    let newFileIcon = sidenav.query(By.css('#new-file'));
 
     // when
     newFileIcon.nativeElement.click();
@@ -305,6 +305,7 @@ describe('NavigationComponent', () => {
     let subfolder = component.getWorkspace().root.children[0];
     let newFolder = subfolder.children[0];
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.getWorkspace().root));
+    when(executionService.getStatusAll()).thenReturn(Promise.resolve([]));
     resetCalls(persistenceService);
 
     // when
@@ -757,5 +758,40 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
     path: tclFile.path
   }));
 });
+
+it('restores test status when refresh button is clicked', async(() => {
+  // given
+  setupWorkspace(component, fixture);
+
+  let refreshIcon = sidenav.query(By.css('#refresh'));
+  let newFile: WorkspaceElement = {
+    name: 'newFile.tcl',
+    path: 'newFile.tcl',
+    type: ElementType.File,
+    state: ElementState.Running,
+    children: []
+  };
+  when(persistenceService.listFiles()).thenReturn(Promise.resolve({
+    name: 'newFile.tcl',
+    path: 'newFile.tcl',
+    type: ElementType.File,
+    children: []
+  }));
+  when(executionService.getStatusAll()).thenReturn(Promise.resolve([
+    {
+      path: 'newFile.tcl',
+      status: 'RUNNING'
+    }
+  ]));
+  resetCalls(persistenceService);
+
+  // when
+  refreshIcon.nativeElement.click();
+
+  // then
+  fixture.whenStable().then(() => {
+    expect(component.getWorkspace().getElement('newFile.tcl').state).toEqual(ElementState.Running);
+  });
+}));
 
 });
