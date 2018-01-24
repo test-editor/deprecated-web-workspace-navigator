@@ -305,7 +305,7 @@ describe('NavigationComponent', () => {
     let subfolder = component.getWorkspace().root.children[0];
     let newFolder = subfolder.children[0];
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(component.getWorkspace().root));
-    when(executionService.getStatusAll()).thenReturn(Promise.resolve([]));
+    when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>()));
     resetCalls(persistenceService);
 
     // when
@@ -765,25 +765,14 @@ it('restores test status when refresh button is clicked', async(() => {
 
   let refreshIcon = sidenav.query(By.css('#refresh'));
   let newFile: WorkspaceElement = {
-    name: 'newFile.tcl',
-    path: 'newFile.tcl',
-    type: ElementType.File,
-    state: ElementState.Running,
-    children: []
+    name: 'newFile.tcl', path: 'newFile.tcl', type: ElementType.File, state: ElementState.Running, children: []
   };
+
   when(persistenceService.listFiles()).thenReturn(Promise.resolve({
-    name: 'newFile.tcl',
-    path: 'newFile.tcl',
-    type: ElementType.File,
-    children: []
+    name: 'newFile.tcl', path: 'newFile.tcl', type: ElementType.File, children: []
   }));
-  when(executionService.getStatusAll()).thenReturn(Promise.resolve([
-    {
-      path: 'newFile.tcl',
-      status: 'RUNNING'
-    }
-  ]));
-  resetCalls(persistenceService);
+  when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>([['newFile.tcl', ElementState.Running]])));
+  when(executionService.status('newFile.tcl')).thenReturn(Promise.resolve(new Response(new ResponseOptions({body: 'SUCCESS'}))));
 
   // when
   refreshIcon.nativeElement.click();

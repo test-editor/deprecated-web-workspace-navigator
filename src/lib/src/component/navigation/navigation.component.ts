@@ -12,8 +12,10 @@ import { ElementState } from '../../common/element-state';
 import { KeyActions } from '../../common/key.actions';
 import { WorkspaceNavigationHelper } from '../../common/util/workspace.navigation.helper';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/takeUntil';
 import { Subscriber } from 'rxjs/Subscriber';
 import { Response } from '@angular/http';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-navigation',
@@ -26,6 +28,7 @@ export class NavigationComponent implements OnInit {
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
   private workspace: Workspace;
+  private stopPolling: Subject<void> = new Subject<void>();
   uiState: UiState;
   workspaceNavigationHelper: WorkspaceNavigationHelper;
   errorMessage: string;
@@ -46,15 +49,16 @@ export class NavigationComponent implements OnInit {
     this.subscribeToEvents();
   }
 
+  ngOnDestroy(): void {
+    this.stopPolling.next();
+    this.stopPolling.complete();
+  }
+
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     return this.persistenceService.listFiles().then(element => {
       this.setWorkspace(new Workspace(element));
       this.uiState.setExpanded(element.path, true);
-      this.executionService.getStatusAll().then(testStates => {
-        testStates.forEach(testStatus => {
-          this.workspace.getElement(testStatus.path).state = this.getElementState(testStatus.status);
-        });
-      });
+      this.updateTestStates();
       return this.workspace;
     }).catch(() => {
       this.errorMessage = 'Could not retrieve workspace!';
@@ -62,12 +66,17 @@ export class NavigationComponent implements OnInit {
     });
   }
 
-  private getElementState(status: string): ElementState {
-    switch (status) {
-      case 'RUNNING': return ElementState.Running;
-      case 'SUCCESS': return ElementState.LastRunSuccessful;
-      case 'FAILED': return ElementState.LastRunFailed;
-    }
+  private updateTestStates(): void {
+    this.stopPolling.next();
+    this.executionService.statusAll().then(testStates => {
+      testStates.forEach((status, path) => {
+        let workspaceElement = this.workspace.getElement(path);
+        workspaceElement.state = status;
+        if (status === ElementState.Running) {
+          this.monitorTestStatus(workspaceElement);
+        }
+      });
+    });
   }
 
   setWorkspace(workspace: Workspace) {
@@ -219,8 +228,7 @@ export class NavigationComponent implements OnInit {
         self.evaluateGetStatusResponseAndRepeat(element.path, response, observer, self);
       });
     });
-
-    observableTestStatus.subscribe(status => { this.setTestStatus(element, status); });
+    observableTestStatus.takeUntil(this.stopPolling).subscribe(status => { this.setTestStatus(element, status); });
   }
 
   private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {

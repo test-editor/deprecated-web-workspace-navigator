@@ -3,4 +3,4 @@ export enum ElementState {
   LastRunSuccessful,
   LastRunFailed,
   Running
-};
+}
