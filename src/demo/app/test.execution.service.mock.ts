@@ -1,6 +1,7 @@
 import { Response, ResponseOptions } from '@angular/http';
 import { AuthHttp } from 'angular2-jwt';
 import { Injectable } from '@angular/core';
+import { ElementState } from '@testeditor/workspace-navigator';
 
 @Injectable()
 export class TestExecutionServiceMock {
@@ -34,4 +35,9 @@ private readonly statusMap = new Map<string, string>();
           })));
     }
   }
+
+  statusAll(): Promise<Map<string, ElementState>> {
+    return Promise.resolve(new Map<string, ElementState>([]));
+  }
+
 }
