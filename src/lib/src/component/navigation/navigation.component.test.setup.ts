@@ -60,7 +60,7 @@ export function mockedPersistenceService() {
 export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService);
   setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
-  setTestStatusServiceResponse(executionService);
+  mockTestStatusServiceWithRunningRunningSuccessSequence(executionService);
   return executionService;
 }
 
@@ -69,14 +69,14 @@ export function setTestExecutionServiceResponse(service: TestExecutionService, s
   when(service.execute(tclFile.path)).thenReturn(Promise.resolve(response));
 }
 
-export function setTestStatusServiceResponse(service: TestExecutionService) {
+export function mockTestStatusServiceWithRunningRunningSuccessSequence(service: TestExecutionService) {
   when(service.status(tclFile.path))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseAfterTermination));
 }
 
-export function setAsyncTestStatusServiceRunningResponse(service: TestExecutionService, delayMillis: number) {
+export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionService, delayMillis: number) {
   when(service.status(tclFile.path))
       .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
 }

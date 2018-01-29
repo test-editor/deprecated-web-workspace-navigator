@@ -20,7 +20,7 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, setAsyncTestStatusServiceRunningResponse, responseBeforeTermination }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
@@ -762,6 +762,7 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
   it('re-retrieves test status when the workspace is refreshed', async(() => {
     // given
     setupWorkspace(component, fixture);
+    let pathInWorkspaceToBeRefreshed = tclFile.path;
     let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().root);
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
     when(executionService.statusAll()).thenReturn(Promise.resolve(
@@ -774,9 +775,9 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
 
     // then
     fixture.whenStable().then(() => {
-      let updatedTclFile = component.getWorkspace().getElement('subfolder/file.tcl');
+      let updatedTclFile = component.getWorkspace().getElement(pathInWorkspaceToBeRefreshed);
       expect(updatedTclFile).not.toBe(tclFile);
-      expect(component.getWorkspace().getElement('subfolder/file.tcl').state).toEqual(ElementState.LastRunFailed);
+      expect(updatedTclFile.state).toEqual(ElementState.LastRunFailed);
     });
   }));
 
@@ -786,10 +787,10 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
     component.selectElement(tclFile.path);
     fixture.detectChanges();
     let responseDelayMillis = 10;
-    setAsyncTestStatusServiceRunningResponse(executionService, responseDelayMillis);
+    mockTestStatusServiceWithPromiseRunning(executionService, responseDelayMillis);
     component.run();
     tick(responseDelayMillis);
-    verify(executionService.status(tclFile.path)).twice();
+    verify(executionService.status(tclFile.path)).twice(); // once immediately, and again after the response delay
     resetCalls(executionService);
 
     // when
@@ -806,7 +807,7 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
     component.selectElement(tclFile.path);
     fixture.detectChanges();
     let responseDelayMillis = 10;
-    setAsyncTestStatusServiceRunningResponse(executionService, responseDelayMillis);
+    mockTestStatusServiceWithPromiseRunning(executionService, responseDelayMillis);
     let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().root);
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
     when(executionService.statusAll()).thenReturn(Promise.resolve(
@@ -826,6 +827,7 @@ it('emits "navigation.open" message when the enter key is pressed', () => {
     let updatedTclFile = component.getWorkspace().getElement(tclFile.path);
     expect(updatedTclFile).not.toBe(tclFile);
     expect(updatedTclFile.state).toEqual(ElementState.Running);
+    // tear down (stop observers that got started by component.run())
     component.ngOnDestroy();
     flush();
   }));

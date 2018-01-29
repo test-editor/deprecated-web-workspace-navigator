@@ -28,7 +28,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
   private workspace: Workspace;
-  private stopPolling: Subject<void> = new Subject<void>();
+  private stopPollingTestStatus: Subject<void> = new Subject<void>();
   uiState: UiState;
   workspaceNavigationHelper: WorkspaceNavigationHelper;
   errorMessage: string;
@@ -50,8 +50,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopPolling.next();
-    this.stopPolling.complete();
+    this.stopPollingTestStatus.next();
+    this.stopPollingTestStatus.complete();
   }
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
@@ -67,7 +67,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   private updateTestStates(): void {
-    this.stopPolling.next();
+    this.stopPollingTestStatus.next(); // remaining polling tasks refer to elements potentially invalidated by a workspace refresh
     this.executionService.statusAll().then(testStates => {
       testStates.forEach((status, path) => {
         let workspaceElement = this.workspace.getElement(path);
@@ -228,7 +228,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         self.evaluateGetStatusResponseAndRepeat(element.path, response, observer, self);
       });
     });
-    observableTestStatus.takeUntil(this.stopPolling).subscribe( status => this.setTestStatus(element, status) );
+    observableTestStatus.takeUntil(this.stopPollingTestStatus).subscribe( status => this.setTestStatus(element, status) );
   }
 
   private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {
