@@ -1,9 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
-import { WorkspaceElement, nameWithoutFileExtension } from '../../common/workspace-element';
+import { WorkspaceElement } from '../../common/workspace-element';
 import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
@@ -12,8 +12,10 @@ import { ElementState } from '../../common/element-state';
 import { KeyActions } from '../../common/key.actions';
 import { WorkspaceNavigationHelper } from '../../common/util/workspace.navigation.helper';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/takeUntil';
 import { Subscriber } from 'rxjs/Subscriber';
 import { Response } from '@angular/http';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-navigation',
@@ -21,11 +23,12 @@ import { Response } from '@angular/http';
   styleUrls: ['./navigation.component.css']
 })
 
-export class NavigationComponent implements OnInit {
+export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
   private workspace: Workspace;
+  private stopPollingTestStatus: Subject<void> = new Subject<void>();
   uiState: UiState;
   workspaceNavigationHelper: WorkspaceNavigationHelper;
   errorMessage: string;
@@ -46,14 +49,33 @@ export class NavigationComponent implements OnInit {
     this.subscribeToEvents();
   }
 
+  ngOnDestroy(): void {
+    this.stopPollingTestStatus.next();
+    this.stopPollingTestStatus.complete();
+  }
+
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     return this.persistenceService.listFiles().then(element => {
       this.setWorkspace(new Workspace(element));
       this.uiState.setExpanded(element.path, true);
+      this.updateTestStates();
       return this.workspace;
     }).catch(() => {
       this.errorMessage = 'Could not retrieve workspace!';
       return undefined;
+    });
+  }
+
+  private updateTestStates(): void {
+    this.stopPollingTestStatus.next(); // remaining polling tasks refer to elements potentially invalidated by a workspace refresh
+    this.executionService.statusAll().then(testStates => {
+      testStates.forEach((status, path) => {
+        let workspaceElement = this.workspace.getElement(path);
+        workspaceElement.state = status;
+        if (status === ElementState.Running) {
+          this.monitorTestStatus(workspaceElement);
+        }
+      });
     });
   }
 
@@ -141,13 +163,13 @@ export class NavigationComponent implements OnInit {
     this.executionService.execute(elementToBeExecuted.path).then(response => {
       if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
         elementToBeExecuted.state = ElementState.Running;
-        this.notification = `Execution of "${nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
+        this.notification = `Execution of "${WorkspaceElement.nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
         setTimeout(() => {
           this.notification = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
         this.monitorTestStatus(elementToBeExecuted);
       } else {
-        this.errorMessage = `The test "${nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
+        this.errorMessage = `The test "${WorkspaceElement.nameWithoutFileExtension(elementToBeExecuted)}" could not be started.`;
         setTimeout(() => {
           this.errorMessage = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
@@ -206,8 +228,7 @@ export class NavigationComponent implements OnInit {
         self.evaluateGetStatusResponseAndRepeat(element.path, response, observer, self);
       });
     });
-
-    observableTestStatus.subscribe(status => { this.setTestStatus(element, status); });
+    observableTestStatus.takeUntil(this.stopPollingTestStatus).subscribe( status => this.setTestStatus(element, status) );
   }
 
   private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {
@@ -217,7 +238,7 @@ export class NavigationComponent implements OnInit {
     } else if (status !== 'RUNNING') {
       observer.next(status);
       observer.complete();
-    } else {
+    } else if (!observer.closed) {
       observer.next(status);
       self.executionService.status(testPath).then(response => {
         self.evaluateGetStatusResponseAndRepeat(testPath, response, observer, self);
