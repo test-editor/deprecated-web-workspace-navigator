@@ -1,10 +1,10 @@
 export class PathValidator {
 
   /** Matches dot segements such as "xyz/./", "/../" or "../". */
-  static readonly dotSegment = /(\/|^)\.+\//;
+  static readonly dotSegment = new RegExp("(^|/)\\.+/");
   static readonly dotSegmentMessage = 'Relative path segments such as "{1}" are not allowed.';
 
-  static readonly segmentTooLong = /[^\/\\]{256,}/;
+  static readonly segmentTooLong = new RegExp("[^/]{256,}");
   static readonly segmentTooLongMessage = 'Folder or file names must have a maximum length of 255 characters.';
 
   isValid(input: string): boolean {
