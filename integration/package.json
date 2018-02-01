@@ -33,7 +33,7 @@
     "@angular/http": "5.2.2",
     "@angular/platform-browser": "5.2.2",
     "@angular/platform-browser-dynamic": "5.2.2",
-    "@testeditor/messaging-service": "1.2.0",
+    "@testeditor/messaging-service": "1.4.0",
     "@testeditor": "file:../dist/",
     "angular2-jwt": "0.2.3",
     "bootstrap": "4.0.0",
