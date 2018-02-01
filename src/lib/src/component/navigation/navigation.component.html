@@ -2,9 +2,9 @@
   <div *ngIf="getWorkspace()">
     <div class="icon-menu">
       <div class="icons-left">
-        <button id="new-file" class="icon glyphicon glyphicon-file" (click)="newElement('file')" title="create new file"></button>
-        <button id="new-folder" class="icon glyphicon glyphicon-folder-close" (click)="newElement('folder')" title="create new folder"></button>
-        <button id="run" class="icon glyphicon glyphicon-play" (click)="run()" [disabled]="!selectionIsExecutable()" title="execute test"></button>
+        <button id="new-file" class="icon fa fa-file" (click)="newElement('file')" title="create new file"></button>
+        <button id="new-folder" class="icon fa fa-folder" (click)="newElement('folder')" title="create new folder"></button>
+        <button id="run" class="icon fa fa-play" (click)="run()" [disabled]="!selectionIsExecutable()" title="execute test"></button>
       </div>
       <div class="icons-right">
         <button id="refresh" class="icon fa fa-refresh" aria-hidden="true" (click)="refresh()" title="refresh workspace"></button>
