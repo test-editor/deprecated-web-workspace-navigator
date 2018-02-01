@@ -55,7 +55,8 @@
     "@angular/forms": ">=4.0.0 <6.0.0",
     "@angular/http": ">=4.0.0 <6.0.0",
     "@testeditor/messaging-service": "^1.0.0",
-    "angular2-jwt": "^0.2.3"
+    "angular2-jwt": "^0.2.3",
+    "bootstrap": ">=4.0.0"
   },
   "devDependencies": {
     "@angular/common": "5.2.2",
