@@ -52,8 +52,5 @@ export const root: WorkspaceElement = {
  *   - lastChild
  */
 export function createWorkspaceWithSubElements(): Workspace {
-  const mockPersistenceService = mock(PersistenceService);
-  when(mockPersistenceService.listFiles).thenReturn(() => Promise.resolve(root));
-  const mockExecutionService = mock(TestExecutionService);
-  return new Workspace(instance(mockPersistenceService), instance(mock(TestExecutionService)));
+  return new Workspace(root);
 };

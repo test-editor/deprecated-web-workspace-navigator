@@ -10,7 +10,6 @@ import * as events from '../event-types';
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { ElementState } from '../../common/element-state';
 import { KeyActions } from '../../common/key.actions';
-import { WorkspaceNavigationHelper } from '../../common/util/workspace.navigation.helper';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/takeUntil';
 import { Subscriber } from 'rxjs/Subscriber';
@@ -27,9 +26,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
+  private readonly workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
-  uiState: UiState;
-  workspaceNavigationHelper: WorkspaceNavigationHelper;
   errorMessage: string;
   notification: string;
 
@@ -37,11 +35,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
-    private executionService: TestExecutionService,
-    private workspace: Workspace
+    private executionService: TestExecutionService
   ) {
-    this.uiState = new UiState();
-    this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
+    this.workspace = new Workspace(null);
   }
 
   ngOnInit(): void {
@@ -55,9 +51,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
-    return this.persistenceService.listFiles().then(element => {
-      this.reloadWorkspace();
-      this.uiState.setExpanded(element.path, true);
+    const workspaceFiles = this.persistenceService.listFiles();
+    return workspaceFiles.then(element => {
+      this.workspace.reload(element);
       this.updateTestStates();
       return this.workspace;
     }).catch(() => {
@@ -79,42 +75,37 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
   }
 
-  reloadWorkspace() {
-    this.workspace.load();
-    this.workspaceNavigationHelper = new WorkspaceNavigationHelper(this.workspace, this.uiState);
-  }
-
   getWorkspace() {
     return this.workspace;
   }
 
   subscribeToEvents(): void {
     this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
-      this.uiState.activeEditorPath = element.path;
-      this.uiState.selectedElement = null;
+      this.workspace.setActive(element.path);
+      this.workspace.setSelected(null);
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.EDITOR_CLOSE, element => {
-      if (element.path === this.uiState.activeEditorPath) {
-        this.uiState.activeEditorPath = null;
+      if (element.path === this.workspace.getActive()) {
+        this.workspace.setActive(null);
         this.changeDetectorRef.detectChanges();
       }
-      if (this.uiState.isDirty(element.path)) {
-        this.uiState.setDirty(element.path, false);
+      if (this.workspace.isDirty(element.path)) {
+        this.workspace.setDirty(element.path, false);
         this.changeDetectorRef.detectChanges();
       }
     });
     this.messagingService.subscribe(events.EDITOR_DIRTY_CHANGED, element => {
-      this.uiState.setDirty(element.path, element.dirty);
+      this.workspace.setDirty(element.path, element.dirty);
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.NAVIGATION_DELETED, element => {
-      let isSelectedElement = this.uiState.selectedElement && this.uiState.selectedElement.path === element.path;
+      let isSelectedElement = this.workspace.getSelected() && this.workspace.getSelected() === element.path;
       if (isSelectedElement) {
-        this.uiState.selectedElement = null;
+        this.workspace.setSelected(null);
       }
-      this.uiState.setDirty(element.path, false);
-      this.uiState.setExpanded(element.path, false);
+      this.workspace.setDirty(element.path, false);
+      this.workspace.setExpanded(element.path, false);
       this.retrieveWorkspaceRoot();
       this.changeDetectorRef.detectChanges();
     });
@@ -122,7 +113,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.handleNavigationCreated(payload);
     });
     this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
-      this.uiState.selectedElement = element as WorkspaceElement;
+      this.workspace.setSelected = element.path;
       this.changeDetectorRef.detectChanges();
     });
   }
@@ -137,16 +128,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   newElement(type: string): void {
-    let selectedElement = this.uiState.selectedElement;
-    if (selectedElement) {
-      if (selectedElement.type === ElementType.Folder) {
-        this.uiState.setExpanded(selectedElement.path, true);
-      }
-    }
-    this.uiState.newElementRequest = {
-      selectedElement: selectedElement,
-      type: type
-    };
+    this.workspace.newElement(type);
     this.changeDetectorRef.detectChanges();
   }
 
@@ -155,12 +137,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   run(): void {
-    let elementToBeExecuted = this.uiState.selectedElement;
-    if (elementToBeExecuted == null) {
-      elementToBeExecuted = this.workspace.getElement(this.uiState.activeEditorPath);
+    let elementPathToBeExecuted = this.workspace.getSelected();
+    if (elementPathToBeExecuted == null) {
+      elementPathToBeExecuted = this.workspace.getActive();
     }
 
-    this.executionService.execute(elementToBeExecuted.path).then(response => {
+    this.executionService.execute(elementPathToBeExecuted).then(response => {
+      const elementToBeExecuted = this.workspace.getElement(elementPathToBeExecuted)
       if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
         elementToBeExecuted.state = ElementState.Running;
         this.notification = `Execution of "${WorkspaceElement.nameWithoutFileExtension(elementToBeExecuted)}" has been started.`;
@@ -178,32 +161,28 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   collapseAll(): void {
-    this.uiState.clearExpanded();
-    this.uiState.setExpanded(this.workspace.getRootPath(), true);
+    this.workspace.collapseAll();
   }
 
   revealElement(path: string): void {
-    let subpaths = this.workspace.getSubpaths(path);
-    subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
-    this.uiState.setExpanded(this.workspace.getRootPath(), true);
+    this.workspace.revealElement(path);
   }
 
   selectElement(path: string): void {
-    let element = this.workspace.getElement(path);
-    this.uiState.selectedElement = element;
+    this.workspace.setSelected(path);
   }
 
   selectionIsExecutable(): boolean {
-    let contextElement = this.getContextElement();
+    let contextElement = this.workspace.getElement(this.getContextElement());
 
     return contextElement !== null && contextElement.path.endsWith('.tcl') && contextElement.state !== ElementState.Running;
   }
 
-  private getContextElement(): WorkspaceElement {
-    if (this.uiState.selectedElement !== null) {
-      return this.uiState.selectedElement;
-    } else if (this.uiState.activeEditorPath != null) {
-      return this.workspace.getElement(this.uiState.activeEditorPath);
+  private getContextElement(): string {
+    if (this.workspace.getSelected() !== null) {
+      return this.workspace.getSelected();
+    } else if (this.workspace.getActive() != null) {
+      return this.workspace.getActive();
     } else {
       return null;
     }
@@ -211,7 +190,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   onKeyUp(event: KeyboardEvent) {
     console.log('KeyUp event received:\n' + event);
-    let element = this.uiState.selectedElement;
+    let element = this.workspace.getElement(this.workspace.getSelected());
     switch (event.key) {
       case KeyActions.EXPAND_NODE: return this.expandNode(element);
       case KeyActions.COLLAPSE_NODE: return this.collapseNode(element);
@@ -257,28 +236,28 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   private expandNode(element: WorkspaceElement): void {
     if (element !== null && element.type === ElementType.Folder) {
-      this.uiState.setExpanded(element.path, true);
+      this.workspace.setExpanded(element.path, true);
     }
   }
 
   private collapseNode(element: WorkspaceElement): void {
     if (element !== null && element.type === ElementType.Folder) {
-      this.uiState.setExpanded(element.path, false);
+      this.workspace.setExpanded(element.path, false);
     }
   }
 
   private selectPredecessor(element: WorkspaceElement): void {
-    let predecessor = this.workspaceNavigationHelper.previousVisible(element);
+    let predecessor = this.workspace.previousVisible(element);
     if (predecessor != null) {
-      this.uiState.selectedElement = predecessor;
+      this.workspace.setSelected(predecessor.path);
       this.changeDetectorRef.detectChanges();
     }
   }
 
   private selectSuccessor(element: WorkspaceElement): void {
-    let successor = this.workspaceNavigationHelper.nextVisible(element);
+    let successor = this.workspace.nextVisible(element);
     if (successor != null) {
-      this.uiState.selectedElement = successor;
+      this.workspace.setSelected(successor.path);
       this.changeDetectorRef.detectChanges();
     }
   }

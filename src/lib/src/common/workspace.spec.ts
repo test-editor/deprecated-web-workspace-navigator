@@ -23,7 +23,7 @@ describe('Workspace', () => {
     let retrievedElement = workspace.getElement('root');
 
     // then
-    expect(retrievedElement).toBe(workspace.root);
+    expect(retrievedElement.path).toBe(workspace.getRootPath());
   });
 
   it('normalizes paths when retrieving elements', () => {
@@ -34,7 +34,7 @@ describe('Workspace', () => {
     let retrievedElement = workspace.getElement('some/folder');
 
     // then
-    expect(retrievedElement).toBe(workspace.root);
+    expect(retrievedElement.path).toBe(workspace.getRootPath());
   });
 
 });
@@ -94,7 +94,7 @@ describe('Workspace.getParent()', () => {
       it('returns null for the root element', () => {
         // given
         let workspace = createWorkspaceWithSubElements();
-        let path = workspace.root.path;
+        let path = workspace.getRootPath();
         // when
         let actualParent = workspace.getParent(path);
         // then
@@ -114,7 +114,7 @@ describe('Workspace.getParent()', () => {
       it('returns root, if root´s normalized path is the empty string, for a path not containing any slashes', () => {
         // given
         let workspace = createWorkspaceWithRootFolder('/');
-        workspace.root.children.push({
+        workspace.getElement(workspace.getRootPath()).children.push({
           name: 'firstChild',
           path: 'firstChild',
           type: ElementType.File,
@@ -123,7 +123,7 @@ describe('Workspace.getParent()', () => {
         // when
         let actualParent = workspace.getParent('firstChild');
         // then
-        expect(actualParent).toEqual(workspace.root);
+        expect(actualParent.path).toEqual(workspace.getRootPath());
       });
 
     });
