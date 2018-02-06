@@ -202,7 +202,7 @@ describe('NewElementComponent', () => {
 
     // then
     let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["glyphicon-file"]).toBeTruthy();
+    expect(iconType.classes["fa-file"]).toBeTruthy();
   });
 
   it('shows folder icon when a new folder should be created', () => {
@@ -214,7 +214,7 @@ describe('NewElementComponent', () => {
 
     // then
     let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["glyphicon-folder-close"]).toBeTruthy();
+    expect(iconType.classes["fa-folder"]).toBeTruthy();
   });
 
   it('validation for valid input does not show error message', () => {

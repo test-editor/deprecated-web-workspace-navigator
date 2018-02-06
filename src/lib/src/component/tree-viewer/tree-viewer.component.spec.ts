@@ -164,7 +164,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["glyphicon-chevron-right"]).toBeTruthy();
+    expect(icon.classes["fa-chevron-right"]).toBeTruthy();
   });
 
   it('has chevron-down icon for expanded folders', () => {
@@ -175,7 +175,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["glyphicon-chevron-down"]).toBeTruthy();
+    expect(icon.classes["fa-chevron-down"]).toBeTruthy();
   });
 
   it('sets expanded state when clicked on chevron icon', () => {
@@ -438,7 +438,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes['glyphicon-picture']).toBeTruthy();
+    expect(icon.classes['fa-image']).toBeTruthy();
   });
 
   it('shows spinning icon for running tests', () => {
