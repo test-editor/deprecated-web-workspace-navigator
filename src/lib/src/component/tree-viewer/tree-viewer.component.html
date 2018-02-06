@@ -2,10 +2,10 @@
   <div class="tree-view-item">
     <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
-        'active': model.path === uiState.activeEditorPath,
-        'dirty': uiState.isDirty(model.path),
+        'active': model.path === workspace.getActive(),
+        'dirty': workspace.isDirty(model.path),
         'header': level == 0,
-        'selected': model.path === uiState.selectedElement?.path
+        'selected': workspace.isSelected(model.path)
       }">
 
       <div>
@@ -44,7 +44,7 @@
   </div>
   <div *ngIf="isExpanded()">
     <div *ngFor="let child of model.children">
-      <nav-tree-viewer [model]="child" [uiState]="uiState" [level]="level + 1"></nav-tree-viewer>
+      <nav-tree-viewer [model]="child" [workspace]="workspace" [level]="level + 1"></nav-tree-viewer>
     </div>
   </div>
 </div>

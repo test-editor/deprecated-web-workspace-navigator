@@ -26,7 +26,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  private workspace: Workspace;
+  private readonly workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
   errorMessage: string;
   notification: string;
@@ -37,6 +37,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private persistenceService: PersistenceService,
     private executionService: TestExecutionService
   ) {
+    this.workspace = new Workspace();
   }
 
   ngOnInit(): void {
@@ -50,9 +51,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
-    const workspaceFiles = this.persistenceService.listFiles();
-    return workspaceFiles.then(element => {
-      this.workspace = new Workspace(element);
+    return this.persistenceService.listFiles().then(element => {
+      this.workspace.reload(element);
       this.updateTestStates();
       return this.workspace;
     }).catch(() => {
@@ -112,7 +112,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.handleNavigationCreated(payload);
     });
     this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
-      this.workspace.setSelected = element.path;
+      this.workspace.setSelected(element.path);
       this.changeDetectorRef.detectChanges();
     });
   }
@@ -174,7 +174,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   selectionIsExecutable(): boolean {
     let contextElement = this.workspace.getElement(this.getContextElement());
 
-    return contextElement !== null && contextElement.path.endsWith('.tcl') && contextElement.state !== ElementState.Running;
+    return contextElement != null && contextElement.path.endsWith('.tcl') && contextElement.state !== ElementState.Running;
   }
 
   private getContextElement(): string {

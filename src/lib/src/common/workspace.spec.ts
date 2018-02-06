@@ -10,7 +10,9 @@ function createWorkspaceWithRootFolder(path: string): Workspace {
     type: ElementType.Folder,
     children: []
   };
-  return new Workspace(element);
+  const workspace = new Workspace();
+  workspace.reload(element);
+  return workspace;
 }
 
 describe('Workspace', () => {

@@ -17,6 +17,7 @@ import * as events from '../event-types';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
 import { ElementState } from '../../common/element-state';
+import { Workspace } from '../../common/workspace';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -78,7 +79,8 @@ describe('TreeViewerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(TreeViewerComponent);
     component = fixture.componentInstance;
-    component.uiState = new UiState();
+    component.workspace = new Workspace();
+    component.workspace.reload(singleEmptyFolder);
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
   });
@@ -103,6 +105,10 @@ describe('TreeViewerComponent', () => {
 
   it('folded folder does not display sub elements', async(() => {
     // given
+    component.workspace = new Workspace();
+    component.workspace.reload({
+      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
+    });
     component.model = foldedFolderWithSubfolders;
 
     // when
@@ -122,10 +128,14 @@ describe('TreeViewerComponent', () => {
 
   it('expands folder when UI state is set', async(() => {
     // given
+    component.workspace = new Workspace();
+    component.workspace.reload({
+      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
+    });
     component.model = foldedFolderWithSubfolders;
 
     // when
-    component.uiState.setExpanded(component.model.path, true);
+    component.workspace.setExpanded(component.model.path, true);
     fixture.detectChanges();
 
     // then
@@ -146,6 +156,10 @@ describe('TreeViewerComponent', () => {
 
   it('sets expanded state when double-clicked', () => {
     // given
+    component.workspace = new Workspace();
+    component.workspace.reload({
+      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
+    });
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
 
@@ -153,12 +167,16 @@ describe('TreeViewerComponent', () => {
     getItemKey().triggerEventHandler('dblclick', null);
 
     // then
-    let expandedState = component.uiState.isExpanded(component.model.path);
+    let expandedState = component.workspace.isExpanded(component.model.path);
     expect(expandedState).toBeTruthy();
   });
 
   it('has chevron-right icon for unexpanded folders', () => {
     // when
+    component.workspace = new Workspace();
+    component.workspace.reload({
+      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
+    });
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
@@ -169,7 +187,7 @@ describe('TreeViewerComponent', () => {
 
   it('has chevron-down icon for expanded folders', () => {
     // when
-    component.uiState.setExpanded(foldedFolderWithSubfolders.path, true);
+    component.workspace.setExpanded(foldedFolderWithSubfolders.path, true);
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
@@ -180,6 +198,10 @@ describe('TreeViewerComponent', () => {
 
   it('sets expanded state when clicked on chevron icon', () => {
     // given
+    component.workspace = new Workspace();
+    component.workspace.reload({
+      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
+    });
     component.model = foldedFolderWithSubfolders;
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
@@ -188,7 +210,7 @@ describe('TreeViewerComponent', () => {
     icon.triggerEventHandler('click', null);
 
     // then
-    let expandedState = component.uiState.isExpanded(component.model.path);
+    let expandedState = component.workspace.isExpanded(component.model.path);
     expect(expandedState).toBeTruthy();
   })
 
@@ -266,7 +288,7 @@ describe('TreeViewerComponent', () => {
     expect(getItemKey().classes.active).toBeFalsy();
 
     // when
-    component.uiState.activeEditorPath = singleFile.path;
+    component.workspace.setActive(singleFile.path);
     fixture.detectChanges();
 
     // then
@@ -280,7 +302,7 @@ describe('TreeViewerComponent', () => {
     expect(getItemKey().classes.dirty).toBeFalsy();
 
     // when
-    component.uiState.setDirty(singleFile.path, true);
+    component.workspace.setDirty(singleFile.path, true);
     fixture.detectChanges();
 
     // then
@@ -289,12 +311,14 @@ describe('TreeViewerComponent', () => {
 
   it('has css class "selected" if given by the UI state', () => {
     // given
+    component.workspace = new Workspace();
+    component.workspace.reload(singleFile);
     component.model = singleFile;
     fixture.detectChanges();
     expect(getItemKey().classes.selected).toBeFalsy();
 
     // when
-    component.uiState.selectedElement = singleFile;
+    component.workspace.setSelected(singleFile.path);
     fixture.detectChanges();
 
     // then

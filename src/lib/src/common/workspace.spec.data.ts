@@ -52,5 +52,7 @@ export const root: WorkspaceElement = {
  *   - lastChild
  */
 export function createWorkspaceWithSubElements(): Workspace {
-  return new Workspace(root);
+  const workspace = new Workspace();
+  workspace.reload(root);
+  return workspace;
 };

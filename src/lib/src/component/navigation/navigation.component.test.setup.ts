@@ -81,7 +81,7 @@ export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionSe
       .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
 }
 
-export function setupWorkspace(component: NavigationComponent, mockedPersistenceService: PersistenceService, fixture: ComponentFixture<NavigationComponent>) {
+export function setupWorkspace(component: NavigationComponent, mockedPersistenceService: PersistenceService, fixture: ComponentFixture<NavigationComponent>): Promise<Workspace> {
   const subfolder: WorkspaceElement = {
     name: 'subfolder',
     path: 'subfolder',
@@ -106,6 +106,8 @@ export function setupWorkspace(component: NavigationComponent, mockedPersistence
     children: [subfolder]
   };
   when(mockedPersistenceService.listFiles()).thenReturn(Promise.resolve(root));
-  component.retrieveWorkspaceRoot();
-  fixture.detectChanges();
+  return component.retrieveWorkspaceRoot().then(workspace => {
+    fixture.detectChanges();
+    return workspace;
+  });
 }

@@ -12,9 +12,8 @@ export class Workspace {
   private uiState: UiState;
   private pathToElement = new Map<string, WorkspaceElement>();
 
-  constructor(root: WorkspaceElement) {
+  constructor() {
     this.uiState = new UiState();
-    this.reload(root);
   }
 
   public reload(newRoot: WorkspaceElement): void {
@@ -61,8 +60,12 @@ export class Workspace {
   }
 
   getElement(path: string): WorkspaceElement | undefined {
-    let normalized = this.normalizePath(path);
-    return this.pathToElement.get(normalized);
+    if (path != null) {
+      let normalized = this.normalizePath(path);
+      return this.pathToElement.get(normalized);
+    } else {
+      return undefined;
+    }
   }
 
   getParent(path: string): WorkspaceElement {
@@ -92,7 +95,12 @@ export class Workspace {
   }
 
   getSelected(): string {
-    return this.uiState.selectedElement.path;
+    return this.uiState.selectedElement ? this.uiState.selectedElement.path : null;
+  }
+
+  isSelected(path: string): boolean {
+    const selected = this.getSelected();
+    return selected === path;
   }
 
   setSelected(path: string) {
@@ -115,6 +123,10 @@ export class Workspace {
     this.uiState.setExpanded(path, expanded);
   }
 
+  toggleExpanded(path: string): void {
+    this.uiState.toggleExpanded(path);
+  }
+
   collapseAll(): void {
     this.uiState.clearExpanded();
     this.uiState.setExpanded(this.root.path, true);
@@ -124,6 +136,18 @@ export class Workspace {
     const subpaths = this.getSubpaths(path);
     subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
     this.uiState.setExpanded(this.root.path, true);
+  }
+
+  hasNewElementRequest(): boolean {
+    return this.uiState.newElementRequest != null;
+  }
+
+  getNewElement() {
+    if (this.hasNewElementRequest()) {
+      return this.uiState.newElementRequest.selectedElement;
+    } else {
+      return null;
+    }
   }
 
   newElement(type: string) {
