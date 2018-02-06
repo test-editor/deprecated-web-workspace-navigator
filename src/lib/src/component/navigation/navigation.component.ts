@@ -26,7 +26,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  private readonly workspace: Workspace;
+  private workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
   errorMessage: string;
   notification: string;
@@ -37,7 +37,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private persistenceService: PersistenceService,
     private executionService: TestExecutionService
   ) {
-    this.workspace = new Workspace(null);
   }
 
   ngOnInit(): void {
@@ -53,7 +52,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
     const workspaceFiles = this.persistenceService.listFiles();
     return workspaceFiles.then(element => {
-      this.workspace.reload(element);
+      this.workspace = new Workspace(element);
       this.updateTestStates();
       return this.workspace;
     }).catch(() => {

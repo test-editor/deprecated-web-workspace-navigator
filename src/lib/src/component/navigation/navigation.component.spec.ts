@@ -75,9 +75,11 @@ describe('NavigationComponent', () => {
     tclFile.state = ElementState.Idle;
   });
 
-  it('should be created', () => {
-    expect(component).toBeTruthy();
-  });
+  it('should be created', async(() => {
+    fixture.whenStable().then(() => {
+      expect(component).toBeTruthy();
+    });
+  }));
 
   it('sets workspaceRoot initially', async(() => {
     fixture.whenStable().then(() => {
@@ -91,7 +93,7 @@ describe('NavigationComponent', () => {
     });
   }));
 
-  it('displays an error when workspace could not be retrieved', async(() => {
+  fit('displays an error when workspace could not be retrieved', async(() => {
     // given
     when(persistenceService.listFiles()).thenReturn(Promise.reject("failed"));
 
@@ -183,7 +185,7 @@ describe('NavigationComponent', () => {
     messagingService.publish(events.NAVIGATION_SELECT, tclFile);
 
     // then
-    expect(component.getWorkspace().getSelected()).toEqual(tclFile);
+    expect(component.getWorkspace().getSelected()).toEqual(tclFile.path);
   });
 
   // it('updates the UI state for creating a new file', () => {
@@ -299,7 +301,7 @@ describe('NavigationComponent', () => {
     component.selectElement(subfolder.path + '/');
 
     // then
-    expect(component.getWorkspace().getSelected()).toBe(subfolder);
+    expect(component.getWorkspace().getSelected()).toBe(subfolder.path);
   });
 
   it('reveals and selects element when an "navigation.created" event is received', async(() => {
@@ -321,7 +323,7 @@ describe('NavigationComponent', () => {
       expect(component.getWorkspace().isExpanded(subfolder.path)).toBeTruthy();
       expect(component.getWorkspace().isExpanded(component.getWorkspace().getRootPath())).toBeTruthy();
       expect(component.getWorkspace().isExpanded(newFolder.path)).toBeFalsy();
-      expect(component.getWorkspace().getSelected()).toBe(newFolder);
+      expect(component.getWorkspace().getSelected()).toBe(newFolder.path);
     });
   }));
 
@@ -634,7 +636,7 @@ describe('NavigationComponent', () => {
     sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
-    expect(component.getWorkspace().getSelected()).toEqual(succeedingSiblingOfTclFile);
+    expect(component.getWorkspace().getSelected()).toEqual(succeedingSiblingOfTclFile.path);
 
   }));
 
@@ -663,7 +665,7 @@ describe('NavigationComponent', () => {
     sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
-    expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile);
+    expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
 
   }));
 
@@ -678,7 +680,7 @@ describe('NavigationComponent', () => {
     sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
-    expect(component.getWorkspace().getSelected()).toEqual(lastElement);
+    expect(component.getWorkspace().getSelected()).toEqual(lastElement.path);
 
   }));
 
@@ -693,7 +695,7 @@ it('selects the preceding sibling element when the up arrow key is pressed', asy
   sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
-  expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile);
+  expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
 
 }));
 
@@ -723,7 +725,7 @@ it('selects the preceding sibling`s last child element when the up arrow key is 
   sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
   // then
-  expect(component.getWorkspace().getSelected()).toEqual(component.getWorkspace().getElement('subfolder/newFolder'));
+  expect(component.getWorkspace().getSelected()).toEqual('subfolder/newFolder');
 
 }));
 
