@@ -62,7 +62,8 @@ export class Workspace {
   getElement(path: string): WorkspaceElement | undefined {
     if (path != null) {
       let normalized = this.normalizePath(path);
-      return this.pathToElement.get(normalized);
+      const element = this.pathToElement.get(normalized);
+      return { name: element.name, path: element.path, type: element.type, children: [] };
     } else {
       return undefined;
     }
