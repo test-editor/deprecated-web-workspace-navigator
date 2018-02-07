@@ -1,7 +1,7 @@
 import { ElementType } from './element-type';
 import { Workspace } from './workspace';
 import { WorkspaceElement } from './workspace-element';
-import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, lastChild, greatGrandChild } from './workspace.spec.data';
+import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, lastChild, greatGrandChild, root } from './workspace.spec.data';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -13,10 +13,6 @@ function createWorkspaceWithRootFolder(path: string): Workspace {
   const workspace = new Workspace();
   workspace.reload(element);
   return workspace;
-}
-
-function getRoot(workspace: Workspace): WorkspaceElement {
-  return workspace.getElement(workspace.getRootPath());
 }
 
 describe('Workspace', () => {
@@ -84,53 +80,53 @@ describe('Workspace.getSubpaths()', () => {
 
 });
 
-describe('Workspace.getParent()', () => {
+// describe('Workspace.getParent()', () => {
 
-  it('returns the parent element', () => {
-    // given
-    let path = grandChild.path;
-    // when
-    let actualParent = createWorkspaceWithSubElements().getParent(path);
-    // then
-    expect(actualParent).toEqual(middleChild);
-  });
+//   it('returns the parent element', () => {
+//     // given
+//     let path = grandChild.path;
+//     // when
+//     let actualParent = createWorkspaceWithSubElements().getParent(path);
+//     // then
+//     expect(actualParent).toEqual(middleChild.path);
+//   });
 
-  it('returns null for the root element', () => {
-    // given
-    let workspace = createWorkspaceWithSubElements();
-    let path = workspace.getRootPath();
-    // when
-    let actualParent = workspace.getParent(path);
-    // then
-    expect(actualParent).toBeNull();
-  });
+//   it('returns null for the root element', () => {
+//     // given
+//     let workspace = createWorkspaceWithSubElements();
+//     let path = root.path;
+//     // when
+//     let actualParent = workspace.getParent(path);
+//     // then
+//     expect(actualParent).toBeNull();
+//   });
 
 
-  it('returns null for parent of empty path', () => {
-    // given
-    let workspace = createWorkspaceWithRootFolder('/');
-    // when
-    let actualParent = workspace.getParent('');
-    // then
-    expect(actualParent).toBeNull();
-  });
+//   it('returns null for parent of empty path', () => {
+//     // given
+//     let workspace = createWorkspaceWithRootFolder('/');
+//     // when
+//     let actualParent = workspace.getParent('');
+//     // then
+//     expect(actualParent).toBeNull();
+//   });
 
-  it('returns root, if root´s normalized path is the empty string, for a path not containing any slashes', () => {
-    // given
-    let workspace = createWorkspaceWithRootFolder('/');
-    workspace.getElement(workspace.getRootPath()).children.push({
-      name: 'firstChild',
-      path: 'firstChild',
-      type: ElementType.File,
-      children: []
-    });
-    // when
-    let actualParent = workspace.getParent('firstChild');
-    // then
-    expect(actualParent.path).toEqual(workspace.getRootPath());
-  });
+//   it('returns root, if root´s normalized path is the empty string, for a path not containing any slashes', () => {
+//     // given
+//     let workspace = createWorkspaceWithRootFolder('/');
+//     workspace.getElement(root.path).children.push({
+//       name: 'firstChild',
+//       path: 'firstChild',
+//       type: ElementType.File,
+//       children: []
+//     });
+//     // when
+//     let actualParent = workspace.getParent('firstChild');
+//     // then
+//     expect(actualParent).toEqual(workspace.getRootPath());
+//   });
 
-});
+// });
 
 describe('Workspace Navigation', () => {
 
@@ -139,173 +135,200 @@ describe('Workspace Navigation', () => {
 
   beforeEach(() => {
     workspace = createWorkspaceWithSubElements();
-    workspace.setExpanded(workspace.getRootPath(), true);
+    workspace.setExpanded(root.path, true);
     workspace.setExpanded(middleChild.path, true);
     workspace.setExpanded(grandChild.path, true);
   });
 
-  describe('nextVisible()', () => {
+  describe('selectSuccessor()', () => {
 
     it('returns the first child element', () => {
+      // given
+      workspace.setSelected(root.path);
+
       // when
-      let actualSuccessor = workspace.nextVisible(getRoot(workspace));
+      workspace.selectSuccessor();
 
       // then
-      expect(actualSuccessor).toEqual(firstChild);
+      expect(workspace.getSelected()).toEqual(firstChild.path);
     });
 
     it('returns the next sibling element', () => {
+      // given
+      workspace.setSelected(firstChild.path);
+
       // when
-      let actualSuccessor = workspace.nextVisible(firstChild);
+      workspace.selectSuccessor();
 
       // then
-      expect(actualSuccessor).toEqual(middleChild);
+      expect(workspace.getSelected()).toEqual(middleChild.path);
     });
 
     it('returns the parent`s next sibling element when collapsed', () => {
       // given
+      workspace.setSelected(grandChild.path);
       workspace.setExpanded(grandChild.path, false);
+
       // when
-      let actualSuccessor = workspace.nextVisible(grandChild);
+      workspace.selectSuccessor();
 
       // then
-      expect(actualSuccessor).toEqual(lastChild);
+      expect(workspace.getSelected()).toEqual(lastChild.path);
     });
 
-    it('returns null', () => {
+    it('does not change selection for last element', () => {
+      // given
+      workspace.setSelected(lastChild.path);
+
       // when
-      let actualSuccessor = workspace.nextVisible(lastChild);
+      workspace.selectSuccessor();
 
       // then
-      expect(actualSuccessor).toEqual(null);
+      expect(workspace.getSelected()).toEqual(lastChild.path);
     });
 
     it('skips collapsed elements and returns next sibling element', () => {
       // given
+      workspace.setSelected(lastChild.path);
       workspace.setExpanded(middleChild.path, false);
+
       // when
-      let actualSuccessor = workspace.nextVisible(middleChild);
+      workspace.selectSuccessor();
 
       // then
-      expect(actualSuccessor).toEqual(lastChild);
+      expect(workspace.getSelected()).toEqual(lastChild.path);
     });
   });
 
-  describe('nextSiblingOrAncestorSibling()', () => {
+  // describe('nextSiblingOrAncestorSibling()', () => {
 
-    it('returns null for root', () => {
-      // when
-      let actualSuccessor = workspace.nextSiblingOrAncestorSibling(null, getRoot(workspace));
+  //   it('returns null for root', () => {
+  //     // given
+  //     workspace.setSelected(root.path);
+  //     // when
+  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(null, getRoot(workspace));
 
-      // then
-      expect(actualSuccessor).toEqual(null);
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(null);
+  //   });
 
-    it('returns null last element', () => {
-      // when
-      let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), lastChild);
+  //   it('returns null last element', () => {
+  //     // when
+  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), lastChild);
 
-      // then
-      expect(actualSuccessor).toEqual(null);
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(null);
+  //   });
 
-    it('returns next sibling', () => {
-      // when
-      let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), firstChild);
+  //   it('returns next sibling', () => {
+  //     // when
+  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), firstChild);
 
-      // then
-      expect(actualSuccessor).toEqual(middleChild);
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(middleChild);
+  //   });
 
-    it('returns parent`s next sibling', () => {
-      // when
-      let actualSuccessor = workspace.nextSiblingOrAncestorSibling(middleChild, grandChild);
+  //   it('returns parent`s next sibling', () => {
+  //     // when
+  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(middleChild, grandChild);
 
-      // then
-      expect(actualSuccessor).toEqual(lastChild);
-    });
-  });
+  //     // then
+  //     expect(actualSuccessor).toEqual(lastChild);
+  //   });
+  // });
 
   describe('previousVisible()', () => {
-    it('returns null for root', () => {
+    it('does not change selection for root', () => {
+      // given
+      workspace.setSelected(root.path);
       // when
-      let actualSuccessor = workspace.previousVisible(getRoot(workspace));
+      workspace.selectPredecessor();
 
       // then
-      expect(actualSuccessor).toEqual(null);
+      expect(workspace.getSelected()).toEqual(root.path);
     });
 
     it('returns parent', () => {
+      // given
+      workspace.setSelected(firstChild.path);
+
       // when
-      let actualSuccessor = workspace.previousVisible(firstChild);
+      workspace.selectPredecessor();
 
       // then
-      expect(actualSuccessor).toEqual(getRoot(workspace));
+      expect(workspace.getSelected()).toEqual(root.path);
     });
 
     it('returns preceeding sibling', () => {
+      // given
+      workspace.setSelected(middleChild.path);
+
       // when
-      let actualSuccessor = workspace.previousVisible(middleChild);
+      workspace.selectPredecessor();
 
       // then
-      expect(actualSuccessor).toEqual(firstChild);
+      expect(workspace.getSelected()).toEqual(firstChild.path);
     });
 
     it('returns preceeding sibling`s last descendant', () => {
+      // given
+      workspace.setSelected(lastChild.path);
+
       // when
-      let actualSuccessor = workspace.previousVisible(lastChild);
+      workspace.selectPredecessor();
 
       // then
-      expect(actualSuccessor).toEqual(greatGrandChild);
+      expect(workspace.getSelected()).toEqual(greatGrandChild.path);
     });
 
     it('skips collapsed elements and returns preceeding sibling', () => {
       // given
+      workspace.setSelected(lastChild.path);
       workspace.setExpanded(middleChild.path, false);
 
       // when
-      let actualSuccessor = workspace.previousVisible(lastChild);
+      workspace.selectPredecessor();
 
       // then
-      expect(actualSuccessor).toEqual(middleChild);
+      expect(workspace.getSelected()).toEqual(middleChild.path);
     });
   });
 
-  describe('lastVisibleDescendant()', () => {
-    it('returns last child for root', () => {
-      // when
-      let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
+  // describe('lastVisibleDescendant()', () => {
+  //   it('returns last child for root', () => {
+  //     // when
+  //     let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
 
-      // then
-      expect(actualSuccessor).toEqual(lastChild);
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(lastChild);
+  //   });
 
-    it('returns itself when collapsed', () => {
-      // given
-      workspace.setExpanded(workspace.getRootPath(), false);
-      // when
-      let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
+  //   it('returns itself when collapsed', () => {
+  //     // given
+  //     workspace.setExpanded(root.path, false);
+  //     // when
+  //     let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
 
-      // then
-      expect(actualSuccessor).toEqual(getRoot(workspace));
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(getRoot(workspace));
+  //   });
 
-    it('returns last descendant', () => {
-      // when
-      let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
+  //   it('returns last descendant', () => {
+  //     // when
+  //     let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
 
-      // then
-      expect(actualSuccessor).toEqual(greatGrandChild);
-    });
+  //     // then
+  //     expect(actualSuccessor).toEqual(greatGrandChild);
+  //   });
 
-    it('returns last visible descendant', () => {
-      // given
-      workspace.setExpanded(grandChild.path, false);
-      // when
-      let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
+  //   it('returns last visible descendant', () => {
+  //     // given
+  //     workspace.setExpanded(grandChild.path, false);
+  //     // when
+  //     let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
 
-      // then
-      expect(actualSuccessor).toEqual(grandChild);
-    });
-  });
+  //     // then
+  //     expect(actualSuccessor).toEqual(grandChild);
+  //   });
+  // });
 });

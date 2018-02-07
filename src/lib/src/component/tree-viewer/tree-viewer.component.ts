@@ -1,7 +1,6 @@
 import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { MessagingService } from '@testeditor/messaging-service';
-import { WorkspaceElement } from '../../common/workspace-element';
 import { ElementType } from '../../common/element-type';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import * as events from '../event-types';
@@ -9,6 +8,7 @@ import { UiState } from '../ui-state';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
+import { LinkedWorkspaceElement } from '../../common/workspace-element';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -20,7 +20,7 @@ export class TreeViewerComponent {
   private static readonly IMAGE_EXTENSIONS = ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.svg'];
 
   @Input() workspace: Workspace;
-  @Input() model: WorkspaceElement;
+  @Input() elementInfo: LinkedWorkspaceElement;
   @Input() level = 0;
 
   confirmDelete = false;
@@ -36,12 +36,12 @@ export class TreeViewerComponent {
   ) { }
 
   onClick() {
-    this.messagingService.publish(events.NAVIGATION_SELECT, this.model);
+    this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
   }
 
   onDoubleClick() {
     if (this.isFolder()) {
-      this.workspace.toggleExpanded(this.model.path);
+      this.workspace.toggleExpanded(this.elementInfo.path);
     }
     if (this.isFile()) {
       this.openFile();
@@ -50,21 +50,21 @@ export class TreeViewerComponent {
 
   openFile() {
     if (this.isImage()) {
-      this.persistenceService.getBinaryResource(this.model.path).then((response) => {
+      this.persistenceService.getBinaryResource(this.elementInfo.path).then((response) => {
         let url = new URL(URL.createObjectURL(response.blob()));
         this.windowReference.open(url);
       });
     } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
-        name: this.model.name,
-        path: this.model.path
+        name: this.elementInfo.name,
+        path: this.elementInfo.path
       });
     }
   }
 
   onIconClick() {
     if (this.isFolder()) {
-      this.workspace.toggleExpanded(this.model.path);
+      this.workspace.toggleExpanded(this.elementInfo.path);
     }
   }
 
@@ -73,8 +73,8 @@ export class TreeViewerComponent {
   }
 
   onDeleteConfirm(): void {
-    this.persistenceService.deleteResource(this.model.path).then(() => {
-      this.messagingService.publish(events.NAVIGATION_DELETED, this.model);
+    this.persistenceService.deleteResource(this.elementInfo.path).then(() => {
+      this.messagingService.publish(events.NAVIGATION_DELETED, this.elementInfo);
     }).catch(() => {
       this.handleDeleteFailed();
     });
@@ -94,27 +94,27 @@ export class TreeViewerComponent {
   }
 
   isExpanded(): boolean {
-    return this.workspace.isExpanded(this.model.path);
+    return this.workspace.isExpanded(this.elementInfo.path);
   }
 
   isFile(): boolean {
-    return this.model.type === ElementType.File;
+    return this.elementInfo.type === ElementType.File;
   }
 
   isFolder(): boolean {
-    return this.model.type === ElementType.Folder;
+    return this.elementInfo.type === ElementType.Folder;
   }
 
   isFolderExpanded(): boolean {
-    return this.isExpanded() && this.model.children.length > 0 && this.isFolder();
+    return this.isExpanded() && this.elementInfo.childPaths.length > 0 && this.isFolder();
   }
 
   isFolderFolded(): boolean {
-    return !this.isExpanded() && this.model.children.length > 0 && this.isFolder();
+    return !this.isExpanded() && this.elementInfo.childPaths.length > 0 && this.isFolder();
   }
 
   isEmptyFolder(): boolean {
-    return this.model.children.length == 0 && this.isFolder();
+    return this.elementInfo.childPaths.length == 0 && this.isFolder();
   }
 
   isUnknown(): boolean {
@@ -125,7 +125,7 @@ export class TreeViewerComponent {
     if (this.workspace.hasNewElementRequest()) {
       let selectedElement = this.workspace.getNewElement();
       if (selectedElement) {
-        return selectedElement.path == this.model.path;
+        return selectedElement.path == this.elementInfo.path;
       } else {
         return this.level == 0; // display at root
       }
@@ -135,11 +135,11 @@ export class TreeViewerComponent {
 
   isImage(): boolean {
     return TreeViewerComponent.IMAGE_EXTENSIONS.some((extension) => {
-      return this.model.path.toLowerCase().endsWith(extension);
+      return this.elementInfo.path.toLowerCase().endsWith(extension);
     }, this);
   }
 
-  isRunning(): boolean { return this.model.state === ElementState.Running; }
-  lastRunSuccessful(): boolean { return this.model.state === ElementState.LastRunSuccessful; }
-  lastRunFailed(): boolean { return this.model.state === ElementState.LastRunFailed; }
+  isRunning(): boolean { return this.elementInfo.state === ElementState.Running; }
+  lastRunSuccessful(): boolean { return this.elementInfo.state === ElementState.LastRunSuccessful; }
+  lastRunFailed(): boolean { return this.elementInfo.state === ElementState.LastRunFailed; }
 }

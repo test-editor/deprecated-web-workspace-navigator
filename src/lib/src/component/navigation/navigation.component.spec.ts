@@ -20,13 +20,14 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination, subfolder }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { discardPeriodicTasks } from '@angular/core/testing';
 import { flushMicrotasks } from '@angular/core/testing';
+import { root, middleChild, grandChild } from '../../common/workspace.spec.data';
 
 describe('NavigationComponent', () => {
 
@@ -67,7 +68,6 @@ describe('NavigationComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(NavigationComponent);
     component = fixture.componentInstance;
-    // component.uiState = new UiState();
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
@@ -109,15 +109,15 @@ describe('NavigationComponent', () => {
   }));
 
   it('updates the UI state when an "editor.active" event is received', async(() => {
-    fixture.whenStable().then(() => {
     // given
+    setupWorkspace(component, persistenceService, fixture).then(() => {
     expect(component.getWorkspace().getActive()).toBeFalsy();
 
     // when
-    messagingService.publish(events.EDITOR_ACTIVE, { path: examplePath });
+    messagingService.publish(events.EDITOR_ACTIVE, { path: tclFile.path });
 
     // then
-    expect(component.getWorkspace().getActive()).toEqual(examplePath);
+    expect(component.getWorkspace().getActive()).toEqual(tclFile.path);
     expect(component.getWorkspace().getSelected()).toBeFalsy();
   });
   }));
@@ -163,16 +163,16 @@ describe('NavigationComponent', () => {
   it('updates the UI state when an "navigation.deleted" event is received', async(() => {
     // given
     fixture.whenStable().then(() => {
-    component.getWorkspace().setDirty(tclFile.path, true);
-    component.getWorkspace().setExpanded(tclFile.path, true);
-    component.getWorkspace().setSelected(tclFile.path);
+    component.getWorkspace().setDirty(subfolder.path, true);
+    component.getWorkspace().setExpanded(subfolder.path, true);
+    component.getWorkspace().setSelected(subfolder.path);
 
     // when
-    messagingService.publish(events.NAVIGATION_DELETED, { name: tclFile.name, path: tclFile.path });
+    messagingService.publish(events.NAVIGATION_DELETED, { name: subfolder.name, path: subfolder.path });
 
     // then
-    expect(component.getWorkspace().isDirty(tclFile.path)).toBeFalsy();
-    expect(component.getWorkspace().isExpanded(tclFile.path)).toBeFalsy();
+    expect(component.getWorkspace().isDirty(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(subfolder.path)).toBeFalsy();
     expect(component.getWorkspace().getSelected()).toBeFalsy();
   });
   }));
@@ -251,8 +251,8 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
     const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
-    let subfolder = root.children[0];
-    component.getWorkspace().setExpanded(subfolder.path, true);
+    let subfolder = root.childPaths[0];
+    component.getWorkspace().setExpanded(subfolder, true);
     fixture.detectChanges();
     let collapseAllIcon = sidenav.query(By.css('#collapse-all'));
 
@@ -260,7 +260,7 @@ describe('NavigationComponent', () => {
     collapseAllIcon.nativeElement.click();
 
     // then
-    expect(component.getWorkspace().isExpanded(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(subfolder)).toBeFalsy();
     expect(component.getWorkspace().isExpanded(root.path)).toBeTruthy();
   });
   });
@@ -294,39 +294,36 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
     const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
-    const subfolder = root.children[0];
-    const newFolder = subfolder.children[0];
+    const subfolder = root.childPaths[0];
+    const newFolder = component.getWorkspace().getElement(subfolder).childPaths[0];
 
     // when
-    component.revealElement(newFolder.path);
+    component.revealElement(newFolder);
 
     // then
-    expect(component.getWorkspace().isExpanded(subfolder.path)).toBeTruthy();
+    expect(component.getWorkspace().isExpanded(subfolder)).toBeTruthy();
     expect(component.getWorkspace().isExpanded(root.path)).toBeTruthy();
-    expect(component.getWorkspace().isExpanded(newFolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(newFolder)).toBeFalsy();
   });
 });
 
   it('can select subfolder', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    const subfolder = component.getWorkspace().getElement(component.getWorkspace().getRootPath()).children[0];
+    const subfolder = component.getWorkspace().getElement(component.getWorkspace().getRootPath()).childPaths[0];
 
     // when
-    component.selectElement(subfolder.path + '/');
+    component.selectElement(subfolder + '/');
 
     // then
-    expect(component.getWorkspace().getSelected()).toBe(subfolder.path);
+    expect(component.getWorkspace().getSelected()).toBe(subfolder);
   });
 });
 
   it('reveals and selects element when an "navigation.created" event is received', fakeAsync(() => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(() => {
-      const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
-      const subfolder = root.children[0];
       const newFolder = subfolder.children[0];
-      when(persistenceService.listFiles()).thenReturn(Promise.resolve(root));
       when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>()));
       resetCalls(persistenceService);
 
@@ -371,7 +368,7 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.execute(tclFile.path)).once();
-    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
+    expect(ElementState[tclFile.state]).toEqual(ElementState[ElementState.LastRunSuccessful]);
   });
   }));
 
@@ -809,7 +806,7 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
       let pathInWorkspaceToBeRefreshed = tclFile.path;
-      let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().getElement(component.getWorkspace().getRootPath()));
+      let reloadedWorkspace = WorkspaceElement.copyOf(root);
       when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
       when(executionService.statusAll()).thenReturn(Promise.resolve(
         new Map<string, ElementState>([[tclFile.path, ElementState.LastRunFailed]])));
@@ -822,8 +819,9 @@ describe('NavigationComponent', () => {
       // then
       tick();
       let updatedTclFile = component.getWorkspace().getElement(pathInWorkspaceToBeRefreshed);
-      expect(updatedTclFile).not.toBe(tclFile);
-      expect(updatedTclFile.state).toEqual(ElementState.LastRunFailed);
+      // TODO alternative check!
+      // expect(updatedTclFile).not.toBe(tclFile);
+      expect(ElementState[workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.LastRunFailed]);
   });
   }));
 
@@ -855,7 +853,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
     let responseDelayMillis = 10;
     mockTestStatusServiceWithPromiseRunning(executionService, responseDelayMillis);
-    let reloadedWorkspace = WorkspaceElement.copyOf(component.getWorkspace().getElement(component.getWorkspace().getRootPath()));
+    let reloadedWorkspace = WorkspaceElement.copyOf(root);
     when(persistenceService.listFiles()).thenReturn(Promise.resolve(reloadedWorkspace));
     when(executionService.statusAll()).thenReturn(Promise.resolve(
       new Map<string, ElementState>([[tclFile.path, ElementState.Running]])));
@@ -872,8 +870,9 @@ describe('NavigationComponent', () => {
     tick(responseDelayMillis);
     verify(executionService.status(tclFile.path)).twice();
     let updatedTclFile = component.getWorkspace().getElement(tclFile.path);
-    expect(updatedTclFile).not.toBe(tclFile);
-    expect(updatedTclFile.state).toEqual(ElementState.Running);
+    // TODO alternative check
+    // expect(updatedTclFile).not.toBe(tclFile);
+    expect(ElementState[workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.Running]);
     // tear down (stop observers that got started by component.run())
     component.ngOnDestroy();
     flush();

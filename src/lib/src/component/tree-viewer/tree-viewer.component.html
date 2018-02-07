@@ -1,11 +1,11 @@
-<div class="tree-view" *ngIf="model">
+<div class="tree-view" *ngIf="elementInfo">
   <div class="tree-view-item">
     <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
-        'active': model.path === workspace.getActive(),
-        'dirty': workspace.isDirty(model.path),
+        'active': elementInfo.path === workspace.getActive(),
+        'dirty': workspace.isDirty(elementInfo.path),
         'header': level == 0,
-        'selected': workspace.isSelected(model.path)
+        'selected': workspace.isSelected(elementInfo.path)
       }">
 
       <div>
@@ -18,7 +18,7 @@
         'fa-image': isImage()
       }" (click)="onIconClick()">
         </span>
-        <span>{{model.name}}</span>
+        <span>{{elementInfo.name}}</span>
       </div>
 
       <div>
@@ -32,7 +32,7 @@
 
     </div>
     <div *ngIf="confirmDelete" class="alert alert-warning confirm-delete">
-      Are you sure you want to delete '{{model.name}}'?
+      Are you sure you want to delete '{{elementInfo.name}}'?
       <br/>
       <a href="#" class="alert-link delete-cancel" (click)="onDeleteCancel()">No</a>
       <a href="#" class="alert-link delete-confirm" (click)="onDeleteConfirm()">Yes</a>
@@ -43,8 +43,8 @@
     <nav-new-element [workspace]="workspace"></nav-new-element>
   </div>
   <div *ngIf="isExpanded()">
-    <div *ngFor="let child of model.children">
-      <nav-tree-viewer [model]="child" [workspace]="workspace" [level]="level + 1"></nav-tree-viewer>
+    <div *ngFor="let childPath of elementInfo.childPaths">
+      <nav-tree-viewer [elementInfo]="workspace.getElement(childPath)" [workspace]="workspace" [level]="level + 1"></nav-tree-viewer>
     </div>
   </div>
 </div>
