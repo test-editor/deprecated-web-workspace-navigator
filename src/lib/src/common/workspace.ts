@@ -150,6 +150,18 @@ export class Workspace {
     }
   }
 
+  getNewElementType(): string {
+    if (this.hasNewElementRequest()) {
+      return this.uiState.newElementRequest.type;
+    } else {
+      return null;
+    }
+  }
+
+  removeNewElementRequest(): void {
+    this.uiState.newElementRequest = null;
+  }
+
   newElement(type: string) {
     let selectedElement = this.uiState.selectedElement;
     if (selectedElement) {

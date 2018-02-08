@@ -40,7 +40,7 @@
     <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   </div>
   <div *ngIf="shouldShowNewElement()" [style.padding-left]="level * 12 + 'px'">
-    <nav-new-element [uiState]="uiState"></nav-new-element>
+    <nav-new-element [workspace]="workspace"></nav-new-element>
   </div>
   <div *ngIf="isExpanded()">
     <div *ngFor="let child of model.children">
