@@ -211,11 +211,11 @@ export class Workspace {
   }
 
   setTestStatus(path: string, status: ElementState) {
-    this.setMarkerValue(path, 'testStatus', status);
+    this.getWorkspaceElement(path).state = status;
   }
 
   getTestStatus(path: string): ElementState {
-    return this.getMarkerValue(path, 'testStatus');
+    return this.getWorkspaceElement(path).state;
   }
 
   nameWithoutFileExtension(path: string): string {

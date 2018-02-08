@@ -1,4 +1,4 @@
-import { ElementState, IndicatorFieldSetup } from '@testeditor/workspace-navigator';
+import { Field, MarkerState, ElementState, IndicatorFieldSetup } from '@testeditor/workspace-navigator';
 
 export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
   fields: [
@@ -17,6 +17,41 @@ export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
         cssClasses: 'fa fa-circle test-failure',
         label: (marker) => `Last run of test "${marker.name}" has failed`,
       }]
+    }, {
+      condition: (element) => element && element.type === 'file',
+      states: [{
+        condition: (marker) => marker.validation.errors > 0,
+        cssClasses: 'fas fa-exclamation-circle validation-errors',
+        label: validationLabel
+      }, {
+        condition: (marker) => marker.validation.errors <= 0 && marker.validation.warnings > 0,
+        cssClasses: 'fas fa-exclamation-triangle validation-warnings',
+        label: validationLabel
+      }, {
+        condition: (marker) => marker.validation.errors <= 0 && marker.validation.warnings <= 0 && marker.validation.infos > 0,
+        cssClasses: 'fas fa-info-circle validation-infos',
+        label: validationLabel
+      }]
     }
   ]
 };
+
+export function validationLabel(marker: any): string {
+  let label = '';
+  if (marker.validation.errors > 0) {
+    label += '${marker.validation.errors} error(s)'
+  }
+  if (marker.validation.warnings > 0) {
+    if (label.length > 0) {
+      label += ', ';
+    }
+    label += '${marker.validation.warnings} warning(s)'
+  }
+  if (marker.validation.infos > 0) {
+    if (label.length > 0) {
+      label += ', ';
+    }
+    label += '${marker.validation.infos} info(s)'
+  }
+  return label;
+}

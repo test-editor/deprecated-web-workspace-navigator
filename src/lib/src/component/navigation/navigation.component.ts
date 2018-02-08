@@ -113,6 +113,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.workspace.setSelected(element.path);
       this.changeDetectorRef.detectChanges();
     });
+    this.messagingService.subscribe(events.WORKSPACE_MARKER_UPDATE, updates => {
+      updates.forEach((pathMap: any) => {
+        for (const field of Object.keys(pathMap.markers)) {
+          this.workspace.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
+        }
+      })
+    });
   }
 
   handleNavigationCreated(payload: any): void {

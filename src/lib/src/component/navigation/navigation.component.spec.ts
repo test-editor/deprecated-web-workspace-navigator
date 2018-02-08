@@ -884,4 +884,31 @@ describe('NavigationComponent', () => {
     flush();
   });
   }));
+
+  it('updates workspace markers when WORKSPACE_MARKER_UPDATE message is received', async(() => {
+    // given
+    setupWorkspace(component, persistenceService, fixture).then(workspace => {
+
+    // when
+    messagingService.publish(events.WORKSPACE_MARKER_UPDATE, [{
+      path: tclFile.path, markers: {
+        testStatus: ElementState.Running,
+        validation: { errors: 3, warnings: 2, infos: 1}
+      }}, {
+      path: lastElement.path, markers: {
+        validation: { errors: 0, warnings: 1, infos: 0}
+      }}]);
+
+    // then
+    const tclFileMarker = component.workspace.getMarker(tclFile.path);
+    const lastElementMarker = component.workspace.getMarker(lastElement.path);
+    expect(tclFileMarker.testStatus).toEqual(ElementState.Running);
+    expect(tclFileMarker.validation.errors).toEqual(3);
+    expect(tclFileMarker.validation.warnings).toEqual(2);
+    expect(tclFileMarker.validation.infos).toEqual(1);
+    expect(lastElementMarker.validation.errors).toEqual(0);
+    expect(lastElementMarker.validation.warnings).toEqual(1);
+    expect(lastElementMarker.validation.infos).toEqual(0);
+  });
+  }));
 });
