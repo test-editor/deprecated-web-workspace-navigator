@@ -2,6 +2,7 @@ import { ElementType } from './element-type';
 import { Workspace } from './workspace';
 import { WorkspaceElement } from './workspace-element';
 import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, lastChild, greatGrandChild, root } from './workspace.spec.data';
+import { ElementState } from './element-state';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -207,6 +208,124 @@ describe('Workspace Navigation', () => {
       // then
       expect(workspace.getSelected()).toEqual(middleChild.path);
     });
+  });
+
+});
+
+describe('Workspace marker interface', () => {
+  it('allows to set values initially', () => {
+    // given
+    const workspace = new Workspace();
+
+    // when
+    workspace.setMarkerValue('sample/path', 'testStatus', ElementState.Running);
+
+    // then
+    expect(workspace.getMarkerValue('sample/path', 'testStatus')).toEqual(ElementState.Running);
+  });
+
+  it('throws error when trying to retrieve marker fields on unknown paths', () => {
+    // given
+    const workspace = new Workspace();
+
+    // when + then
+    expect(() => workspace.getMarkerValue('unknown/path', 'unknownFieldName'))
+        .toThrowError('There are no marker fields for path "unknown/path".');
+  });
+
+  it('throws error when trying to retrieve unknown marker fields', () => {
+    // given
+    const workspace = new Workspace();
+    workspace.setMarkerValue('sample/path', 'testStatus', ElementState.Running);
+
+    // when + then
+    expect(() => workspace.getMarkerValue('sample/path', 'unknownFieldName'))
+        .toThrowError('The marker field "unknownFieldName" does not exist for path "sample/path".');
+  });
+
+  it('allows to set and retrieve null values', () => {
+    // given
+    const workspace = new Workspace();
+    workspace.setMarkerValue('sample/path', 'testStatus', null);
+
+    // when
+    const actualValue = workspace.getMarkerValue('sample/path', 'testStatus');
+
+    // then
+    expect(actualValue).toBeNull();
+  });
+
+  it('allows to set and retrieve values for the empty path', () => {
+    // given
+    const workspace = new Workspace();
+    workspace.setMarkerValue('', 'testStatus', ElementState.Running);
+
+    // when
+    const actualValue = workspace.getMarkerValue('', 'testStatus');
+
+    // then
+    expect(actualValue).toEqual(ElementState.Running);
+  });
+
+  [null, undefined].forEach((invalidPath) => {
+    it(`does not allow the path to be ${invalidPath} when setting field values`, () => {
+      // given
+      const workspace = new Workspace();
+
+      // when + then
+      expect(() => workspace.setMarkerValue(invalidPath, 'testStatus', ElementState.Running))
+          .toThrowError(`path must not be ${invalidPath}`);
+    });
+  });
+
+  [null, undefined].forEach((invalidPath) => {
+    it(`does not allow the path to be ${invalidPath} when retrieving field values`, () => {
+      // given
+      const workspace = new Workspace();
+
+      // when + then
+      expect(() => workspace.getMarkerValue(invalidPath, 'testStatus'))
+          .toThrowError(`path must not be ${invalidPath}`);
+    });
+  });
+
+  [null, undefined, ''].forEach((invalidFieldName) => {
+    it(`does not allow the field name to be ${invalidFieldName} when setting field values`, () => {
+      // given
+      const workspace = new Workspace();
+
+      // when + then
+      expect(() => workspace.setMarkerValue('existing/path', invalidFieldName, ElementState.Running))
+          .toThrowError('empty field names are not allowed');
+    });
+  });
+
+  it('allows to retrieve all markers for a given path', () => {
+    // given
+    const workspace = new Workspace();
+    workspace.setMarkerValue('some/path', 'aField', 42);
+    workspace.setMarkerValue('some/path', 'anotherField', 'foo');
+    workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
+
+    // when
+    const actualMarker = workspace.getMarker('some/path');
+
+    // then
+    expect(actualMarker.aField).toEqual(42);
+    expect(actualMarker.anotherField).toEqual('foo');
+    expect(actualMarker.anUnrelatedField).toBeUndefined();
+  });
+
+  it('returns empty object if there are no markers for a given path', () => {
+    // given
+    const workspace = new Workspace();
+    workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
+
+    // when
+    const actualMarker = workspace.getMarker('some/path');
+
+    // then
+    expect(actualMarker).toEqual({});
   });
 
 });
