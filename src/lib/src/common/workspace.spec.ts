@@ -80,54 +80,6 @@ describe('Workspace.getSubpaths()', () => {
 
 });
 
-// describe('Workspace.getParent()', () => {
-
-//   it('returns the parent element', () => {
-//     // given
-//     let path = grandChild.path;
-//     // when
-//     let actualParent = createWorkspaceWithSubElements().getParent(path);
-//     // then
-//     expect(actualParent).toEqual(middleChild.path);
-//   });
-
-//   it('returns null for the root element', () => {
-//     // given
-//     let workspace = createWorkspaceWithSubElements();
-//     let path = root.path;
-//     // when
-//     let actualParent = workspace.getParent(path);
-//     // then
-//     expect(actualParent).toBeNull();
-//   });
-
-
-//   it('returns null for parent of empty path', () => {
-//     // given
-//     let workspace = createWorkspaceWithRootFolder('/');
-//     // when
-//     let actualParent = workspace.getParent('');
-//     // then
-//     expect(actualParent).toBeNull();
-//   });
-
-//   it('returns root, if root´s normalized path is the empty string, for a path not containing any slashes', () => {
-//     // given
-//     let workspace = createWorkspaceWithRootFolder('/');
-//     workspace.getElement(root.path).children.push({
-//       name: 'firstChild',
-//       path: 'firstChild',
-//       type: ElementType.File,
-//       children: []
-//     });
-//     // when
-//     let actualParent = workspace.getParent('firstChild');
-//     // then
-//     expect(actualParent).toEqual(workspace.getRootPath());
-//   });
-
-// });
-
 describe('Workspace Navigation', () => {
 
   // given
@@ -200,43 +152,6 @@ describe('Workspace Navigation', () => {
     });
   });
 
-  // describe('nextSiblingOrAncestorSibling()', () => {
-
-  //   it('returns null for root', () => {
-  //     // given
-  //     workspace.setSelected(root.path);
-  //     // when
-  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(null, getRoot(workspace));
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(null);
-  //   });
-
-  //   it('returns null last element', () => {
-  //     // when
-  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), lastChild);
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(null);
-  //   });
-
-  //   it('returns next sibling', () => {
-  //     // when
-  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(getRoot(workspace), firstChild);
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(middleChild);
-  //   });
-
-  //   it('returns parent`s next sibling', () => {
-  //     // when
-  //     let actualSuccessor = workspace.nextSiblingOrAncestorSibling(middleChild, grandChild);
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(lastChild);
-  //   });
-  // });
-
   describe('previousVisible()', () => {
     it('does not change selection for root', () => {
       // given
@@ -294,41 +209,4 @@ describe('Workspace Navigation', () => {
     });
   });
 
-  // describe('lastVisibleDescendant()', () => {
-  //   it('returns last child for root', () => {
-  //     // when
-  //     let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(lastChild);
-  //   });
-
-  //   it('returns itself when collapsed', () => {
-  //     // given
-  //     workspace.setExpanded(root.path, false);
-  //     // when
-  //     let actualSuccessor = workspace.lastVisibleDescendant(getRoot(workspace));
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(getRoot(workspace));
-  //   });
-
-  //   it('returns last descendant', () => {
-  //     // when
-  //     let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(greatGrandChild);
-  //   });
-
-  //   it('returns last visible descendant', () => {
-  //     // given
-  //     workspace.setExpanded(grandChild.path, false);
-  //     // when
-  //     let actualSuccessor = workspace.lastVisibleDescendant(middleChild);
-
-  //     // then
-  //     expect(actualSuccessor).toEqual(grandChild);
-  //   });
-  // });
 });
