@@ -9,7 +9,7 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { LinkedWorkspaceElement } from '../../common/workspace-element';
-import { Field } from '../../common/markers/field';
+import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { MarkerState } from '../../common/markers/marker.state';
 
 @Component({
@@ -24,7 +24,7 @@ export class TreeViewerComponent {
   @Input() workspace: Workspace;
   @Input() elementPath: string;
   @Input() level = 0;
-  @Input() fields: Field[];
+  fields: Field[];
 
   confirmDelete = false;
   errorMessage: string;
@@ -35,8 +35,10 @@ export class TreeViewerComponent {
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
-    private windowReference: WindowService
-  ) { }
+    private windowReference: WindowService,
+    fieldSetup: IndicatorFieldSetup) {
+      this.fields = fieldSetup.fields;
+  }
 
   get indicatorBoxes(): { workspace: Workspace, path: string, states: MarkerState[] }[] {
     return this.fields.map((field) => { return {workspace: this.workspace, path: this.elementInfo.path, states: field.states} });

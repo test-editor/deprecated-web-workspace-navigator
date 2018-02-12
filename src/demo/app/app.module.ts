@@ -8,6 +8,7 @@ import { AuthHttp, AuthConfig } from 'angular2-jwt';
 import { AppComponent }  from './app.component';
 import { PersistenceServiceMock } from './persistence.service.mock';
 import { TestExecutionServiceMock } from './test.execution.service.mock';
+import { testEditorIndicatorFieldSetup } from './indicator.field.setup';
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig(), http, options);
@@ -22,7 +23,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
       persistenceServiceUrl: 'http://localhost:9080',
     }, {
       testExecutionServiceUrl: 'http://localhost:9080/tests'
-    })
+    }, testEditorIndicatorFieldSetup)
   ],
   declarations: [ AppComponent ],
   bootstrap: [ AppComponent ],

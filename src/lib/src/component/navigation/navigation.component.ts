@@ -172,7 +172,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     let contextElementPath = this.getContextElement();
 
     return contextElementPath != null && contextElementPath.endsWith('.tcl') &&
-        this.workspace.getTestStatus(contextElementPath) !== ElementState.Running;
+        (!this.workspace.hasMarker(contextElementPath, 'testStatus') ||
+        this.workspace.getTestStatus(contextElementPath) !== ElementState.Running);
   }
 
   private getContextElement(): string {
