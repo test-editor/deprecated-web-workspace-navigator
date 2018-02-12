@@ -9,6 +9,8 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { LinkedWorkspaceElement } from '../../common/workspace-element';
+import { Field } from '../../common/markers/field';
+import { MarkerState } from '../../common/markers/marker.state';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -22,6 +24,7 @@ export class TreeViewerComponent {
   @Input() workspace: Workspace;
   @Input() elementPath: string;
   @Input() level = 0;
+  @Input() fields: Field[];
 
   confirmDelete = false;
   errorMessage: string;
@@ -35,12 +38,19 @@ export class TreeViewerComponent {
     private windowReference: WindowService
   ) { }
 
+  get indicatorBoxes(): { workspace: Workspace, path: string, states: MarkerState[] }[] {
+    return this.fields.map((field) => { return {workspace: this.workspace, path: this.elementInfo.path, states: field.states} });
+
   get elementInfo(): LinkedWorkspaceElement {
     return this.workspace.getElementInfo(this.elementPath);
   }
 
   onClick() {
     this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
+  }
+
+  private showField(field: Field): boolean {
+    return field.condition(this.elementInfo);
   }
 
   onDoubleClick() {

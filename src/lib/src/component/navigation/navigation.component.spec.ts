@@ -28,6 +28,7 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { discardPeriodicTasks } from '@angular/core/testing';
 import { flushMicrotasks } from '@angular/core/testing';
 import { PathValidator } from '../tree-viewer/path-validator';
+import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 
 describe('NavigationComponent', () => {
 
@@ -49,7 +50,8 @@ describe('NavigationComponent', () => {
       declarations: [
         NavigationComponent,
         TreeViewerComponent,
-        NewElementComponent
+        NewElementComponent,
+        IndicatorBoxComponent
       ],
       imports: [
         FormsModule,
