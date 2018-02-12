@@ -45,7 +45,7 @@ export function createResponse(status: number = 200, body: string = ""): Respons
 export function initWorkspaceWithElement(component: TreeViewerComponent, root: WorkspaceElement) {
   component.workspace = new Workspace();
   component.workspace.reload(root);
-  component.elementInfo = component.workspace.getElement(root.path);
+  component.elementPath = root.path;
 }
 
 export function initWorkspaceWithNestedElement(component: TreeViewerComponent, child: WorkspaceElement) {
@@ -53,7 +53,7 @@ export function initWorkspaceWithNestedElement(component: TreeViewerComponent, c
   component.workspace.reload({
     name: 'root', path: 'root', type: 'folder', children: [ child ]
   });
-  component.elementInfo = component.workspace.getElement(child.path);
+  component.elementPath = child.path;
 }
 
 describe('TreeViewerComponent', () => {
@@ -95,6 +95,7 @@ describe('TreeViewerComponent', () => {
     component = fixture.componentInstance;
     component.workspace = new Workspace();
     component.workspace.reload(singleEmptyFolder);
+    component.elementPath = singleEmptyFolder.path;
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
   });
@@ -141,7 +142,7 @@ describe('TreeViewerComponent', () => {
     initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
 
     // when
-    component.workspace.setExpanded(component.elementInfo.path, true);
+    component.workspace.setExpanded(component.elementPath, true);
     fixture.detectChanges();
 
     // then
@@ -169,7 +170,7 @@ describe('TreeViewerComponent', () => {
     getItemKey().triggerEventHandler('dblclick', null);
 
     // then
-    let expandedState = component.workspace.isExpanded(component.elementInfo.path);
+    let expandedState = component.workspace.isExpanded(component.elementPath);
     expect(expandedState).toBeTruthy();
   });
 
@@ -204,7 +205,7 @@ describe('TreeViewerComponent', () => {
     icon.triggerEventHandler('click', null);
 
     // then
-    let expandedState = component.workspace.isExpanded(component.elementInfo.path);
+    let expandedState = component.workspace.isExpanded(component.elementPath);
     expect(expandedState).toBeTruthy();
   })
 
@@ -264,7 +265,7 @@ describe('TreeViewerComponent', () => {
     // some random bytes to stand in for an actual png
     let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
     when(response.blob()).thenReturn(imageBlob);
-    when(persistenceService.getBinaryResource(component.elementInfo.path)).thenReturn(Promise.resolve(instance(response)));
+    when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(instance(response)));
 
     // when
     component.onDoubleClick();
@@ -415,9 +416,7 @@ describe('TreeViewerComponent', () => {
     it(`recognizes '${extension}' as image file name extension`, () => {
       // given
       let imageFilename = `image.${extension}`;
-      component.elementInfo = {
-        name: imageFilename, path: imageFilename, type: 'file', childPaths: []
-      };
+      initWorkspaceWithElement(component, { name: imageFilename, path: imageFilename, type: 'file', children: [] });
 
       // when
       let actual = component.isImage();
@@ -430,9 +429,7 @@ describe('TreeViewerComponent', () => {
   ['fileWithoutExtension', 'test.tcl', 'image.png.bak', 'i-am-no-jpeg'].forEach((filename) => {
     it(`does not recognize '${filename}' as image`, () => {
       // given
-      component.elementInfo = {
-        name: filename, path: filename, type: 'file', childPaths: []
-      };
+      initWorkspaceWithElement(component, { name: filename, path: filename, type: 'file', children: [] });
 
       // when
       let actual = component.isImage();
@@ -445,9 +442,7 @@ describe('TreeViewerComponent', () => {
   it('has picture icon for image files', () => {
     // given
     let imageFilename = 'image.jpg';
-    component.elementInfo = {
-      name: imageFilename, path: imageFilename, type: 'file', childPaths: []
-    };
+    initWorkspaceWithElement(component, { name: imageFilename, path: imageFilename, type: 'file', children: [] });
     expect(component.isImage()).toBeTruthy();
 
     // when
@@ -460,7 +455,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows spinning icon for running tests', () => {
     // given
-    component.elementInfo = { name: 'test.tcl', path: 'test.tcl', type: 'file', childPaths: [], state: ElementState.Running };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running });
 
     // when
     fixture.detectChanges();
@@ -472,7 +467,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows appropriate indicator icon for failed tests', () => {
     // given
-    component.elementInfo = { name: 'test.tcl', path: 'test.tcl', type: 'file', childPaths: [], state: ElementState.LastRunFailed };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed });
 
     // when
     fixture.detectChanges();
@@ -485,7 +480,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows appropriate indicator icon for successful tests', () => {
     // given
-    component.elementInfo = { name: 'test.tcl', path: 'test.tcl', type: 'file', childPaths: [], state: ElementState.LastRunSuccessful };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful });
 
     // when
     fixture.detectChanges();
@@ -498,7 +493,7 @@ describe('TreeViewerComponent', () => {
 
   it('does not show any icon for idle tests without success/failure info', () => {
     // given
-    component.elementInfo = { name: 'test.tcl', path: 'test.tcl', type: 'file', childPaths: [], state: ElementState.Idle };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle });
 
     // when
     fixture.detectChanges();
@@ -513,7 +508,7 @@ describe('TreeViewerComponent', () => {
 
   it('does not show any icon for non-executable files', () => {
     // given
-    component.elementInfo = { name: 'file.txt', path: 'file.txt', type: 'file', childPaths: [] };
+    initWorkspaceWithElement(component, { name: 'file.txt', path: 'file.txt', type: 'file', children: [] });
 
     // when
     fixture.detectChanges();

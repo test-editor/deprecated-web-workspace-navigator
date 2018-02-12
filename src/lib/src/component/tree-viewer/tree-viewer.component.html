@@ -44,7 +44,7 @@
   </div>
   <div *ngIf="isExpanded()">
     <div *ngFor="let childPath of elementInfo.childPaths">
-      <nav-tree-viewer [elementInfo]="workspace.getElement(childPath)" [workspace]="workspace" [level]="level + 1"></nav-tree-viewer>
+      <nav-tree-viewer [elementPath]="childPath" [workspace]="workspace" [level]="level + 1"></nav-tree-viewer>
     </div>
   </div>
 </div>

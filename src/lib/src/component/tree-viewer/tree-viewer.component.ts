@@ -20,7 +20,7 @@ export class TreeViewerComponent {
   private static readonly IMAGE_EXTENSIONS = ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.svg'];
 
   @Input() workspace: Workspace;
-  @Input() elementInfo: LinkedWorkspaceElement;
+  @Input() elementPath: string;
   @Input() level = 0;
 
   confirmDelete = false;
@@ -34,6 +34,10 @@ export class TreeViewerComponent {
     private persistenceService: PersistenceService,
     private windowReference: WindowService
   ) { }
+
+  private get elementInfo(): LinkedWorkspaceElement {
+    return this.workspace.getElement(this.elementPath);
+  }
 
   onClick() {
     this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
@@ -139,7 +143,7 @@ export class TreeViewerComponent {
     }, this);
   }
 
-  isRunning(): boolean { return this.elementInfo.state === ElementState.Running; }
-  lastRunSuccessful(): boolean { return this.elementInfo.state === ElementState.LastRunSuccessful; }
-  lastRunFailed(): boolean { return this.elementInfo.state === ElementState.LastRunFailed; }
+  isRunning(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.Running}
+  lastRunSuccessful(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.LastRunSuccessful; }
+  lastRunFailed(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.LastRunFailed; }
 }
