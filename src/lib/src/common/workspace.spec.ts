@@ -505,6 +505,6 @@ describe('Workspace marker polling', () => {
 
     // then
     expect(invocations).toEqual(4);
-    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunSuccessful);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(state[invocations]);
   }));
 });
