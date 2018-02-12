@@ -1,15 +1,13 @@
-import { ElementState } from "./element-state";
+import { ElementState } from './element-state';
 
-export class WorkspaceElementInfo
-{
+export class WorkspaceElementInfo {
   name: string;
   path: string;
   state?: ElementState = ElementState.Idle;
   type: string;
 }
 
-export class LinkedWorkspaceElement extends WorkspaceElementInfo
-{
+export class LinkedWorkspaceElement extends WorkspaceElementInfo {
   childPaths: string[]
 }
 
