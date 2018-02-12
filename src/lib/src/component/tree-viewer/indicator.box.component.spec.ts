@@ -4,10 +4,12 @@ import { By } from '@angular/platform-browser';
 import { MarkerState } from '../../common/markers/marker.state';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
+import { Component, ViewChild } from '@angular/core';
 
 describe('IndicatorBoxComponent', () => {
   let component: IndicatorBoxComponent;
-  let fixture: ComponentFixture<IndicatorBoxComponent>;
+  let hostComponent: TestHostComponent;
+  let fixture: ComponentFixture<TestHostComponent>;
 
   const sampleMarkerStates: MarkerState[] = [{
     condition: (marker) => marker.testStatus === ElementState.Running,
@@ -23,41 +25,61 @@ describe('IndicatorBoxComponent', () => {
     label: (marker) => `Last run of test "${marker.name}" has failed`,
   }];
 
+  @Component({
+    selector: `host-component`,
+    template: `<indicator-box [model]="{'workspace': workspace,'path': path, 'states': states}"></indicator-box>`
+  })
+  class TestHostComponent {
+    @ViewChild(IndicatorBoxComponent)
+    public indicatorBoxComponentUnderTest: IndicatorBoxComponent;
+
+    workspace: Workspace;
+    path: string;
+    states: MarkerState[];
+  }
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
-        IndicatorBoxComponent
-      ],
-      imports: [
-      ],
-      providers: [
-        // { provide: PersistenceService, useValue: instance(persistenceService) },
-        // { provide: TestExecutionService, useValue: instance(executionService) },
-        // { provide: WindowService, useValue: null}
+        IndicatorBoxComponent, TestHostComponent
       ]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(IndicatorBoxComponent);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(TestHostComponent);
+    hostComponent = fixture.componentInstance;
+    component = hostComponent.indicatorBoxComponentUnderTest;
   });
 
   it('Can be instantiated', () => {
     expect(component).toBeTruthy();
   });
 
+  it('cssClasses returns a map of css class strings to boolean expressions', () => {
+    // given
+    hostComponent.path = 'sample/path/to/test.tcl';
+    hostComponent.workspace = new Workspace();
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
+    hostComponent.states = sampleMarkerStates;
+    fixture.detectChanges();
+
+    // when
+    const actualCssClasses = hostComponent.indicatorBoxComponentUnderTest.cssClasses;
+
+    // then
+    expect(actualCssClasses).toEqual('fa fa-spinner fa-spin');
+  })
+
   it('uses the active marker state`s label and css classes', () => {
     // given
-    const samplePath = 'sample/path/to/test.tcl';
-    const workspace = new Workspace();
-    workspace.setMarkerValue(samplePath, 'testStatus', ElementState.Running);
-    workspace.setMarkerValue(samplePath, 'name', 'test');
-
-    component.workspace = workspace;
-    component.path = samplePath;
-    component.states = sampleMarkerStates;
+    hostComponent.path = 'sample/path/to/test.tcl';
+    hostComponent.workspace = new Workspace();
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
+    hostComponent.states = sampleMarkerStates;
 
     // when
     fixture.detectChanges();
@@ -65,29 +87,27 @@ describe('IndicatorBoxComponent', () => {
     // then
     const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Test "test" is running');
-    expect(indicatorBoxTag.classes['fa-spinner']).toBeTruthy();
-    expect(indicatorBoxTag.classes['fa-spin']).toBeTruthy();
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin');
   });
 
   it('changes label and css classes in accordance with changing marker states', () => {
     // given
-    const samplePath = 'sample/path/to/test.tcl';
-    const workspace = new Workspace();
-    workspace.setMarkerValue(samplePath, 'testStatus', ElementState.Running);
-    workspace.setMarkerValue(samplePath, 'name', 'test');
-    component.workspace = workspace;
-    component.path = samplePath;
-    component.states = sampleMarkerStates;
+    hostComponent.path = 'sample/path/to/test.tcl';
+    hostComponent.workspace = new Workspace();
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
+    hostComponent.states = sampleMarkerStates;
     fixture.detectChanges();
+    const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
+    expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Test "test" is running');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin');
 
     // when
-    workspace.setMarkerValue(samplePath, 'testStatus', ElementState.LastRunSuccessful);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.LastRunSuccessful);
     fixture.detectChanges();
 
     // then
-    const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Last run of test "test" was successful');
-    expect(indicatorBoxTag.classes['fa-circle']).toBeTruthy();
-    expect(indicatorBoxTag.classes['test-success']).toBeTruthy();
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
   });
 });

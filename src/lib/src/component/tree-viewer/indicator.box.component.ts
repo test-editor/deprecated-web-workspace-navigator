@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Workspace } from '../../common/workspace';
 import { MarkerState } from '../../common/markers/marker.state';
 
@@ -8,32 +8,35 @@ import { MarkerState } from '../../common/markers/marker.state';
   styleUrls: ['./indicator.box.component.css']
 })
 export class IndicatorBoxComponent {
-  workspace: Workspace;
-  path: string;
+  @Input() model: { workspace: Workspace, path: string, states: MarkerState[] };
 
-  private cssClasses: any = {};
-  private labelProviders: {condition: (marker: any) => boolean, label: (marker: any) => string}[];
-
-  public set states(states: MarkerState[]) {
-    this.cssClasses = {};
-    states.forEach((state) => {
-      this.cssClasses[state.cssClasses] = () => state.condition(this.getMarker());
-    });
-    this.labelProviders = states.map((state) => {
-      return {condition: state.condition, label: state.label};
-    });
+  get cssClasses(): string {
+    if (this.isInitialized()) {
+      const activeState = this.model.states.find((state) => state.condition(this.getMarker()));
+      if (activeState != null) {
+        return activeState.cssClasses;
+      }
+    }
+    return '';
   }
 
-
   get label(): string {
-    const activeLabel = this.labelProviders.find((provider) => provider.condition(this.getMarker()));
-    if (activeLabel) {
-      return activeLabel.label(this.getMarker());
+    if (this.isInitialized()) {
+      const activeState = this.model.states.find((state) => state.condition(this.getMarker()));
+      if (activeState) {
+        return activeState.label(this.getMarker());
+      }
+    } else {
+      return '';
     }
   }
 
   private getMarker(): any {
-    return this.workspace.getMarker(this.path);
+    return this.model.workspace.getMarker(this.model.path);
+  }
+
+  private isInitialized(): boolean {
+    return this.model != null && this.model.path != null && this.model.states != null && this.model.workspace != null;
   }
 
 }

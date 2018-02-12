@@ -1,4 +1,4 @@
-import { Field } from './field.setup';
+import { Field } from './field';
 import { ElementState } from '../element-state';
 
 
