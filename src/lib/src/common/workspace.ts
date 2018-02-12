@@ -57,6 +57,13 @@ export class Workspace {
     });
   }
 
+  hasMarker(path: string, field: string): boolean {
+    return this.performIfNotNullOrUndefined('path', path, () => {
+      const marker = this.markers[path];
+      return marker != null && marker[field] !== undefined;
+    })
+  }
+
   getMarkers(path: string): any {
     return this.performIfNotNullOrUndefined('path', path, () => {
       return this.markers[path] ? this.markers[path] : {};
@@ -73,6 +80,35 @@ export class Workspace {
       });
     } else {
       throw new Error('empty field names are not allowed');
+    }
+  }
+
+  observeMarker<VALUE_TYPE>(path: string, field: string, observe: () => Promise<VALUE_TYPE>, stopOn: (value: VALUE_TYPE) => boolean): void {
+    if (this.pathToElement.get(path)) {
+      if (!this.hasMarker(path, field)) {
+        this.setMarkerValue(path, field, null);
+      }
+      observe().then((value) => this.setObservedMarker(path, field, value, observe, stopOn))
+      .catch((reason) => {
+        console.log(reason);
+        this.setObservedMarker(path, field, this.getMarkerValue(path, field), observe, stopOn);
+      });
+    } else {
+      throw new Error(`There is no element with path "${path}" in this workspace.`);
+    }
+  }
+
+  private setObservedMarker<VALUE_TYPE>(path: string, field: string, value: VALUE_TYPE,
+    observe: () => Promise<VALUE_TYPE>, stopOn: (value: VALUE_TYPE) => boolean): void {
+      if (this.pathToElement.get(path)) {
+        this.setMarkerValue(path, field, value);
+        if (!stopOn(value)) {
+          observe().then((newValue) => this.setObservedMarker(path, field, newValue, observe, stopOn))
+          .catch((reason) => {
+            console.log(reason);
+            this.setObservedMarker(path, field, value, observe, stopOn);
+          });
+        }
     }
   }
 
