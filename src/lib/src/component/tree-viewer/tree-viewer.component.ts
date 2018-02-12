@@ -8,6 +8,7 @@ import * as events from '../event-types';
 import { UiState } from '../ui-state';
 import { WindowService } from '../../service/browserObjectModel/window.service';
 import { ElementState } from '../../common/element-state';
+import { Workspace } from '../../common/workspace';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -18,11 +19,11 @@ export class TreeViewerComponent {
 
   private static readonly IMAGE_EXTENSIONS = ['.bmp', '.png', '.jpg', '.jpeg', '.gif', '.svg'];
 
-  @Input() uiState: UiState;
+  @Input() workspace: Workspace;
   @Input() model: WorkspaceElement;
-  @Input() level: number = 0;
+  @Input() level = 0;
 
-  confirmDelete: boolean = false;
+  confirmDelete = false;
   errorMessage: string;
 
   private subscriptions: Subscription[] = [];
@@ -40,7 +41,7 @@ export class TreeViewerComponent {
 
   onDoubleClick() {
     if (this.isFolder()) {
-      this.uiState.toggleExpanded(this.model.path);
+      this.workspace.toggleExpanded(this.model.path);
     }
     if (this.isFile()) {
       this.openFile();
@@ -63,7 +64,7 @@ export class TreeViewerComponent {
 
   onIconClick() {
     if (this.isFolder()) {
-      this.uiState.toggleExpanded(this.model.path);
+      this.workspace.toggleExpanded(this.model.path);
     }
   }
 
@@ -93,7 +94,7 @@ export class TreeViewerComponent {
   }
 
   isExpanded(): boolean {
-    return this.uiState.isExpanded(this.model.path);
+    return this.workspace.isExpanded(this.model.path);
   }
 
   isFile(): boolean {
@@ -121,8 +122,8 @@ export class TreeViewerComponent {
   }
 
   shouldShowNewElement(): boolean {
-    if (this.uiState.newElementRequest) {
-      let selectedElement = this.uiState.newElementRequest.selectedElement
+    if (this.workspace.hasNewElementRequest()) {
+      let selectedElement = this.workspace.getNewElement();
       if (selectedElement) {
         return selectedElement.path == this.model.path;
       } else {

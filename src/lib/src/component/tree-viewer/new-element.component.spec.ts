@@ -12,6 +12,7 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { NewElementComponent } from './new-element.component';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
+import { Workspace } from '../../common/workspace';
 
 describe('NewElementComponent', () => {
 
@@ -42,8 +43,9 @@ describe('NewElementComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(NewElementComponent);
     component = fixture.componentInstance;
-    component.uiState = new UiState();
-    component.uiState.newElementRequest = { selectedElement: null, type: ElementType.Folder }
+    component.workspace = new Workspace();
+    component.workspace.setSelected(null);
+    component.workspace.newElement(ElementType.Folder);
     input = fixture.debugElement.query(By.css("input"));
     messagingService = TestBed.get(MessagingService);
   });
@@ -72,7 +74,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('blur', {});
 
     // then
-    expect(component.uiState.newElementRequest).toBeFalsy();
+    expect(component.workspace.hasNewElementRequest()).toBeFalsy();
   });
 
   it('removes itself when escape is pressed', () => {
@@ -80,7 +82,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.escape', {});
 
     // then
-    expect(component.uiState.newElementRequest).toBeFalsy();
+    expect(component.workspace.hasNewElementRequest()).toBeFalsy();
   });
 
   it('adds padding when nothing is selected', () => {
@@ -90,7 +92,9 @@ describe('NewElementComponent', () => {
 
   it('does not add padding-left when a file is selected', () => {
     // given
-    component.uiState.newElementRequest = requestWithDummySelected;
+    component.workspace.reload(requestWithDummySelected.selectedElement);
+    component.workspace.setSelected(requestWithDummySelected.selectedElement.path);
+    component.workspace.newElement(requestWithDummySelected.type);
 
     // when + then
     expect(component.getPaddingLeft()).toEqual("0px");
@@ -125,7 +129,7 @@ describe('NewElementComponent', () => {
 
   it('calls createDocument with type file when enter is pressed', () => {
     // given
-    component.uiState.newElementRequest.type = ElementType.File;
+    component.workspace.newElement(ElementType.File);
     input.nativeElement.value = "something-new.txt";
 
     // when
@@ -137,7 +141,7 @@ describe('NewElementComponent', () => {
 
   it('calls createDocument with type folder when enter is pressed', () => {
     // given
-    component.uiState.newElementRequest.type = ElementType.Folder;
+    component.workspace.newElement(ElementType.Folder);
     input.nativeElement.value = "newFolder";
 
     // when
@@ -150,7 +154,9 @@ describe('NewElementComponent', () => {
   it('calls createDocument with the proper path when enter is pressed', () => {
     // given
     input.nativeElement.value = "something-new.txt";
-    component.uiState.newElementRequest = requestWithDummySelected;
+    component.workspace.reload(requestWithDummySelected.selectedElement);
+    component.workspace.setSelected(requestWithDummySelected.selectedElement.path);
+    component.workspace.newElement(requestWithDummySelected.type);
 
     // when
     input.triggerEventHandler('keyup.enter', {});
@@ -174,7 +180,7 @@ describe('NewElementComponent', () => {
       expect(callback).toHaveBeenCalledTimes(1);
       let expectedPayload = jasmine.objectContaining({ path: 'some/path' });
       expect(callback).toHaveBeenCalledWith(expectedPayload);
-      expect(component.uiState.newElementRequest).toBeFalsy();
+      expect(component.workspace.hasNewElementRequest()).toBeFalsy();
     });
   }));
 
@@ -195,7 +201,7 @@ describe('NewElementComponent', () => {
 
   it('shows file icon when a new file should be created', () => {
     // given
-    component.uiState.newElementRequest.type = ElementType.File;
+    component.workspace.newElement(ElementType.File);
 
     // when
     fixture.detectChanges();
@@ -207,7 +213,7 @@ describe('NewElementComponent', () => {
 
   it('shows folder icon when a new folder should be created', () => {
     // given
-    component.uiState.newElementRequest.type = ElementType.Folder;
+    component.workspace.newElement(ElementType.Folder);
 
     // when
     fixture.detectChanges();
@@ -246,7 +252,9 @@ describe('NewElementComponent', () => {
   it('does not call anything on invalid input when enter is pressed', () => {
     // given
     input.nativeElement.value = "../invalid.txt";
-    component.uiState.newElementRequest = requestWithDummySelected;
+    component.workspace.reload(requestWithDummySelected.selectedElement);
+    component.workspace.setSelected(requestWithDummySelected.selectedElement.path);
+    component.workspace.newElement(requestWithDummySelected.type);
 
     // when
     input.triggerEventHandler('keyup.enter', {});

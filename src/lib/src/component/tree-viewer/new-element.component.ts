@@ -7,6 +7,7 @@ import { PathValidator } from './path-validator';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { MessagingService } from '@testeditor/messaging-service';
 import * as events from '../event-types';
+import { Workspace } from '../../common/workspace';
 
 @Component({
   selector: 'nav-new-element',
@@ -16,7 +17,7 @@ import * as events from '../event-types';
 export class NewElementComponent implements AfterViewInit {
 
   @ViewChild("theInput") input: ElementRef;
-  @Input() uiState: UiState;
+  @Input() workspace: Workspace;
 
   errorMessage: string;
 
@@ -31,7 +32,7 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   getType(): string {
-    return this.uiState.newElementRequest.type;
+    return this.workspace.getNewElementType();
   }
 
   onKeyup(event: any): void {
@@ -48,7 +49,7 @@ export class NewElementComponent implements AfterViewInit {
   onEnter(): void {
     if (this.validate()) {
       let newName = this.input.nativeElement.value;
-      let parent = getDirectory(this.uiState.newElementRequest.selectedElement);
+      let parent = getDirectory(this.workspace.getNewElement());
       let newPath = parent + newName;
       this.sendCreateRequest(newPath, this.getType());
     }
@@ -66,12 +67,12 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   remove(): void {
-    this.uiState.newElementRequest = null;
+    this.workspace.removeNewElementRequest();
   }
 
   getPaddingLeft(): string {
-    if (this.uiState.newElementRequest) {
-      let selectedElement = this.uiState.newElementRequest.selectedElement;
+    if (this.workspace.hasNewElementRequest()) {
+      let selectedElement = this.workspace.getNewElement();
       let isFileSelected = selectedElement && selectedElement.type == ElementType.File;
       return isFileSelected ? "0px" : "12px";
     }

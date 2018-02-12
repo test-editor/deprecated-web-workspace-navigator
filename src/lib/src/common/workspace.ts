@@ -1,13 +1,27 @@
 import { WorkspaceElement } from './workspace-element';
+import { Injectable } from '@angular/core';
+import { PersistenceService } from '../service/persistence/persistence.service';
+import { TestExecutionService } from '../service/execution/test.execution.service';
+import { ElementType } from './element-type';
+import { UiState } from '../component/ui-state';
 
+@Injectable()
 export class Workspace {
 
-  root: WorkspaceElement;
+  private root: WorkspaceElement = null;
+  private uiState: UiState;
   private pathToElement = new Map<string, WorkspaceElement>();
 
-  constructor(root: WorkspaceElement) {
-    this.root = root;
-    this.addToMap(root);
+  constructor() {
+    this.uiState = new UiState();
+  }
+
+  public reload(newRoot: WorkspaceElement): void {
+    this.root = newRoot;
+    if (this.root !== null) {
+      this.uiState.setExpanded(this.root.path, true);
+      this.addToMap(this.root);
+    }
   }
 
   private addToMap(element: WorkspaceElement): void {
@@ -46,8 +60,12 @@ export class Workspace {
   }
 
   getElement(path: string): WorkspaceElement | undefined {
-    let normalized = this.normalizePath(path);
-    return this.pathToElement.get(normalized);
+    if (path != null) {
+      let normalized = this.normalizePath(path);
+      return this.pathToElement.get(normalized);
+    } else {
+      return undefined;
+    }
   }
 
   getParent(path: string): WorkspaceElement {
@@ -62,5 +80,141 @@ export class Workspace {
       }
     }
     return null;
+  }
+
+  getRootPath(): string {
+    return this.root.path;
+  }
+
+  getActive(): string {
+    return this.uiState.activeEditorPath;
+  }
+
+  setActive(path: string) {
+    this.uiState.activeEditorPath = path;
+  }
+
+  getSelected(): string {
+    return this.uiState.selectedElement ? this.uiState.selectedElement.path : null;
+  }
+
+  isSelected(path: string): boolean {
+    const selected = this.getSelected();
+    return selected === path;
+  }
+
+  setSelected(path: string) {
+    this.uiState.selectedElement = this.getElement(path);
+  }
+
+  isDirty(path: string): boolean {
+    return this.uiState.isDirty(path);
+  }
+
+  setDirty(path: string, dirty: boolean): void {
+    this.uiState.setDirty(path, dirty);
+  }
+
+  isExpanded(path: string): boolean {
+    return this.uiState.isExpanded(path);
+  }
+
+  setExpanded(path: string, expanded: boolean): void {
+    this.uiState.setExpanded(path, expanded);
+  }
+
+  toggleExpanded(path: string): void {
+    this.uiState.toggleExpanded(path);
+  }
+
+  collapseAll(): void {
+    this.uiState.clearExpanded();
+    this.uiState.setExpanded(this.root.path, true);
+  }
+
+  revealElement(path: string): void {
+    const subpaths = this.getSubpaths(path);
+    subpaths.forEach(subpath => this.uiState.setExpanded(subpath, true));
+    this.uiState.setExpanded(this.root.path, true);
+  }
+
+  hasNewElementRequest(): boolean {
+    return this.uiState.newElementRequest != null;
+  }
+
+  getNewElement() {
+    if (this.hasNewElementRequest()) {
+      return this.uiState.newElementRequest.selectedElement;
+    } else {
+      return null;
+    }
+  }
+
+  getNewElementType(): string {
+    if (this.hasNewElementRequest()) {
+      return this.uiState.newElementRequest.type;
+    } else {
+      return null;
+    }
+  }
+
+  removeNewElementRequest(): void {
+    this.uiState.newElementRequest = null;
+  }
+
+  newElement(type: string) {
+    let selectedElement = this.uiState.selectedElement;
+    if (selectedElement) {
+      if (selectedElement.type === ElementType.Folder) {
+        this.uiState.setExpanded(selectedElement.path, true);
+      }
+    }
+    this.uiState.newElementRequest = {
+      selectedElement: selectedElement,
+      type: type
+    };
+  }
+
+
+  nextVisible(element: WorkspaceElement): WorkspaceElement {
+    if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
+      return element.children[0];
+    } else {
+      return this.nextSiblingOrAncestorSibling(this.getParent(element.path), element);
+    }
+  }
+
+  nextSiblingOrAncestorSibling(parent: WorkspaceElement, element: WorkspaceElement): WorkspaceElement {
+    let sibling = parent;
+    if (parent != null) {
+      let elementIndex = parent.children.indexOf(element);
+      if (elementIndex + 1 < parent.children.length) { // implicitly assuming elementIndex > -1
+        sibling = parent.children[elementIndex + 1];
+      } else {
+        sibling = this.nextSiblingOrAncestorSibling(this.getParent(parent.path), parent);
+      }
+    }
+    return sibling;
+  }
+
+  previousVisible(element: WorkspaceElement): WorkspaceElement {
+    let parent = this.getParent(element.path);
+    if (parent != null) {
+      let elementIndex = parent.children.indexOf(element);
+      if (elementIndex === 0) {
+        return parent;
+      } else {
+        return this.lastVisibleDescendant(parent.children[elementIndex - 1]);
+      }
+    }
+    return null;
+  }
+
+  lastVisibleDescendant(element: WorkspaceElement): WorkspaceElement {
+    if (element.type === ElementType.Folder && this.uiState.isExpanded(element.path)) {
+      return this.lastVisibleDescendant(element.children[element.children.length - 1]);
+    } else {
+      return element;
+    }
   }
 }
