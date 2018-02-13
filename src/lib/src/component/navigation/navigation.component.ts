@@ -189,8 +189,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     console.log('KeyUp event received:\n' + event);
     let elementPath = this.workspace.getSelected();
     switch (event.key) {
-      case KeyActions.EXPAND_NODE: return this.workspace.setExpanded(elementPath, true);
-      case KeyActions.COLLAPSE_NODE: return this.workspace.setExpanded(elementPath, false);
+      case KeyActions.EXPAND_NODE: this.workspace.setExpanded(elementPath, true); break;
+      case KeyActions.COLLAPSE_NODE: this.workspace.setExpanded(elementPath, false); break;
       case KeyActions.NAVIGATE_NEXT: {
         this.workspace.selectSuccessor();
         this.changeDetectorRef.detectChanges();
@@ -201,7 +201,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
         break;
       }
-      case KeyActions.OPEN_FILE: return this.openFile(elementPath);
+      case KeyActions.OPEN_FILE: this.openFile(elementPath); break;
     }
   }
 
