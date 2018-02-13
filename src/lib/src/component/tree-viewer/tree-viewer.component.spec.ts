@@ -42,6 +42,20 @@ export function createResponse(status: number = 200, body: string = ""): Respons
   }));
 }
 
+export function initWorkspaceWithElement(component: TreeViewerComponent, root: WorkspaceElement) {
+  component.workspace = new Workspace();
+  component.workspace.reload(root);
+  component.elementPath = root.path;
+}
+
+export function initWorkspaceWithNestedElement(component: TreeViewerComponent, child: WorkspaceElement) {
+  component.workspace = new Workspace();
+  component.workspace.reload({
+    name: 'root', path: 'root', type: 'folder', children: [ child ]
+  });
+  component.elementPath = child.path;
+}
+
 describe('TreeViewerComponent', () => {
 
   let component: TreeViewerComponent;
@@ -58,9 +72,9 @@ describe('TreeViewerComponent', () => {
   let foldedFolderWithSubfolders: WorkspaceElement = {
     name: 'top-folder', path: '', type: 'folder',
     children: [
-      { name: 'sub-folder-1', path: 'top-folder', type: 'folder', children: [] },
-      { name: 'sub-folder-2', path: 'top-folder', type: 'folder', children: [] },
-      { name: 'sub-file-1', path: 'top-folder', type: 'file', children: [] }
+      { name: 'sub-folder-1', path: 'sub-folder-1', type: 'folder', children: [] },
+      { name: 'sub-folder-2', path: 'sub-folder-2', type: 'folder', children: [] },
+      { name: 'sub-file-1', path: 'sub-file-1', type: 'file', children: [] }
     ]
   };
 
@@ -81,6 +95,7 @@ describe('TreeViewerComponent', () => {
     component = fixture.componentInstance;
     component.workspace = new Workspace();
     component.workspace.reload(singleEmptyFolder);
+    component.elementPath = singleEmptyFolder.path;
     messagingService = TestBed.get(MessagingService);
     fixture.detectChanges();
   });
@@ -94,22 +109,18 @@ describe('TreeViewerComponent', () => {
   });
 
   it('non empty folder is reported as non empty', () => {
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithElement(component, foldedFolderWithSubfolders);
     expect(component.isEmptyFolder()).toBeFalsy();
   });
 
   it('empty folder is reported as empty', () => {
-    component.model = singleEmptyFolder;
+    initWorkspaceWithElement(component, singleEmptyFolder);
     expect(component.isEmptyFolder()).toBeTruthy();
   });
 
   it('folded folder does not display sub elements', async(() => {
     // given
-    component.workspace = new Workspace();
-    component.workspace.reload({
-      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
-    });
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
 
     // when
     fixture.detectChanges();
@@ -128,14 +139,10 @@ describe('TreeViewerComponent', () => {
 
   it('expands folder when UI state is set', async(() => {
     // given
-    component.workspace = new Workspace();
-    component.workspace.reload({
-      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
-    });
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
 
     // when
-    component.workspace.setExpanded(component.model.path, true);
+    component.workspace.setExpanded(component.elementPath, true);
     fixture.detectChanges();
 
     // then
@@ -156,28 +163,20 @@ describe('TreeViewerComponent', () => {
 
   it('sets expanded state when double-clicked', () => {
     // given
-    component.workspace = new Workspace();
-    component.workspace.reload({
-      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
-    });
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
     fixture.detectChanges();
 
     // when
     getItemKey().triggerEventHandler('dblclick', null);
 
     // then
-    let expandedState = component.workspace.isExpanded(component.model.path);
+    let expandedState = component.workspace.isExpanded(component.elementPath);
     expect(expandedState).toBeTruthy();
   });
 
   it('has chevron-right icon for unexpanded folders', () => {
     // when
-    component.workspace = new Workspace();
-    component.workspace.reload({
-      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
-    });
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
 
@@ -188,7 +187,7 @@ describe('TreeViewerComponent', () => {
   it('has chevron-down icon for expanded folders', () => {
     // when
     component.workspace.setExpanded(foldedFolderWithSubfolders.path, true);
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithElement(component, foldedFolderWithSubfolders);
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
 
@@ -198,11 +197,7 @@ describe('TreeViewerComponent', () => {
 
   it('sets expanded state when clicked on chevron icon', () => {
     // given
-    component.workspace = new Workspace();
-    component.workspace.reload({
-      name: 'root', path: 'root', type: 'folder', children: [ foldedFolderWithSubfolders ]
-    });
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithNestedElement(component, foldedFolderWithSubfolders);
     fixture.detectChanges();
     let icon = getItemKey().query(By.css('.icon-type'));
 
@@ -210,13 +205,13 @@ describe('TreeViewerComponent', () => {
     icon.triggerEventHandler('click', null);
 
     // then
-    let expandedState = component.workspace.isExpanded(component.model.path);
+    let expandedState = component.workspace.isExpanded(component.elementPath);
     expect(expandedState).toBeTruthy();
   })
 
   it('folders are not identified as file', () => {
     // given
-    component.model = foldedFolderWithSubfolders;
+    initWorkspaceWithElement(component, foldedFolderWithSubfolders);
 
     // when + then
     expect(component.isFile()).toBeFalsy();
@@ -225,7 +220,7 @@ describe('TreeViewerComponent', () => {
 
   it('files are not identified as folders', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
 
     // when + then
     expect(component.isFile()).toBeTruthy();
@@ -234,7 +229,7 @@ describe('TreeViewerComponent', () => {
 
   it('onClick() emits "navigation.select" message', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_SELECT, callback);
 
@@ -248,7 +243,7 @@ describe('TreeViewerComponent', () => {
 
   it('onDoubleClick() emits "navigation.open" message', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_OPEN, callback);
 
@@ -265,12 +260,12 @@ describe('TreeViewerComponent', () => {
 
   it('onDoubleClick() on image file opens it in a new tab/window', async(() => {
     // given
-    component.model = imageFile;
+    initWorkspaceWithElement(component, imageFile);
     let response = mock(Response);
     // some random bytes to stand in for an actual png
     let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
     when(response.blob()).thenReturn(imageBlob);
-    when(persistenceService.getBinaryResource(component.model.path)).thenReturn(Promise.resolve(instance(response)));
+    when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(instance(response)));
 
     // when
     component.onDoubleClick();
@@ -283,7 +278,8 @@ describe('TreeViewerComponent', () => {
 
   it('has css class "active" if given by the UI state', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
+
     fixture.detectChanges();
     expect(getItemKey().classes.active).toBeFalsy();
 
@@ -297,7 +293,7 @@ describe('TreeViewerComponent', () => {
 
   it('has css class "dirty" if given by the UI state', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     fixture.detectChanges();
     expect(getItemKey().classes.dirty).toBeFalsy();
 
@@ -311,9 +307,7 @@ describe('TreeViewerComponent', () => {
 
   it('has css class "selected" if given by the UI state', () => {
     // given
-    component.workspace = new Workspace();
-    component.workspace.reload(singleFile);
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     fixture.detectChanges();
     expect(getItemKey().classes.selected).toBeFalsy();
 
@@ -327,7 +321,7 @@ describe('TreeViewerComponent', () => {
 
   it('requires confirmation before deletion', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     component.level = 1;
     fixture.detectChanges();
     let deleteIcon = getItemKey().query(By.css('.icon-delete'));
@@ -346,7 +340,7 @@ describe('TreeViewerComponent', () => {
   it('deletes element if confirmed', () => {
     // given
     when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     component.confirmDelete = true;
     fixture.detectChanges();
     let confirmButton = fixture.debugElement.query(By.css('.tree-view .confirm-delete .delete-confirm'));
@@ -361,7 +355,7 @@ describe('TreeViewerComponent', () => {
 
   it('does not delete element when cancelled', () => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     component.confirmDelete = true;
     fixture.detectChanges();
     let cancelButton = fixture.debugElement.query(By.css('.tree-view .confirm-delete .delete-cancel'));
@@ -376,7 +370,7 @@ describe('TreeViewerComponent', () => {
 
   it('displays error when deletion failed', (done: () => void) => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
 
     // when
@@ -396,7 +390,7 @@ describe('TreeViewerComponent', () => {
 
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given
-    component.model = singleFile;
+    initWorkspaceWithElement(component, singleFile);
     let response = createResponse();
     when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(response));
     let callback = jasmine.createSpy('callback');
@@ -422,9 +416,7 @@ describe('TreeViewerComponent', () => {
     it(`recognizes '${extension}' as image file name extension`, () => {
       // given
       let imageFilename = `image.${extension}`;
-      component.model = {
-        name: imageFilename, path: imageFilename, type: 'file', children: []
-      };
+      initWorkspaceWithElement(component, { name: imageFilename, path: imageFilename, type: 'file', children: [] });
 
       // when
       let actual = component.isImage();
@@ -437,9 +429,7 @@ describe('TreeViewerComponent', () => {
   ['fileWithoutExtension', 'test.tcl', 'image.png.bak', 'i-am-no-jpeg'].forEach((filename) => {
     it(`does not recognize '${filename}' as image`, () => {
       // given
-      component.model = {
-        name: filename, path: filename, type: 'file', children: []
-      };
+      initWorkspaceWithElement(component, { name: filename, path: filename, type: 'file', children: [] });
 
       // when
       let actual = component.isImage();
@@ -452,9 +442,7 @@ describe('TreeViewerComponent', () => {
   it('has picture icon for image files', () => {
     // given
     let imageFilename = 'image.jpg';
-    component.model = {
-      name: imageFilename, path: imageFilename, type: 'file', children: []
-    };
+    initWorkspaceWithElement(component, { name: imageFilename, path: imageFilename, type: 'file', children: [] });
     expect(component.isImage()).toBeTruthy();
 
     // when
@@ -467,7 +455,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows spinning icon for running tests', () => {
     // given
-    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running });
 
     // when
     fixture.detectChanges();
@@ -479,7 +467,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows appropriate indicator icon for failed tests', () => {
     // given
-    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed });
 
     // when
     fixture.detectChanges();
@@ -492,7 +480,7 @@ describe('TreeViewerComponent', () => {
 
   it('shows appropriate indicator icon for successful tests', () => {
     // given
-    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful });
 
     // when
     fixture.detectChanges();
@@ -505,7 +493,7 @@ describe('TreeViewerComponent', () => {
 
   it('does not show any icon for idle tests without success/failure info', () => {
     // given
-    component.model = { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle };
+    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle });
 
     // when
     fixture.detectChanges();
@@ -520,7 +508,7 @@ describe('TreeViewerComponent', () => {
 
   it('does not show any icon for non-executable files', () => {
     // given
-    component.model = { name: 'file.txt', path: 'file.txt', type: 'file', children: [] };
+    initWorkspaceWithElement(component, { name: 'file.txt', path: 'file.txt', type: 'file', children: [] });
 
     // when
     fixture.detectChanges();

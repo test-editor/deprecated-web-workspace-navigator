@@ -1,9 +1,10 @@
-import { WorkspaceElement } from './workspace-element';
+import { WorkspaceElement, LinkedWorkspaceElement } from './workspace-element';
 import { Injectable } from '@angular/core';
 import { PersistenceService } from '../service/persistence/persistence.service';
 import { TestExecutionService } from '../service/execution/test.execution.service';
 import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
+import { ElementState } from './element-state';
 
 @Injectable()
 export class Workspace {
@@ -22,6 +23,9 @@ export class Workspace {
       this.uiState.setExpanded(this.root.path, true);
       this.addToMap(this.root);
     }
+  }
+  public get initialized() : boolean {
+    return this.root != null;
   }
 
   private addToMap(element: WorkspaceElement): void {
@@ -59,22 +63,28 @@ export class Workspace {
     }
   }
 
-  getElement(path: string): WorkspaceElement | undefined {
+  getElementInfo(path: string): LinkedWorkspaceElement {
     if (path != null) {
-      let normalized = this.normalizePath(path);
-      return this.pathToElement.get(normalized);
+      const element = this.getWorkspaceElement(path);
+      return { name: element.name, path: element.path, type: element.type, childPaths: element.children.map(child => child.path) };
     } else {
       return undefined;
     }
   }
 
-  getParent(path: string): WorkspaceElement {
+  private getWorkspaceElement(path: string): WorkspaceElement | undefined {
+    let normalized = this.normalizePath(path);
+    return this.pathToElement.get(normalized);
+  }
+
+
+  private getParent(path: string): WorkspaceElement {
     let normalized = this.normalizePath(path);
     if (normalized !== '') {
       let lastSeparatorIndex = normalized.lastIndexOf('/');
       if (lastSeparatorIndex >= 0) {
         let parentPath = normalized.substring(0, lastSeparatorIndex);
-        return this.getElement(parentPath);
+        return this.getWorkspaceElement(parentPath);
       } else if (this.normalizePath(this.root.path) === '') {
         return this.root;
       }
@@ -91,7 +101,36 @@ export class Workspace {
   }
 
   setActive(path: string) {
+    if (this.contains(path)) {
     this.uiState.activeEditorPath = path;
+  }
+    // TODO error on else?
+  }
+
+  contains(path: string): boolean {
+    return path != null && this.pathToElement.has(this.normalizePath(path));
+  }
+
+  hasSubElements(path: string): boolean {
+    return this.getWorkspaceElement(path).children.length > 0;
+  }
+
+  setTestStatus(path: string, status: ElementState) {
+    this.getWorkspaceElement(path).state = status;
+  }
+
+  getTestStatus(path: string): ElementState {
+    return this.getWorkspaceElement(path).state;
+  }
+
+  nameWithoutFileExtension(path: string): string {
+    const name = this.getWorkspaceElement(path).name;
+    let delimiterIndex = name.lastIndexOf('.');
+    if (delimiterIndex >= 0) {
+      return name.substring(0, delimiterIndex);
+    } else {
+      return name;
+    }
   }
 
   getSelected(): string {
@@ -104,7 +143,7 @@ export class Workspace {
   }
 
   setSelected(path: string) {
-    this.uiState.selectedElement = this.getElement(path);
+    this.uiState.selectedElement = (path == null ? null : this.getWorkspaceElement(path));
   }
 
   isDirty(path: string): boolean {
@@ -120,7 +159,9 @@ export class Workspace {
   }
 
   setExpanded(path: string, expanded: boolean): void {
-    this.uiState.setExpanded(path, expanded);
+    if (this.contains(path) && this.getWorkspaceElement(path).type === ElementType.Folder) {
+      this.uiState.setExpanded(path, expanded);
+    }
   }
 
   toggleExpanded(path: string): void {
@@ -175,21 +216,36 @@ export class Workspace {
     };
   }
 
-
-  nextVisible(element: WorkspaceElement): WorkspaceElement {
-    if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
-      return element.children[0];
-    } else {
-      return this.nextSiblingOrAncestorSibling(this.getParent(element.path), element);
+  selectPredecessor(): void {
+    const predecessor = this.previousVisible(this.getSelected());
+    if (predecessor != null) {
+      this.setSelected(predecessor);
     }
   }
 
-  nextSiblingOrAncestorSibling(parent: WorkspaceElement, element: WorkspaceElement): WorkspaceElement {
-    let sibling = parent;
+  selectSuccessor(): void {
+    const successor = this.nextVisible(this.getSelected());
+    if (successor != null) {
+      this.setSelected(successor);
+    }
+  }
+
+  private nextVisible(elementPath: string): string {
+    const element = this.getWorkspaceElement(elementPath);
+    if (element.children.length > 0 && this.uiState.isExpanded(element.path)) {
+      return element.children[0].path;
+    } else {
+      return this.nextSiblingOrAncestorSibling(this.getParent(elementPath), element);
+    }
+  }
+
+  private nextSiblingOrAncestorSibling(parent: WorkspaceElement, element: WorkspaceElement): string {
+    let sibling: string = null;
     if (parent != null) {
-      let elementIndex = parent.children.indexOf(element);
+      sibling = parent.path;
+      const elementIndex = parent.children.indexOf(element);
       if (elementIndex + 1 < parent.children.length) { // implicitly assuming elementIndex > -1
-        sibling = parent.children[elementIndex + 1];
+        sibling = parent.children[elementIndex + 1].path;
       } else {
         sibling = this.nextSiblingOrAncestorSibling(this.getParent(parent.path), parent);
       }
@@ -197,12 +253,13 @@ export class Workspace {
     return sibling;
   }
 
-  previousVisible(element: WorkspaceElement): WorkspaceElement {
-    let parent = this.getParent(element.path);
+  private previousVisible(elementPath: string): string {
+    let parent = this.getParent(elementPath);
+    const element = this.getWorkspaceElement(elementPath);
     if (parent != null) {
       let elementIndex = parent.children.indexOf(element);
       if (elementIndex === 0) {
-        return parent;
+        return parent.path;
       } else {
         return this.lastVisibleDescendant(parent.children[elementIndex - 1]);
       }
@@ -210,11 +267,12 @@ export class Workspace {
     return null;
   }
 
-  lastVisibleDescendant(element: WorkspaceElement): WorkspaceElement {
+  private lastVisibleDescendant(element: WorkspaceElement): string {
     if (element.type === ElementType.Folder && this.uiState.isExpanded(element.path)) {
       return this.lastVisibleDescendant(element.children[element.children.length - 1]);
     } else {
-      return element;
+      return element.path;
     }
   }
+
 }

@@ -1,23 +1,21 @@
-import { ElementState } from "./element-state";
+import { ElementState } from './element-state';
 
-export class WorkspaceElement {
+export class WorkspaceElementInfo {
   name: string;
   path: string;
   state?: ElementState = ElementState.Idle;
   type: string;
+}
+
+export class LinkedWorkspaceElement extends WorkspaceElementInfo {
+  childPaths: string[]
+}
+
+export class WorkspaceElement extends WorkspaceElementInfo {
   children: WorkspaceElement[];
 }
 
 export namespace WorkspaceElement {
-
-  export function nameWithoutFileExtension(element: WorkspaceElement): string {
-    let delimiterIndex = element.name.lastIndexOf('.');
-    if (delimiterIndex >= 0) {
-      return element.name.substring(0, delimiterIndex);
-    } else {
-      return element.name;
-    }
-  }
 
   export function copyOf(original: WorkspaceElement): WorkspaceElement {
     let copy = new WorkspaceElement();

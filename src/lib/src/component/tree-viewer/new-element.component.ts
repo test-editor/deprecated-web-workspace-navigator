@@ -1,7 +1,6 @@
 import { Component, ViewChild, Input, ElementRef, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { UiState } from '../ui-state';
 import { ElementType } from '../../common/element-type';
-import { WorkspaceElement } from '../../common/workspace-element';
 import { getDirectory } from '../../common/util/workspace-element-helper';
 import { PathValidator } from './path-validator';
 import { PersistenceService } from '../../service/persistence/persistence.service';

@@ -9,6 +9,7 @@ import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { Response, ResponseOptions } from '@angular/http';
+import { ElementState } from '../../common/element-state';
 
 export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
@@ -42,6 +43,31 @@ export const lastElement: WorkspaceElement = {
   children: []
 };
 
+export const subfolder: WorkspaceElement = {
+  name: 'subfolder',
+  path: 'subfolder',
+  type: ElementType.Folder,
+  children: [
+    {
+      name: 'newFolder',
+      path: 'subfolder/newFolder',
+      type: ElementType.Folder,
+      children: []
+    },
+    nonExecutableFile,
+    tclFile,
+    succeedingSiblingOfTclFile,
+    lastElement
+  ]
+};
+
+export const root: WorkspaceElement = {
+  name: 'root',
+  path: '',
+  type: ElementType.Folder,
+  children: [subfolder]
+};
+
 export const responseBeforeTermination = new Response(new ResponseOptions({
   status: HTTP_STATUS_OK,
   body: 'RUNNING'
@@ -61,6 +87,7 @@ export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService);
   setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
   mockTestStatusServiceWithRunningRunningSuccessSequence(executionService);
+  when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>([])));
   return executionService;
 }
 
@@ -82,29 +109,7 @@ export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionSe
 }
 
 export function setupWorkspace(component: NavigationComponent, mockedPersistenceService: PersistenceService, fixture: ComponentFixture<NavigationComponent>): Promise<Workspace> {
-  const subfolder: WorkspaceElement = {
-    name: 'subfolder',
-    path: 'subfolder',
-    type: ElementType.Folder,
-    children: [
-      {
-        name: 'newFolder',
-        path: 'subfolder/newFolder',
-        type: ElementType.Folder,
-        children: []
-      },
-      nonExecutableFile,
-      tclFile,
-      succeedingSiblingOfTclFile,
-      lastElement
-    ]
-  };
-  const root: WorkspaceElement = {
-    name: 'root',
-    path: '',
-    type: ElementType.Folder,
-    children: [subfolder]
-  };
+
   when(mockedPersistenceService.listFiles()).thenReturn(Promise.resolve(root));
   return component.retrieveWorkspaceRoot().then(workspace => {
     fixture.detectChanges();

@@ -1,5 +1,5 @@
 <div class="sidenav noselect">
-  <div *ngIf="getWorkspace()">
+  <div *ngIf="workspace.initialized">
     <div class="icon-menu">
       <div class="icons-left">
         <button id="new-file" class="icon fa fa-file" (click)="newElement('file')" title="create new file"></button>
@@ -11,7 +11,7 @@
         <button id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()" title="collapse all"></button>
       </div>
     </div>
-    <nav-tree-viewer tabindex="0" [model]="getWorkspace().root" [workspace]="getWorkspace()" (keyup)="onKeyUp($event)"></nav-tree-viewer>
+    <nav-tree-viewer tabindex="0" [elementPath]="workspace.getRootPath()" [workspace]="workspace" (keyup)="onKeyUp($event)"></nav-tree-viewer>
   </div>
   <div *ngIf="errorMessage" id="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <div *ngIf="notification" id="notification" class="alert alert-info">{{notification}}</div>

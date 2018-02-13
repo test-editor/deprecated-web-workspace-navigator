@@ -23,7 +23,7 @@ export class UiState {
   }
 
   toggleExpanded(path: string): void {
-    this.expandedElements[path] = !this.expandedElements[path];
+    this.setExpanded(path, !this.expandedElements[path]);
   }
 
   isDirty(path: string): boolean {
