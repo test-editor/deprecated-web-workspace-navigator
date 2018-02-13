@@ -28,6 +28,7 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { discardPeriodicTasks } from '@angular/core/testing';
 import { flushMicrotasks } from '@angular/core/testing';
 import { root, middleChild, grandChild } from '../../common/workspace.spec.data';
+import { PathValidator } from '../tree-viewer/path-validator';
 
 describe('NavigationComponent', () => {
 
@@ -59,7 +60,8 @@ describe('NavigationComponent', () => {
       providers: [
         { provide: PersistenceService, useValue: instance(persistenceService) },
         { provide: TestExecutionService, useValue: instance(executionService) },
-        { provide: WindowService, useValue: null}
+        { provide: WindowService, useValue: null},
+        PathValidator
       ]
     })
       .compileComponents();
@@ -200,52 +202,53 @@ describe('NavigationComponent', () => {
     });
   }));
 
-  // it('updates the UI state for creating a new file', () => {
-  //   // given
-  //   component.retrieveWorkspaceRoot();
-  //   fixture.detectChanges();
-  //   let newFileIcon = sidenav.query(By.css('#new-file'));
+  it('updates the UI state for creating a new file', fakeAsync(() => {
+    // given
+    component.retrieveWorkspaceRoot();
+    tick();
+    fixture.detectChanges();
+    let newFileIcon = sidenav.query(By.css('#new-file'));
 
-  //   // when
-  //   newFileIcon.nativeElement.click();
+    // when
+    newFileIcon.nativeElement.click();
 
-  //   // then
-  //   let newElementRequest = component.uiState.newElementRequest;
-  //   expect(newElementRequest).toBeTruthy();
-  //   expect(newElementRequest.type).toEqual('file');
-  // });
+    // then
+    expect(component.workspace.hasNewElementRequest()).toBeTruthy();
+    expect(component.workspace.getNewElementType()).toEqual('file');
+  }));
 
-  // it('updates the UI state for creating a new folder', () => {
-  //   // given
-  //   component.retrieveWorkspaceRoot();
-  //   fixture.detectChanges();
-  //   let newFolder = sidenav.query(By.css('#new-folder'))
+  it('updates the UI state for creating a new folder', fakeAsync(() => {
+    // given
+    component.retrieveWorkspaceRoot();
+    tick();
+    fixture.detectChanges();
+    let newFolder = sidenav.query(By.css('#new-folder'))
 
-  //   // when
-  //   newFolder.nativeElement.click();
+    // when
+    newFolder.nativeElement.click();
 
-  //   // then
-  //   let newElementRequest = component.uiState.newElementRequest;
-  //   expect(newElementRequest).toBeTruthy();
-  //   expect(newElementRequest.type).toEqual('folder');
-  // });
+    // then
+    expect(component.workspace.hasNewElementRequest()).toBeTruthy();
+    expect(component.workspace.getNewElementType()).toEqual('folder');
+  }));
 
-  // it('expands selected element on creation of new element', () => {
-  //   // given
-  //   setupWorkspace(component, persistenceService, fixture);
-  //   const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
-  //   const subfolder = root.children[0];
-  //   component.getWorkspace().setSelected(subfolder.path);
-  //   fixture.detectChanges();
-  //   expect(component.getWorkspace().isExpanded(subfolder.path)).toBeFalsy();
+  it('expands selected element on creation of new element', async(() => {
+    // given
+    setupWorkspace(component, persistenceService, fixture).then(() => {
+      const rootInfo = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
+      const subfolderPath = rootInfo.childPaths[0];
+      component.getWorkspace().setSelected(subfolderPath);
+      fixture.detectChanges();
+      expect(component.getWorkspace().isExpanded(subfolderPath)).toBeFalsy();
 
-  //   // when
-  //   component.newElement('file')
+      // when
+      component.newElement('file');
 
-  //   // then
-  //   expect(component.uiState.newElementRequest.selectedElement).toBe(subfolder);
-  //   expect(component.getWorkspace().isExpanded(subfolder.path)).toBeTruthy();
-  // });
+      // then
+      expect(component.workspace.getNewElement().path).toBe(subfolderPath);
+      expect(component.getWorkspace().isExpanded(subfolderPath)).toBeTruthy();
+    })
+  }));
 
   it('collapses all when icon is clicked', () => {
     // given
