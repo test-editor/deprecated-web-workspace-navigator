@@ -22,7 +22,7 @@ describe('Workspace', () => {
     let workspace = createWorkspaceWithRootFolder('root');
 
     // when
-    let retrievedElement = workspace.getElement('root');
+    let retrievedElement = workspace.getElementInfo('root');
 
     // then
     expect(retrievedElement.path).toBe(workspace.getRootPath());
@@ -33,7 +33,7 @@ describe('Workspace', () => {
     let workspace = createWorkspaceWithRootFolder('/some/folder//');
 
     // when
-    let retrievedElement = workspace.getElement('some/folder');
+    let retrievedElement = workspace.getElementInfo('some/folder');
 
     // then
     expect(retrievedElement.path).toBe(workspace.getRootPath());

@@ -36,7 +36,7 @@ export class TreeViewerComponent {
   ) { }
 
   get elementInfo(): LinkedWorkspaceElement {
-    return this.workspace.getElement(this.elementPath);
+    return this.workspace.getElementInfo(this.elementPath);
   }
 
   onClick() {

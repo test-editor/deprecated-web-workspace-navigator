@@ -63,7 +63,7 @@ export class Workspace {
     }
   }
 
-  getElement(path: string): LinkedWorkspaceElement {
+  getElementInfo(path: string): LinkedWorkspaceElement {
     if (path != null) {
       const element = this.getWorkspaceElement(path);
       return { name: element.name, path: element.path, type: element.type, childPaths: element.children.map(child => child.path) };

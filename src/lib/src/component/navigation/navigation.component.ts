@@ -240,7 +240,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   private openFile(elementPath: string): void {
-    const elementInfo = this.getWorkspace().getElement(elementPath);
+    const elementInfo = this.getWorkspace().getElementInfo(elementPath);
     if (elementInfo !== null && elementInfo.type === ElementType.File) {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
         name: elementInfo.name,

@@ -250,7 +250,7 @@ describe('NavigationComponent', () => {
   it('collapses all when icon is clicked', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
+    const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
     let subfolder = root.childPaths[0];
     component.getWorkspace().setExpanded(subfolder, true);
     fixture.detectChanges();
@@ -293,9 +293,9 @@ describe('NavigationComponent', () => {
   it('can reveal new folder', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    const root = component.getWorkspace().getElement(component.getWorkspace().getRootPath());
+    const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
     const subfolder = root.childPaths[0];
-    const newFolder = component.getWorkspace().getElement(subfolder).childPaths[0];
+    const newFolder = component.getWorkspace().getElementInfo(subfolder).childPaths[0];
 
     // when
     component.revealElement(newFolder);
@@ -310,7 +310,7 @@ describe('NavigationComponent', () => {
   it('can select subfolder', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    const subfolder = component.getWorkspace().getElement(component.getWorkspace().getRootPath()).childPaths[0];
+    const subfolder = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath()).childPaths[0];
 
     // when
     component.selectElement(subfolder + '/');
@@ -590,7 +590,7 @@ describe('NavigationComponent', () => {
   it('sets expanded state when right arrow key is pressed', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    let element = component.getWorkspace().getElement('subfolder');
+    let element = component.getWorkspace().getElementInfo('subfolder');
     component.getWorkspace().setSelected(element.path);
     component.getWorkspace().setExpanded(element.path, false);
     fixture.detectChanges();
@@ -607,7 +607,7 @@ describe('NavigationComponent', () => {
   it('keeps expanded state when right arrow key is pressed', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    let element = component.getWorkspace().getElement('subfolder');
+    let element = component.getWorkspace().getElementInfo('subfolder');
     component.getWorkspace().setSelected(element.path);
     component.getWorkspace().setExpanded(element.path, true);
     fixture.detectChanges();
@@ -624,7 +624,7 @@ describe('NavigationComponent', () => {
   it('sets collapsed state when left arrow key is pressed', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    let element = component.getWorkspace().getElement('subfolder');
+    let element = component.getWorkspace().getElementInfo('subfolder');
     component.getWorkspace().setSelected(element.path);
     component.getWorkspace().setExpanded(element.path, true);
     fixture.detectChanges();
@@ -641,7 +641,7 @@ describe('NavigationComponent', () => {
   it('keeps collapsed state when left arrow key is pressed', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    let element = component.getWorkspace().getElement('subfolder');
+    let element = component.getWorkspace().getElementInfo('subfolder');
     component.getWorkspace().setSelected(element.path);
     component.getWorkspace().setExpanded(element.path, false);
     fixture.detectChanges();
@@ -681,7 +681,7 @@ describe('NavigationComponent', () => {
     sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
 
     // then
-    expect(component.getWorkspace().getElement(component.getWorkspace().getSelected()).name).toEqual('newFolder');
+    expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('newFolder');
 
   });
   }));
@@ -743,7 +743,7 @@ describe('NavigationComponent', () => {
     sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
 
     // then
-    expect(component.getWorkspace().getElement(component.getWorkspace().getSelected()).name).toEqual('subfolder');
+    expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('subfolder');
 
   });
   }));
@@ -784,7 +784,7 @@ describe('NavigationComponent', () => {
   it('emits "navigation.open" message when the enter key is pressed', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    component.getWorkspace().setExpanded(component.getWorkspace().getElement('subfolder').path, true);
+    component.getWorkspace().setExpanded(component.getWorkspace().getElementInfo('subfolder').path, true);
     component.getWorkspace().setSelected(tclFile.path);
     fixture.detectChanges();
     let callback = jasmine.createSpy('callback');
@@ -818,7 +818,7 @@ describe('NavigationComponent', () => {
 
       // then
       tick();
-      let updatedTclFile = component.getWorkspace().getElement(pathInWorkspaceToBeRefreshed);
+      let updatedTclFile = component.getWorkspace().getElementInfo(pathInWorkspaceToBeRefreshed);
       // TODO alternative check!
       // expect(updatedTclFile).not.toBe(tclFile);
       expect(ElementState[workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.LastRunFailed]);
@@ -869,7 +869,7 @@ describe('NavigationComponent', () => {
     // then
     tick(responseDelayMillis);
     verify(executionService.status(tclFile.path)).twice();
-    let updatedTclFile = component.getWorkspace().getElement(tclFile.path);
+    let updatedTclFile = component.getWorkspace().getElementInfo(tclFile.path);
     // TODO alternative check
     // expect(updatedTclFile).not.toBe(tclFile);
     expect(ElementState[workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.Running]);
