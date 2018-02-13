@@ -25,7 +25,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  private readonly workspace: Workspace;
+  workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
   errorMessage: string;
   notification: string;

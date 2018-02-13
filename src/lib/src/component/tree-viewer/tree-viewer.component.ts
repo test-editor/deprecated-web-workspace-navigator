@@ -35,7 +35,7 @@ export class TreeViewerComponent {
     private windowReference: WindowService
   ) { }
 
-  private get elementInfo(): LinkedWorkspaceElement {
+  get elementInfo(): LinkedWorkspaceElement {
     return this.workspace.getElement(this.elementPath);
   }
 
