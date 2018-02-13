@@ -251,8 +251,8 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
     const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
-    let subfolder = root.childPaths[0];
-    component.getWorkspace().setExpanded(subfolder, true);
+    let subfolderPath = root.childPaths[0];
+    component.getWorkspace().setExpanded(subfolderPath, true);
     fixture.detectChanges();
     let collapseAllIcon = sidenav.query(By.css('#collapse-all'));
 
@@ -260,7 +260,7 @@ describe('NavigationComponent', () => {
     collapseAllIcon.nativeElement.click();
 
     // then
-    expect(component.getWorkspace().isExpanded(subfolder)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(subfolderPath)).toBeFalsy();
     expect(component.getWorkspace().isExpanded(root.path)).toBeTruthy();
   });
   });
@@ -294,14 +294,14 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
     const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
-    const subfolder = root.childPaths[0];
-    const newFolder = component.getWorkspace().getElementInfo(subfolder).childPaths[0];
+    const subfolderPath = root.childPaths[0];
+    const newFolder = component.getWorkspace().getElementInfo(subfolderPath).childPaths[0];
 
     // when
     component.revealElement(newFolder);
 
     // then
-    expect(component.getWorkspace().isExpanded(subfolder)).toBeTruthy();
+    expect(component.getWorkspace().isExpanded(subfolderPath)).toBeTruthy();
     expect(component.getWorkspace().isExpanded(root.path)).toBeTruthy();
     expect(component.getWorkspace().isExpanded(newFolder)).toBeFalsy();
   });
@@ -310,13 +310,13 @@ describe('NavigationComponent', () => {
   it('can select subfolder', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
-    const subfolder = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath()).childPaths[0];
+    const subfolderPath = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath()).childPaths[0];
 
     // when
-    component.selectElement(subfolder + '/');
+    component.selectElement(subfolderPath + '/');
 
     // then
-    expect(component.getWorkspace().getSelected()).toBe(subfolder);
+    expect(component.getWorkspace().getSelected()).toBe(subfolderPath);
   });
 });
 
