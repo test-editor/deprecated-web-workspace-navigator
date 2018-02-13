@@ -9,8 +9,9 @@ import { WindowService } from './window.service';
 export class DefaultWindowService implements WindowService {
   private readonly windowRef = window;
 
-  open(url: URL): void {
-    this.windowRef.open(url.toString());
+  open(getUrl: () => Promise<URL>): void {
+    const newWindow = this.windowRef.open('');
+    getUrl().then((url) => newWindow.document.write(`<html><body><img src="${url.toString()}"/></body></html>`));
   }
 
 }
