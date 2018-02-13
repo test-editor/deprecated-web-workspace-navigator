@@ -1,6 +1,6 @@
 export { ElementState } from './src/common/element-state';
 export { ElementType } from './src/common/element-type';
-export { WorkspaceElement } from './src/common/workspace-element';
+export { WorkspaceElement, WorkspaceElementInfo } from './src/common/workspace-element';
 export { WorkspaceNavigatorModule } from './src/workspace.navigator.module';
 export { NavigationComponent } from './src/component/navigation/navigation.component';
 export { TreeViewerComponent } from './src/component/tree-viewer/tree-viewer.component';

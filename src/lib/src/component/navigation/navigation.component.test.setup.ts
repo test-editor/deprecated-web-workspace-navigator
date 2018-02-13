@@ -10,10 +10,33 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { Response, ResponseOptions } from '@angular/http';
 import { ElementState } from '../../common/element-state';
+import { IndicatorFieldSetup } from '../../common/markers/field';
 
 export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_ERROR = 500;
+
+export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
+  fields: [
+    {
+      condition: (element) => element && element.name.endsWith('tcl'),
+      states: [{
+        condition: (marker) => marker.testStatus === ElementState.Running,
+        cssClasses: 'fa fa-spinner fa-spin',
+        label: (marker) => `Test "${marker.name}" is running`,
+      }, {
+        condition: (marker) => marker.testStatus === ElementState.LastRunSuccessful,
+        cssClasses: 'fa fa-circle test-success',
+        label: (marker) => `Last run of test "${marker.name}" was successful`,
+      }, {
+        condition: (marker) => marker.testStatus === ElementState.LastRunFailed,
+        cssClasses: 'fa fa-circle test-failure',
+        label: (marker) => `Last run of test "${marker.name}" has failed`,
+      }]
+    }
+  ]
+};
+
 
 export const tclFile: WorkspaceElement = {
   name: 'file.tcl',

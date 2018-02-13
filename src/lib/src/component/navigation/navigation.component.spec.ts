@@ -20,7 +20,7 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination, subfolder, root }
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService, setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile, lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination, subfolder, root, testEditorIndicatorFieldSetup }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
@@ -29,6 +29,7 @@ import { discardPeriodicTasks } from '@angular/core/testing';
 import { flushMicrotasks } from '@angular/core/testing';
 import { PathValidator } from '../tree-viewer/path-validator';
 import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
+import { IndicatorFieldSetup } from '../../common/markers/field';
 
 describe('NavigationComponent', () => {
 
@@ -62,6 +63,7 @@ describe('NavigationComponent', () => {
         { provide: PersistenceService, useValue: instance(persistenceService) },
         { provide: TestExecutionService, useValue: instance(executionService) },
         { provide: WindowService, useValue: null},
+        { provide: IndicatorFieldSetup, useValue: testEditorIndicatorFieldSetup},
         PathValidator
       ]
     })
@@ -372,7 +374,7 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.execute(tclFile.path)).once();
-    expect(ElementState[tclFile.state]).toEqual(ElementState[ElementState.LastRunSuccessful]);
+    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
   });
   }));
 
@@ -391,7 +393,7 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.execute(tclFile.path)).once();
-    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
+    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
   });
   }));
 
@@ -409,7 +411,7 @@ describe('NavigationComponent', () => {
 
     // then
     verify(executionService.status(tclFile.path)).thrice(); // mock returns 'RUNNING' twice, then 'SUCCESS'
-    expect(tclFile.state).toEqual(ElementState.LastRunSuccessful);
+    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
   });
   }));
 
@@ -452,7 +454,7 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {
     let runIcon = sidenav.query(By.css('#run'));
-    tclFile.state = ElementState.Running;
+    workspace.setTestStatus(tclFile.path, ElementState.Running);
 
     // when
     component.selectElement(tclFile.path);

@@ -18,7 +18,7 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
-import { Field } from '../../common/markers/field';
+import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { IndicatorBoxComponent } from './indicator.box.component';
 
 export function testBedSetup(providers?: any[]): void {
@@ -115,7 +115,8 @@ describe('TreeViewerComponent', () => {
     windowService = mock(DefaultWindowService);
     testBedSetup([
       { provide: PersistenceService, useValue: instance(persistenceService) },
-      { provide: WindowService, useValue: instance(windowService) }
+      { provide: WindowService, useValue: instance(windowService) },
+      { provide: IndicatorFieldSetup, useValue: sampleFieldSetup}
     ]);
   }));
 

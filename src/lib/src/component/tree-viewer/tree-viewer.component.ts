@@ -41,7 +41,8 @@ export class TreeViewerComponent {
   }
 
   get indicatorBoxes(): { workspace: Workspace, path: string, states: MarkerState[] }[] {
-    return this.fields.map((field) => { return {workspace: this.workspace, path: this.elementInfo.path, states: field.states} });
+    return this.fields.map((field) => { return {workspace: this.workspace, path: this.elementPath, states: field.states} });
+  }
 
   get elementInfo(): LinkedWorkspaceElement {
     return this.workspace.getElementInfo(this.elementPath);
