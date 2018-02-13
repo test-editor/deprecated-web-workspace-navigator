@@ -45,7 +45,7 @@ export class TreeViewerComponent {
 
   onDoubleClick() {
     if (this.isFolder()) {
-      this.workspace.toggleExpanded(this.elementInfo.path);
+      this.workspace.toggleExpanded(this.elementPath);
     }
     if (this.isFile()) {
       this.openFile();
@@ -54,21 +54,21 @@ export class TreeViewerComponent {
 
   openFile() {
     if (this.isImage()) {
-      this.persistenceService.getBinaryResource(this.elementInfo.path).then((response) => {
+      this.persistenceService.getBinaryResource(this.elementPath).then((response) => {
         let url = new URL(URL.createObjectURL(response.blob()));
         this.windowReference.open(url);
       });
     } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
         name: this.elementInfo.name,
-        path: this.elementInfo.path
+        path: this.elementPath
       });
     }
   }
 
   onIconClick() {
     if (this.isFolder()) {
-      this.workspace.toggleExpanded(this.elementInfo.path);
+      this.workspace.toggleExpanded(this.elementPath);
     }
   }
 
@@ -77,7 +77,7 @@ export class TreeViewerComponent {
   }
 
   onDeleteConfirm(): void {
-    this.persistenceService.deleteResource(this.elementInfo.path).then(() => {
+    this.persistenceService.deleteResource(this.elementPath).then(() => {
       this.messagingService.publish(events.NAVIGATION_DELETED, this.elementInfo);
     }).catch(() => {
       this.handleDeleteFailed();
@@ -98,7 +98,7 @@ export class TreeViewerComponent {
   }
 
   isExpanded(): boolean {
-    return this.workspace.isExpanded(this.elementInfo.path);
+    return this.workspace.isExpanded(this.elementPath);
   }
 
   isFile(): boolean {
@@ -129,7 +129,7 @@ export class TreeViewerComponent {
     if (this.workspace.hasNewElementRequest()) {
       let selectedElement = this.workspace.getNewElement();
       if (selectedElement) {
-        return selectedElement.path == this.elementInfo.path;
+        return selectedElement.path == this.elementPath;
       } else {
         return this.level == 0; // display at root
       }
@@ -139,7 +139,7 @@ export class TreeViewerComponent {
 
   isImage(): boolean {
     return TreeViewerComponent.IMAGE_EXTENSIONS.some((extension) => {
-      return this.elementInfo.path.toLowerCase().endsWith(extension);
+      return this.elementPath.toLowerCase().endsWith(extension);
     }, this);
   }
 
