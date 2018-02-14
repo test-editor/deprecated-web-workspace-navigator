@@ -110,4 +110,24 @@ describe('IndicatorBoxComponent', () => {
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Last run of test "test" was successful');
     expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
   });
+
+  it('handles exceptions in condition expressions gracefully', () => {
+    // given
+    hostComponent.path = 'sample/path/to/test.tcl';
+    hostComponent.workspace = new Workspace();
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
+    hostComponent.states = sampleMarkerStates.slice()
+    hostComponent.states.unshift({
+      condition: (marker) => marker.nonExisting.property === true,
+      cssClasses: 'fa fa-spinner fa-spin',
+      label: (marker) => { throw new Error('broken label provider'); },
+    });
+
+    // when
+    fixture.detectChanges()
+
+    // then
+    // expect no errors
+  });
 });

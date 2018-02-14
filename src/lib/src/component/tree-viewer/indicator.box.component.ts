@@ -39,4 +39,14 @@ export class IndicatorBoxComponent {
     return this.model != null && this.model.path != null && this.model.possibleStates != null && this.model.workspace != null;
   }
 
+  private getActiveState(): MarkerState {
+    return this.model.possibleStates.find((state) => {
+      try {
+        return state.condition(this.getMarkers())
+      } catch(error) {
+        console.log(error);
+        return false;
+      }
+    });
+  }
 }
