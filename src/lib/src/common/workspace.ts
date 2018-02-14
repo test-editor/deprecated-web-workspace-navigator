@@ -5,6 +5,7 @@ import { TestExecutionService } from '../service/execution/test.execution.servic
 import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
 import { ElementState } from './element-state';
+import { MarkerObserver} from './markers/marker.observer';
 
 @Injectable()
 export class Workspace {
@@ -83,30 +84,29 @@ export class Workspace {
     }
   }
 
-  observeMarker<VALUE_TYPE>(path: string, field: string, observe: () => Promise<VALUE_TYPE>, stopOn: (value: VALUE_TYPE) => boolean): void {
-    if (this.pathToElement.get(path)) {
-      if (!this.hasMarker(path, field)) {
-        this.setMarkerValue(path, field, null);
+  observeMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>): void {
+    if (this.pathToElement.get(observer.path)) {
+      if (!this.hasMarker(observer.path, observer.field)) {
+        this.setMarkerValue(observer.path, observer.field, null);
       }
-      observe().then((value) => this.setObservedMarker(path, field, value, observe, stopOn))
+      observer.observe().then((value) => this.setObservedMarker(observer, value))
       .catch((reason) => {
         console.log(reason);
-        this.setObservedMarker(path, field, this.getMarkerValue(path, field), observe, stopOn);
+        this.setObservedMarker(observer, this.getMarkerValue(observer.path, observer.field));
       });
     } else {
-      throw new Error(`There is no element with path "${path}" in this workspace.`);
+      throw new Error(`There is no element with path "${observer.path}" in this workspace.`);
     }
   }
 
-  private setObservedMarker<VALUE_TYPE>(path: string, field: string, value: VALUE_TYPE,
-    observe: () => Promise<VALUE_TYPE>, stopOn: (value: VALUE_TYPE) => boolean): void {
-      if (this.pathToElement.get(path)) {
-        this.setMarkerValue(path, field, value);
-        if (!stopOn(value)) {
-          observe().then((newValue) => this.setObservedMarker(path, field, newValue, observe, stopOn))
+  private setObservedMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
+      if (this.pathToElement.get(observer.path)) {
+        this.setMarkerValue(observer.path, observer.field, value);
+        if (!observer.stopOn(value)) {
+          observer.observe().then((newValue) => this.setObservedMarker(observer, newValue))
           .catch((reason) => {
             console.log(reason);
-            this.setObservedMarker(path, field, value, observe, stopOn);
+            this.setObservedMarker(observer, value);
           });
         }
     }

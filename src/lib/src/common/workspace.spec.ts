@@ -4,6 +4,7 @@ import { WorkspaceElement } from './workspace-element';
 import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, lastChild, greatGrandChild, root } from './workspace.spec.data';
 import { ElementState } from './element-state';
 import { fakeAsync, tick, flush } from '@angular/core/testing';
+import { MarkerObserver } from './markers/marker.observer';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -334,53 +335,62 @@ describe('Workspace marker interface', () => {
 describe('Workspace marker polling', () => {
   it('observes external data sources and updates marker values, accordingly', fakeAsync(() => {
     // given
-    const path = 'sample/path';
-    const workspace = createWorkspaceWithRootFolder(path);
-    const field = 'testStatus';
-    const state = ElementState.LastRunSuccessful;
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(ElementState.LastRunSuccessful),
+      stopOn: (currentState) => currentState !== ElementState.Running
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
 
     // when
-    workspace.observeMarker(path, field, () => Promise.resolve(state), (currentState) => currentState !== ElementState.Running)
+    workspace.observeMarker(observer);
     tick();
 
     // then
-    expect(workspace.getMarkerValue(path, field)).toEqual(state);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunSuccessful);
   }));
 
   it('keeps polling until exit condition is reached', fakeAsync(() => {
     // given
-    const path = 'sample/path';
-    const workspace = createWorkspaceWithRootFolder(path);
-    const field = 'testStatus';
     const stateBefore = ElementState.Running;
     const stateAfter = ElementState.LastRunFailed;
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter),
+      stopOn: (currentState) => currentState !== stateBefore
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
     const invocationsUntilChange = 3;
     let invocations = 0;
-    const observable = () => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter);
 
     // when
-    workspace.observeMarker(path, field, observable, (currentState) => currentState !== stateBefore)
+    workspace.observeMarker(observer);
     tick();
 
     // then
-    expect(workspace.getMarkerValue(path, field)).toEqual(stateAfter);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(stateAfter);
     expect(invocations).toEqual(invocationsUntilChange + 1);
   }));
 
   it('stops polling when the path disappears from the workspace', fakeAsync(() => {
     // given
-    const observedPath = 'sample/path';
-    const workspace = createWorkspaceWithRootFolder(observedPath);
-    const field = 'testStatus';
     const stateBefore = ElementState.Running;
     const stateAfter = ElementState.LastRunFailed;
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => new Promise((resolve) => setTimeout(resolve, 1))
+        .then(() => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter)),
+      stopOn: (currentState) => currentState !== stateBefore
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
     const invocationsUntilChange = 3;
     const invocationsUntilReload = 2;
     let invocations = 0;
-    const observable = () => new Promise((resolve) => setTimeout(resolve, 1))
-      .then(() => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter));
 
-    workspace.observeMarker(observedPath, field, observable, (currentState) => currentState !== stateBefore)
+    workspace.observeMarker(observer);
     tick(invocationsUntilReload);
 
     // when
@@ -389,38 +399,44 @@ describe('Workspace marker polling', () => {
 
     // then
     expect(invocations).toEqual(invocationsUntilReload);
-    expect(workspace.getMarkerValue(observedPath, field)).toEqual(stateBefore);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(stateBefore);
     flush();
   }));
 
   it('throws an error when the path does not exist', () => {
     // given
-    const invalidPath = 'non/existing/path';
+    const observer: MarkerObserver<ElementState> = {
+      path: 'non/existing/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(ElementState.LastRunSuccessful),
+      stopOn: () => true
+    }
     const workspace = createWorkspaceWithRootFolder('existing/path');
-    const field = 'testStatus';
-    const state = ElementState.LastRunSuccessful;
 
     // when + then
-    expect(() => workspace.observeMarker(invalidPath, field, () => Promise.resolve(state), () => true))
-    .toThrowError(`There is no element with path "${invalidPath}" in this workspace.`);
+    expect(() => workspace.observeMarker(observer))
+    .toThrowError(`There is no element with path "${observer.path}" in this workspace.`);
   });
 
   it('continues polling when the observable produces errors', fakeAsync(() => {
     // given
-    const path = 'sample/path';
-    const workspace = createWorkspaceWithRootFolder(path);
-    const field = 'testStatus';
     const state = Array(4).fill(ElementState.Running).concat([ElementState.LastRunSuccessful]);
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => invocations++ % 2 ? Promise.resolve(state[invocations]) : Promise.reject('failure'),
+      stopOn: (currentState) => currentState !== ElementState.Running
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
     let invocations = 0;
-    const observable = () => invocations++ % 2 ? Promise.resolve(state[invocations]) : Promise.reject('failure');
-    workspace.setMarkerValue(path, field, state[0]);
+    workspace.setMarkerValue(observer.path, observer.field, state[0]);
 
     // when
-    workspace.observeMarker(path, field, observable, (currentState) => currentState !== ElementState.Running)
+    workspace.observeMarker(observer)
     tick();
 
     // then
     expect(invocations).toEqual(4);
-    expect(workspace.getMarkerValue(path, field)).toEqual(state[invocations]);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(state[invocations]);
   }));
 });
