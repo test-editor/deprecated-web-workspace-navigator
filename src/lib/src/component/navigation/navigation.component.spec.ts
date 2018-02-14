@@ -913,6 +913,25 @@ describe('NavigationComponent', () => {
   });
   }));
 
+  it('shows indicator on tree item when WORKSPACE_MARKER_UPDATE message is received', async(() => {
+    // given
+    setupWorkspace(component, persistenceService, fixture).then(workspace => {
+      component.workspace.setExpanded(subfolder.path, true);
+
+    // when
+    messagingService.publish(events.WORKSPACE_MARKER_UPDATE, [{
+      path: tclFile.path, markers: {
+        testStatus: ElementState.Running
+      }}]);
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(sidenav.query(By.css('.fa-spinner'))).toBeTruthy();
+    })
+
+  });
+  }));
+
   it('observes workspace markers when WORKSPACE_MARKER_OBSERVE message is received', async(() => {
     // given
     setupWorkspace(component, persistenceService, fixture).then(workspace => {

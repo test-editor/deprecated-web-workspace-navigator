@@ -120,6 +120,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
           this.workspace.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
         }
       });
+      this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
       this.workspace.observeMarker(observer);
