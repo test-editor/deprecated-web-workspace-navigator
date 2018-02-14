@@ -21,15 +21,15 @@ export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
       condition: (element) => element && element.type === 'file',
       states: [{
         condition: (marker) => marker.validation.errors > 0,
-        cssClasses: 'fas fa-exclamation-circle validation-errors',
+        cssClasses: 'fa fa-exclamation-circle validation-errors',
         label: validationLabel
       }, {
         condition: (marker) => marker.validation.errors <= 0 && marker.validation.warnings > 0,
-        cssClasses: 'fas fa-exclamation-triangle validation-warnings',
+        cssClasses: 'fa fa-exclamation-triangle validation-warnings',
         label: validationLabel
       }, {
         condition: (marker) => marker.validation.errors <= 0 && marker.validation.warnings <= 0 && marker.validation.infos > 0,
-        cssClasses: 'fas fa-info-circle validation-infos',
+        cssClasses: 'fa fa-info-circle validation-infos',
         label: validationLabel
       }]
     }
@@ -39,19 +39,19 @@ export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
 export function validationLabel(marker: any): string {
   let label = '';
   if (marker.validation.errors > 0) {
-    label += '${marker.validation.errors} error(s)'
+    label += `${marker.validation.errors} error(s)`;
   }
   if (marker.validation.warnings > 0) {
     if (label.length > 0) {
       label += ', ';
     }
-    label += '${marker.validation.warnings} warning(s)'
+    label += `${marker.validation.warnings} warning(s)`
   }
   if (marker.validation.infos > 0) {
     if (label.length > 0) {
       label += ', ';
     }
-    label += '${marker.validation.infos} info(s)'
+    label += `${marker.validation.infos} info(s)`
   }
   return label;
 }

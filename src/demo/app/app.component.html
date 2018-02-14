@@ -24,7 +24,10 @@
             <a href="#" (click)="setDirty(path, true)">dirty</a> |
             <a href="#" (click)="setDirty(path, false)">undirty</a> |
             <a href="#" (click)="setActive(path)">active</a> |
-            <a href="#" (click)="close(path)">close</a>
+            <a href="#" (click)="close(path)">close</a> |
+            errors <a href="#" (click)="changeValidationStatus(path, 'errors', 1)">+</a>/<a href="#" (click)="changeValidationStatus(path, 'errors', -1)">–</a> |
+            warnings <a href="#" (click)="changeValidationStatus(path, 'warnings', 1)">+</a>/<a href="#" (click)="changeValidationStatus(path, 'warnings', -1)">–</a> |
+            infos <a href="#" (click)="changeValidationStatus(path, 'infos', 1)">+</a>/<a href="#" (click)="changeValidationStatus(path, 'infos', -1)">–</a>
           </li>
         </ul>
       </div>

@@ -3,6 +3,7 @@ import { MessagingService } from '@testeditor/messaging-service';
 
 import * as events from '@testeditor/workspace-navigator';
 import { EDITOR_DIRTY_CHANGED, EDITOR_ACTIVE, EDITOR_CLOSE } from '../../lib/src/component/event-types';
+import { validationLabel } from './indicator.field.setup';
 
 @Component({
   selector: 'demo-app',
@@ -14,6 +15,7 @@ export class AppComponent {
   lastSelected: any;
   lastOpened: any;
   paths: string[] = [];
+  private readonly validationStatus: Map<string, { validation: { errors: number, warnings: number, infos: number } }> = new Map();
 
   constructor(private messagingService: MessagingService, private changeDetectorRef: ChangeDetectorRef) {
     this.subscribeToEvents();
@@ -54,4 +56,12 @@ export class AppComponent {
     }
   }
 
+  changeValidationStatus(path: string, type: string, increment: number): void {
+    if(!this.validationStatus.has(path)) {
+      this.validationStatus.set(path, {validation: { errors: 0, warnings: 0, infos: 0} });
+    }
+    const elementStatus = this.validationStatus.get(path);
+    elementStatus.validation[type] += elementStatus.validation[type] + increment < 0 ? 0 : increment;
+    this.messagingService.publish(events.WORKSPACE_MARKER_UPDATE, [{path: path, markers: elementStatus}]);
+  }
 }
