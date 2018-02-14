@@ -30,6 +30,7 @@ import { flushMicrotasks } from '@angular/core/testing';
 import { PathValidator } from '../tree-viewer/path-validator';
 import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from '../../common/markers/field';
+import { MarkerObserver } from '../../common/markers/marker.observer';
 
 describe('NavigationComponent', () => {
 
@@ -909,6 +910,27 @@ describe('NavigationComponent', () => {
     expect(lastElementMarker.validation.errors).toEqual(0);
     expect(lastElementMarker.validation.warnings).toEqual(1);
     expect(lastElementMarker.validation.infos).toEqual(0);
+  });
+  }));
+
+  it('observes workspace markers when WORKSPACE_MARKER_OBSERVE message is received', async(() => {
+    // given
+    setupWorkspace(component, persistenceService, fixture).then(workspace => {
+    const observer: MarkerObserver<ElementState> = {
+      path: tclFile.path,
+      field: 'testStatus',
+      observe: () => Promise.resolve(ElementState.LastRunFailed),
+      stopOn: (value) => value !== ElementState.Running
+    }
+
+    // when
+    messagingService.publish(events.WORKSPACE_MARKER_OBSERVE, observer);
+
+    // then
+    fixture.whenStable().then(() => {
+      const tclFileMarker = component.workspace.getMarker(tclFile.path);
+      expect(component.workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunFailed);
+    });
   });
   }));
 });

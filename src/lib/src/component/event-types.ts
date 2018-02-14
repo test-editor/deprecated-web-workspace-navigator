@@ -6,3 +6,4 @@ export const NAVIGATION_CREATED = 'navigation.created';
 export const NAVIGATION_OPEN = 'navigation.open';
 export const NAVIGATION_SELECT = 'navigation.select';
 export const WORKSPACE_MARKER_UPDATE = 'workspace.marker.update';
+export const WORKSPACE_MARKER_OBSERVE = 'workspace.marker.observe';
