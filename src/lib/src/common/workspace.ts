@@ -57,7 +57,7 @@ export class Workspace {
     });
   }
 
-  getMarker(path: string): any {
+  getMarkers(path: string): any {
     return this.performIfNotNullOrUndefined('path', path, () => {
       return this.markers[path] ? this.markers[path] : {};
     });

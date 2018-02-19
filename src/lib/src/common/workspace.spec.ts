@@ -308,7 +308,7 @@ describe('Workspace marker interface', () => {
     workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
 
     // when
-    const actualMarker = workspace.getMarker('some/path');
+    const actualMarker = workspace.getMarkers('some/path');
 
     // then
     expect(actualMarker.aField).toEqual(42);
@@ -322,7 +322,7 @@ describe('Workspace marker interface', () => {
     workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
 
     // when
-    const actualMarker = workspace.getMarker('some/path');
+    const actualMarker = workspace.getMarkers('some/path');
 
     // then
     expect(actualMarker).toEqual({});

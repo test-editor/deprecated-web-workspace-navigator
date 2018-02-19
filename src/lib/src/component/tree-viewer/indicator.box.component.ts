@@ -8,11 +8,11 @@ import { MarkerState } from '../../common/markers/marker.state';
   styleUrls: ['./indicator.box.component.css']
 })
 export class IndicatorBoxComponent {
-  @Input() model: { workspace: Workspace, path: string, states: MarkerState[] };
+  @Input() model: { workspace: Workspace, path: string, possibleStates: MarkerState[] };
 
   get cssClasses(): string {
     if (this.isInitialized()) {
-      const activeState = this.model.states.find((state) => state.condition(this.getMarker()));
+      const activeState = this.model.possibleStates.find((state) => state.condition(this.getMarkers()));
       if (activeState != null) {
         return activeState.cssClasses;
       }
@@ -22,21 +22,21 @@ export class IndicatorBoxComponent {
 
   get label(): string {
     if (this.isInitialized()) {
-      const activeState = this.model.states.find((state) => state.condition(this.getMarker()));
+      const activeState = this.model.possibleStates.find((state) => state.condition(this.getMarkers()));
       if (activeState) {
-        return activeState.label(this.getMarker());
+        return activeState.label(this.getMarkers());
       }
     } else {
       return '';
     }
   }
 
-  private getMarker(): any {
-    return this.model.workspace.getMarker(this.model.path);
+  private getMarkers(): any {
+    return this.model.workspace.getMarkers(this.model.path);
   }
 
   private isInitialized(): boolean {
-    return this.model != null && this.model.path != null && this.model.states != null && this.model.workspace != null;
+    return this.model != null && this.model.path != null && this.model.possibleStates != null && this.model.workspace != null;
   }
 
 }

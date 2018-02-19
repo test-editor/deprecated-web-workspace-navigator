@@ -27,8 +27,8 @@ describe('MarkerState', () => {
   it('returns the correct label', () => {
     // given
     const markerState: MarkerState = {
-      condition: (marker) => marker['testStatus'] === ElementState.Running,
-      cssClasses: 'fa-spinner fa-spin',
+      condition: () => true,
+      cssClasses: '',
       label: (marker) => `Test ${marker.name} is running`,
     };
     const marker = { name: 'sampleTest.tcl' };

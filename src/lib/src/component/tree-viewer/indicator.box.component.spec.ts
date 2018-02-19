@@ -27,7 +27,7 @@ describe('IndicatorBoxComponent', () => {
 
   @Component({
     selector: `host-component`,
-    template: `<indicator-box [model]="{'workspace': workspace,'path': path, 'states': states}"></indicator-box>`
+    template: `<indicator-box [model]="{'workspace': workspace,'path': path, 'possibleStates': states}"></indicator-box>`
   })
   class TestHostComponent {
     @ViewChild(IndicatorBoxComponent)
