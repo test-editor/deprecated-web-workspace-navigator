@@ -42,6 +42,24 @@ describe('Workspace', () => {
     expect(retrievedElement.path).toBe(workspace.getRootPath());
   });
 
+  it('does not leave stale paths after reload', () => {
+    // given
+    let workspace = createWorkspaceWithSubElements()
+
+    // when
+    workspace.reload(middleChild);
+
+    // then
+    expect(workspace.contains(root.path)).toBeFalsy();
+    expect(workspace.contains(firstChild.path)).toBeFalsy();
+    expect(workspace.contains(middleChild.path)).toBeTruthy();
+    expect(workspace.contains(grandChild.path)).toBeTruthy();
+    expect(workspace.contains(greatGrandChild.path)).toBeTruthy();
+    expect(workspace.contains(lastChild.path)).toBeFalsy();
+  });
+
+
+
 });
 
 describe('Workspace.getSubpaths()', () => {
@@ -330,6 +348,56 @@ describe('Workspace marker interface', () => {
     expect(actualMarker).toEqual({});
   });
 
+  it('removes stale markers on reload by default', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+
+    // when
+    workspace.reload(middleChild); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeFalsy();
+  });
+
+  it('retains stale markers on reload on explicit request', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+
+    // when
+    workspace.reload(middleChild, false); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeTruthy();
+  });
+
+  it('removes stale markers on explicit clear', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+    workspace.reload(middleChild, false); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // when
+    workspace.clearStaleMarkers();
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeFalsy();
+  });
+
+  it('retains all non-stale markers on clear', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/middleChild/grandChild', 'testStatus', ElementState.Running);
+    workspace.reload(middleChild, false); // this is the parent of 'grandChild', marker is not "stale"!
+
+    // when
+    workspace.clearStaleMarkers();
+
+    // then
+    expect(workspace.hasMarker('root/middleChild/grandChild', 'testStatus')).toBeTruthy();
+  });
+
 });
 
 describe('Workspace marker polling', () => {
@@ -394,7 +462,7 @@ describe('Workspace marker polling', () => {
     tick(invocationsUntilReload);
 
     // when
-    workspace.reload({name: '', path: 'unobserved/path', type: ElementType.File, children: []});
+    workspace.reload({name: '', path: 'unobserved/path', type: ElementType.File, children: []}, false);
     tick();
 
     // then
@@ -437,6 +505,6 @@ describe('Workspace marker polling', () => {
 
     // then
     expect(invocations).toEqual(4);
-    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(state[invocations]);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunSuccessful);
   }));
 });

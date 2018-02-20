@@ -13,17 +13,21 @@ export class Workspace {
   private root: WorkspaceElement = null;
   private uiState: UiState;
   private pathToElement = new Map<string, WorkspaceElement>();
-  private readonly markers: any[] = [];
+  private readonly markers: any = {};
 
   constructor() {
     this.uiState = new UiState();
   }
 
-  public reload(newRoot: WorkspaceElement): void {
+  public reload(newRoot: WorkspaceElement, clearStaleMarkers = true): void {
     this.root = newRoot;
     if (this.root !== null) {
+      this.pathToElement.clear();
       this.uiState.setExpanded(this.root.path, true);
       this.addToMap(this.root);
+      if (clearStaleMarkers) {
+        this.clearStaleMarkers();
+      }
     }
   }
   public get initialized(): boolean {
@@ -84,33 +88,45 @@ export class Workspace {
     }
   }
 
+  clearStaleMarkers(): void {
+    Object.keys(this.markers).forEach((path) => {
+      if (!this.pathToElement.has(path)) {
+        delete this.markers[path];
+      }
+    });
+  }
+
   observeMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>): void {
     if (this.pathToElement.get(observer.path)) {
       if (!this.hasMarker(observer.path, observer.field)) {
         this.setMarkerValue(observer.path, observer.field, null);
       }
-      observer.observe().then((value) => this.setObservedMarker(observer, value))
+      observer.observe().then((value) => this.updateMarkerValueAndContinueObserving(observer, value))
       .catch((reason) => {
-        console.log(reason);
-        this.setObservedMarker(observer, this.getMarkerValue(observer.path, observer.field));
+        this.logObserverErrorAndContinue(reason, observer, this.getMarkerValue(observer.path, observer.field));
       });
     } else {
       throw new Error(`There is no element with path "${observer.path}" in this workspace.`);
     }
   }
 
-  private setObservedMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
-      if (this.pathToElement.get(observer.path)) {
-        this.setMarkerValue(observer.path, observer.field, value);
-        if (!observer.stopOn(value)) {
-          observer.observe().then((newValue) => this.setObservedMarker(observer, newValue))
-          .catch((reason) => {
-            console.log(reason);
-            this.setObservedMarker(observer, value);
-          });
-        }
+  private updateMarkerValueAndContinueObserving<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
+    if (this.pathToElement.get(observer.path)) {
+      this.setMarkerValue(observer.path, observer.field, value);
+      if (!observer.stopOn(value)) {
+        observer.observe().then((newValue) => this.updateMarkerValueAndContinueObserving(observer, newValue))
+        .catch((reason) => {
+          this.logObserverErrorAndContinue(reason, observer, value);
+        });
+      }
     }
   }
+
+  private logObserverErrorAndContinue<VALUE_TYPE>(error: any, observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
+    console.log(`Problem occurred while observing "${observer.field}" of "${observer.path}". Cause: ${error}`);
+    this.updateMarkerValueAndContinueObserving(observer, value);
+  }
+
 
   private performIfNotNullOrUndefined(parameterName: string, parameterValue: any, action: () => any) {
     if (parameterValue != null) {
