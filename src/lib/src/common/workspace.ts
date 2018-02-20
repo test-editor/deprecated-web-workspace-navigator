@@ -12,6 +12,7 @@ export class Workspace {
   private root: WorkspaceElement = null;
   private uiState: UiState;
   private pathToElement = new Map<string, WorkspaceElement>();
+  private readonly markers: any[] = [];
 
   constructor() {
     this.uiState = new UiState();
@@ -24,7 +25,7 @@ export class Workspace {
       this.addToMap(this.root);
     }
   }
-  public get initialized() : boolean {
+  public get initialized(): boolean {
     return this.root != null;
   }
 
@@ -39,6 +40,48 @@ export class Workspace {
     const trailingSlashes = /\/+$/;
     let normalized = path.replace(leadingSlashes, '').replace(trailingSlashes, '');
     return normalized;
+  }
+
+  getMarkerValue(path: string, field: string): any {
+    return this.performIfNotNullOrUndefined('path', path, () => {
+      const marker = this.markers[path];
+      if (marker) {
+        if (marker[field] !== undefined) {
+          return marker[field];
+        } else {
+          throw new Error(`The marker field "${field}" does not exist for path "${path}".`);
+        }
+      } else {
+        throw new Error(`There are no marker fields for path "${path}".`);
+      }
+    });
+  }
+
+  getMarkers(path: string): any {
+    return this.performIfNotNullOrUndefined('path', path, () => {
+      return this.markers[path] ? this.markers[path] : {};
+    });
+  }
+
+  setMarkerValue(path: string, field: string, value: any): void {
+    if (field && field !== '') {
+      this.performIfNotNullOrUndefined('path', path, () => {
+        if (!this.markers[path]) {
+          this.markers[path] = {};
+        }
+        this.markers[path][field] = value;
+      });
+    } else {
+      throw new Error('empty field names are not allowed');
+    }
+  }
+
+  private performIfNotNullOrUndefined(parameterName: string, parameterValue: any, action: () => any) {
+    if (parameterValue != null) {
+      return action();
+    } else {
+      throw new Error(`${parameterName} must not be ${parameterValue}`);
+    }
   }
 
   /**

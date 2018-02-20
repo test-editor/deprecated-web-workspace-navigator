@@ -8,7 +8,7 @@ export class WorkspaceElementInfo {
 }
 
 export class LinkedWorkspaceElement extends WorkspaceElementInfo {
-  childPaths: string[]
+  childPaths: string[];
 }
 
 export class WorkspaceElement extends WorkspaceElementInfo {
