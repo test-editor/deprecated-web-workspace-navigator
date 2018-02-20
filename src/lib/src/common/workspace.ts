@@ -5,6 +5,7 @@ import { TestExecutionService } from '../service/execution/test.execution.servic
 import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
 import { ElementState } from './element-state';
+import { MarkerObserver} from './markers/marker.observer';
 
 @Injectable()
 export class Workspace {
@@ -12,17 +13,21 @@ export class Workspace {
   private root: WorkspaceElement = null;
   private uiState: UiState;
   private pathToElement = new Map<string, WorkspaceElement>();
-  private readonly markers: any[] = [];
+  private readonly markers: any = {};
 
   constructor() {
     this.uiState = new UiState();
   }
 
-  public reload(newRoot: WorkspaceElement): void {
+  public reload(newRoot: WorkspaceElement, clearStaleMarkers = true): void {
     this.root = newRoot;
     if (this.root !== null) {
+      this.pathToElement.clear();
       this.uiState.setExpanded(this.root.path, true);
       this.addToMap(this.root);
+      if (clearStaleMarkers) {
+        this.clearStaleMarkers();
+      }
     }
   }
   public get initialized(): boolean {
@@ -57,6 +62,13 @@ export class Workspace {
     });
   }
 
+  hasMarker(path: string, field: string): boolean {
+    return this.performIfNotNullOrUndefined('path', path, () => {
+      const marker = this.markers[path];
+      return marker != null && marker[field] !== undefined;
+    })
+  }
+
   getMarkers(path: string): any {
     return this.performIfNotNullOrUndefined('path', path, () => {
       return this.markers[path] ? this.markers[path] : {};
@@ -75,6 +87,46 @@ export class Workspace {
       throw new Error('empty field names are not allowed');
     }
   }
+
+  clearStaleMarkers(): void {
+    Object.keys(this.markers).forEach((path) => {
+      if (!this.pathToElement.has(path)) {
+        delete this.markers[path];
+      }
+    });
+  }
+
+  observeMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>): void {
+    if (this.pathToElement.get(observer.path)) {
+      if (!this.hasMarker(observer.path, observer.field)) {
+        this.setMarkerValue(observer.path, observer.field, null);
+      }
+      observer.observe().then((value) => this.updateMarkerValueAndContinueObserving(observer, value))
+      .catch((reason) => {
+        this.logObserverErrorAndContinue(reason, observer, this.getMarkerValue(observer.path, observer.field));
+      });
+    } else {
+      throw new Error(`There is no element with path "${observer.path}" in this workspace.`);
+    }
+  }
+
+  private updateMarkerValueAndContinueObserving<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
+    if (this.pathToElement.get(observer.path)) {
+      this.setMarkerValue(observer.path, observer.field, value);
+      if (!observer.stopOn(value)) {
+        observer.observe().then((newValue) => this.updateMarkerValueAndContinueObserving(observer, newValue))
+        .catch((reason) => {
+          this.logObserverErrorAndContinue(reason, observer, value);
+        });
+      }
+    }
+  }
+
+  private logObserverErrorAndContinue<VALUE_TYPE>(error: any, observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
+    console.log(`Problem occurred while observing "${observer.field}" of "${observer.path}". Cause: ${error}`);
+    this.updateMarkerValueAndContinueObserving(observer, value);
+  }
+
 
   private performIfNotNullOrUndefined(parameterName: string, parameterValue: any, action: () => any) {
     if (parameterValue != null) {

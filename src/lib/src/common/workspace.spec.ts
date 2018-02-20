@@ -3,6 +3,8 @@ import { Workspace } from './workspace';
 import { WorkspaceElement } from './workspace-element';
 import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, lastChild, greatGrandChild, root } from './workspace.spec.data';
 import { ElementState } from './element-state';
+import { fakeAsync, tick, flush } from '@angular/core/testing';
+import { MarkerObserver } from './markers/marker.observer';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -39,6 +41,24 @@ describe('Workspace', () => {
     // then
     expect(retrievedElement.path).toBe(workspace.getRootPath());
   });
+
+  it('does not leave stale paths after reload', () => {
+    // given
+    let workspace = createWorkspaceWithSubElements()
+
+    // when
+    workspace.reload(middleChild);
+
+    // then
+    expect(workspace.contains(root.path)).toBeFalsy();
+    expect(workspace.contains(firstChild.path)).toBeFalsy();
+    expect(workspace.contains(middleChild.path)).toBeTruthy();
+    expect(workspace.contains(grandChild.path)).toBeTruthy();
+    expect(workspace.contains(greatGrandChild.path)).toBeTruthy();
+    expect(workspace.contains(lastChild.path)).toBeFalsy();
+  });
+
+
 
 });
 
@@ -328,4 +348,163 @@ describe('Workspace marker interface', () => {
     expect(actualMarker).toEqual({});
   });
 
+  it('removes stale markers on reload by default', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+
+    // when
+    workspace.reload(middleChild); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeFalsy();
+  });
+
+  it('retains stale markers on reload on explicit request', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+
+    // when
+    workspace.reload(middleChild, false); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeTruthy();
+  });
+
+  it('removes stale markers on explicit clear', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/firstChild', 'testStatus', ElementState.Running);
+    workspace.reload(middleChild, false); // subtree not containing 'firstChild', marker becomes "stale"
+
+    // when
+    workspace.clearStaleMarkers();
+
+    // then
+    expect(workspace.hasMarker('root/firstChild', 'testStatus')).toBeFalsy();
+  });
+
+  it('retains all non-stale markers on clear', () => {
+    // given
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue('root/middleChild/grandChild', 'testStatus', ElementState.Running);
+    workspace.reload(middleChild, false); // this is the parent of 'grandChild', marker is not "stale"!
+
+    // when
+    workspace.clearStaleMarkers();
+
+    // then
+    expect(workspace.hasMarker('root/middleChild/grandChild', 'testStatus')).toBeTruthy();
+  });
+
+});
+
+describe('Workspace marker polling', () => {
+  it('observes external data sources and updates marker values, accordingly', fakeAsync(() => {
+    // given
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(ElementState.LastRunSuccessful),
+      stopOn: (currentState) => currentState !== ElementState.Running
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
+
+    // when
+    workspace.observeMarker(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunSuccessful);
+  }));
+
+  it('keeps polling until exit condition is reached', fakeAsync(() => {
+    // given
+    const stateBefore = ElementState.Running;
+    const stateAfter = ElementState.LastRunFailed;
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter),
+      stopOn: (currentState) => currentState !== stateBefore
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
+    const invocationsUntilChange = 3;
+    let invocations = 0;
+
+    // when
+    workspace.observeMarker(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(stateAfter);
+    expect(invocations).toEqual(invocationsUntilChange + 1);
+  }));
+
+  it('stops polling when the path disappears from the workspace', fakeAsync(() => {
+    // given
+    const stateBefore = ElementState.Running;
+    const stateAfter = ElementState.LastRunFailed;
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => new Promise((resolve) => setTimeout(resolve, 1))
+        .then(() => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter)),
+      stopOn: (currentState) => currentState !== stateBefore
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
+    const invocationsUntilChange = 3;
+    const invocationsUntilReload = 2;
+    let invocations = 0;
+
+    workspace.observeMarker(observer);
+    tick(invocationsUntilReload);
+
+    // when
+    workspace.reload({name: '', path: 'unobserved/path', type: ElementType.File, children: []}, false);
+    tick();
+
+    // then
+    expect(invocations).toEqual(invocationsUntilReload);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(stateBefore);
+    flush();
+  }));
+
+  it('throws an error when the path does not exist', () => {
+    // given
+    const observer: MarkerObserver<ElementState> = {
+      path: 'non/existing/path',
+      field: 'testStatus',
+      observe: () => Promise.resolve(ElementState.LastRunSuccessful),
+      stopOn: () => true
+    }
+    const workspace = createWorkspaceWithRootFolder('existing/path');
+
+    // when + then
+    expect(() => workspace.observeMarker(observer))
+    .toThrowError(`There is no element with path "${observer.path}" in this workspace.`);
+  });
+
+  it('continues polling when the observable produces errors', fakeAsync(() => {
+    // given
+    const state = Array(4).fill(ElementState.Running).concat([ElementState.LastRunSuccessful]);
+    const observer: MarkerObserver<ElementState> = {
+      path: 'sample/path',
+      field: 'testStatus',
+      observe: () => invocations++ % 2 ? Promise.resolve(state[invocations]) : Promise.reject('failure'),
+      stopOn: (currentState) => currentState !== ElementState.Running
+    }
+    const workspace = createWorkspaceWithRootFolder(observer.path);
+    let invocations = 0;
+    workspace.setMarkerValue(observer.path, observer.field, state[0]);
+
+    // when
+    workspace.observeMarker(observer)
+    tick();
+
+    // then
+    expect(invocations).toEqual(4);
+    expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunSuccessful);
+  }));
 });
