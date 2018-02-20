@@ -1,3 +1,3 @@
 export abstract class WindowService {
-  abstract open(url: URL): void;
+  abstract open(getUrl: () => Promise<URL>): void;
 }
