@@ -3,7 +3,7 @@ import { ElementState, IndicatorFieldSetup } from '@testeditor/workspace-navigat
 export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
   fields: [
     {
-      condition: (element) => element && element.name.endsWith('tcl'),
+      condition: (element) => element && element.name.endsWith('.tcl'),
       states: [{
         condition: (marker) => marker.testStatus === ElementState.Running,
         cssClasses: 'fa fa-spinner fa-spin',

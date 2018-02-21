@@ -52,7 +52,7 @@ export class TreeViewerComponent {
     this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
   }
 
-  private showField(field: Field): boolean {
+  private shouldFieldBeShown(field: Field): boolean {
     return field.condition(this.elementInfo);
   }
 

@@ -515,6 +515,7 @@ describe('TreeViewerComponent', () => {
 
     // then
     let icon = getItemKey().query(By.css('.fa-circle.test-success'));
+    expect(icon).toBeTruthy();
   });
 
   it('does not show any icon for idle tests without success/failure info', () => {
