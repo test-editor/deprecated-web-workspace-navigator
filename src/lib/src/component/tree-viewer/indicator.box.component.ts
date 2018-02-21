@@ -26,9 +26,8 @@ export class IndicatorBoxComponent {
       if (activeState) {
         return activeState.label(this.getMarkers());
       }
-    } else {
-      return '';
     }
+    return '';
   }
 
   private getMarkers(): any {

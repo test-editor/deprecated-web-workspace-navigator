@@ -111,11 +111,11 @@ describe('IndicatorBoxComponent', () => {
     expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
   });
 
-  it('handles exceptions in condition expressions gracefully', () => {
+  it('handles exceptions in condition expressions gracefully and allows other state to become active', () => {
     // given
     hostComponent.path = 'sample/path/to/test.tcl';
     hostComponent.workspace = new Workspace();
-    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.LastRunSuccessful);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates.slice()
     hostComponent.states.unshift({
@@ -128,6 +128,30 @@ describe('IndicatorBoxComponent', () => {
     fixture.detectChanges()
 
     // then
-    // expect no errors
+    const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
+    expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Last run of test "test" was successful');
+  });
+
+  it('handles exceptions in condition expressions gracefully and resorts to defaults when no state is active', () => {
+    // given
+    hostComponent.path = 'sample/path/to/test.tcl';
+    hostComponent.workspace = new Workspace();
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', -1);
+    hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
+    hostComponent.states = sampleMarkerStates.slice()
+    hostComponent.states.unshift({
+      condition: (marker) => marker.nonExisting.property === true,
+      cssClasses: 'fa fa-spinner fa-spin',
+      label: (marker) => { throw new Error('broken label provider'); },
+    });
+
+    // when
+    fixture.detectChanges()
+
+    // then
+    const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
+    expect(indicatorBoxTag.nativeElement.className).toEqual('');
+    expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('');
   });
 });
