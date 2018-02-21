@@ -29,7 +29,7 @@ export const testEditorIndicatorFieldSetup: IndicatorFieldSetup = {
 };
 
 export function isTclFile(element: WorkspaceElementInfo): boolean {
-  return element && element.name.endsWith('tcl');
+  return element && element.name.endsWith('.tcl');
 }
 
 export function testIsRunning(marker: any): boolean {

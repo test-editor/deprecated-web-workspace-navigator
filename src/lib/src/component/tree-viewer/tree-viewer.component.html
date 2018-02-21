@@ -23,7 +23,7 @@
 
       <div *ngFor="let field of fields">
         <ng-container *ngIf="showField(field) else emptyIndicatorBox">
-          <indicator-box [model]="{'workspace': workspace, 'path': elementInfo.path, 'states': field.states}"></indicator-box>
+          <indicator-box [model]="{'workspace': workspace, 'path': elementInfo.path, 'possibleStates': field.states}"></indicator-box>
         </ng-container>
         <ng-template #emptyIndicatorBox>
           <div class="fa-fw"></div>

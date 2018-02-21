@@ -86,7 +86,7 @@ describe('TreeViewerComponent', () => {
 
   const sampleFieldSetup: Field[] = [
     {
-      condition: (element) => element && element.name.endsWith('tcl'),
+      condition: (element) => element && element.name.endsWith('.tcl'),
       states: [{
         condition: (marker) => marker.testStatus === ElementState.Running,
         cssClasses: 'fa fa-spinner fa-spin',
@@ -100,13 +100,6 @@ describe('TreeViewerComponent', () => {
         cssClasses: 'fa fa-circle test-failure',
         label: (marker) => `Last run of test "${marker.name}" has failed`,
       }]
-    }, {
-      condition: () => component.level !== 0,
-      states: [{
-        condition: () => true,
-        cssClasses: 'icon-delete fa fa-times',
-        label: () => `Delete "${component.elementInfo.name}"`
-      }]
     }
   ];
 
@@ -116,7 +109,7 @@ describe('TreeViewerComponent', () => {
     testBedSetup([
       { provide: PersistenceService, useValue: instance(persistenceService) },
       { provide: WindowService, useValue: instance(windowService) },
-      { provide: IndicatorFieldSetup, useValue: sampleFieldSetup}
+      { provide: IndicatorFieldSetup, useValue: { fields: sampleFieldSetup} }
     ]);
   }));
 
