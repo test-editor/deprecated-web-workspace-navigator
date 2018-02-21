@@ -21,14 +21,17 @@
         <span>{{elementInfo.name}}</span>
       </div>
 
-      <div>
-        <span id="test-state-running" class="fa fa-fw" [ngClass]="{
-          'fa-spinner fa-spin': isRunning(),
-          'fa-circle': lastRunSuccessful() || lastRunFailed(),
-          'test-success': lastRunSuccessful(),
-          'test-failure': lastRunFailed()}"></span>
-        <span *ngIf="level != 0" class="icon-delete fa fa-times" (click)="onDeleteIconClick()"></span>
+      <div *ngFor="let field of fields">
+        <ng-container *ngIf="shouldFieldBeShown(field) else emptyIndicatorBox">
+          <indicator-box [model]="{'workspace': workspace, 'path': elementInfo.path, 'possibleStates': field.states}"></indicator-box>
+        </ng-container>
+        <ng-template #emptyIndicatorBox>
+          <div class="fa-fw"></div>
+        </ng-template>
       </div>
+      <div>
+        <span *ngIf="level != 0" class="icon-delete fa fa-times" (click)="onDeleteIconClick()"></span>
+    </div>
 
     </div>
     <div *ngIf="confirmDelete" class="alert alert-warning confirm-delete">

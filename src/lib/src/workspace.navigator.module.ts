@@ -14,6 +14,8 @@ import { TestExecutionService } from './service/execution/test.execution.service
 import { TestExecutionServiceConfig } from './service/execution/test.execution.service.config';
 import { WindowService } from './service/browserObjectModel/window.service';
 import { DefaultWindowService } from './service/browserObjectModel/default.window.service';
+import { IndicatorBoxComponent } from './component/tree-viewer/indicator.box.component';
+import { IndicatorFieldSetup } from './common/markers/field';
 
 @NgModule({
   imports: [
@@ -24,7 +26,8 @@ import { DefaultWindowService } from './service/browserObjectModel/default.windo
   declarations: [
     NavigationComponent,
     TreeViewerComponent,
-    NewElementComponent
+    NewElementComponent,
+    IndicatorBoxComponent
   ],
   exports: [
     NavigationComponent,
@@ -33,13 +36,14 @@ import { DefaultWindowService } from './service/browserObjectModel/default.windo
 })
 export class WorkspaceNavigatorModule {
 
-  static forRoot(persistanceConfig: PersistenceServiceConfig, testExecutionConfig: TestExecutionServiceConfig): ModuleWithProviders {
+  static forRoot(persistanceConfig: PersistenceServiceConfig, testExecutionConfig: TestExecutionServiceConfig, indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [
         { provide: PersistenceServiceConfig, useValue: persistanceConfig },
         { provide: TestExecutionServiceConfig, useValue: testExecutionConfig },
         { provide: WindowService, useClass: DefaultWindowService},
+        { provide: IndicatorFieldSetup, useValue: indicatorFieldSetup},
         PathValidator,
         PersistenceService,
         TestExecutionService

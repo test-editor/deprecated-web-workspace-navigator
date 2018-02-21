@@ -18,6 +18,8 @@ import { WindowService } from '../../service/browserObjectModel/window.service';
 import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
+import { Field, IndicatorFieldSetup } from '../../common/markers/field';
+import { IndicatorBoxComponent } from './indicator.box.component';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -27,7 +29,8 @@ export function testBedSetup(providers?: any[]): void {
     ],
     declarations: [
       TreeViewerComponent,
-      NewElementComponent
+      NewElementComponent,
+      IndicatorBoxComponent
     ],
     providers: providers
   }).compileComponents();
@@ -81,12 +84,32 @@ describe('TreeViewerComponent', () => {
   let singleFile: WorkspaceElement = { name: 'file', path: '', type: 'file', children: [] };
   let imageFile: WorkspaceElement = { name: 'image.jpg', path: 'image.jpg', type: 'file', children: [] };
 
+  const sampleFieldSetup: Field[] = [
+    {
+      condition: (element) => element && element.name.endsWith('.tcl'),
+      states: [{
+        condition: (marker) => marker.testStatus === ElementState.Running,
+        cssClasses: 'fa fa-spinner fa-spin',
+        label: (marker) => `Test "${marker.name}" is running`,
+      }, {
+        condition: (marker) => marker.testStatus === ElementState.LastRunSuccessful,
+        cssClasses: 'fa fa-circle test-success',
+        label: (marker) => `Last run of test "${marker.name}" was successful`,
+      }, {
+        condition: (marker) => marker.testStatus === ElementState.LastRunFailed,
+        cssClasses: 'fa fa-circle test-failure',
+        label: (marker) => `Last run of test "${marker.name}" has failed`,
+      }]
+    }
+  ];
+
   beforeEach(async(() => {
     persistenceService = mock(PersistenceService);
     windowService = mock(DefaultWindowService);
     testBedSetup([
       { provide: PersistenceService, useValue: instance(persistenceService) },
-      { provide: WindowService, useValue: instance(windowService) }
+      { provide: WindowService, useValue: instance(windowService) },
+      { provide: IndicatorFieldSetup, useValue: { fields: sampleFieldSetup} }
     ]);
   }));
 
@@ -453,72 +476,109 @@ describe('TreeViewerComponent', () => {
     expect(icon.classes['fa-image']).toBeTruthy();
   });
 
-  it('shows spinning icon for running tests', () => {
+  it('shows spinning icon for running tests', async(() => {
     // given
-    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Running });
+    initWorkspaceWithNestedElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [] });
+    component.workspace.setMarkerValue('test.tcl', 'testStatus', ElementState.Running);
+    component.fields = sampleFieldSetup;
 
     // when
     fixture.detectChanges();
 
     // then
-    let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.classes['fa-spinner']).toBeTruthy();
-  });
+    fixture.whenStable().then(() => {
+      expect(getItemKey().query(By.css('.fa-spinner'))).toBeTruthy();
+    });
+  }));
 
   it('shows appropriate indicator icon for failed tests', () => {
     // given
-    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunFailed });
+    initWorkspaceWithNestedElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [] });
+    component.workspace.setMarkerValue('test.tcl', 'testStatus', ElementState.LastRunFailed);
+    component.fields = sampleFieldSetup;
 
     // when
     fixture.detectChanges();
 
     // then
-    let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.classes['fa-circle']).toBeTruthy();
-    expect(icon.classes['test-failure']).toBeTruthy();
+    expect(getItemKey().query(By.css('.fa-circle.test-failure'))).toBeTruthy();
   });
 
   it('shows appropriate indicator icon for successful tests', () => {
     // given
-    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.LastRunSuccessful });
+    initWorkspaceWithNestedElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [] });
+    component.workspace.setMarkerValue('test.tcl', 'testStatus', ElementState.LastRunSuccessful);
+    component.fields = sampleFieldSetup;
 
     // when
     fixture.detectChanges();
 
     // then
-    let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.classes['fa-circle']).toBeTruthy();
-    expect(icon.classes['test-success']).toBeTruthy();
+    let icon = getItemKey().query(By.css('.fa-circle.test-success'));
+    expect(icon).toBeTruthy();
   });
 
   it('does not show any icon for idle tests without success/failure info', () => {
     // given
-    initWorkspaceWithElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [], state: ElementState.Idle });
+    initWorkspaceWithNestedElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [] });
+    component.workspace.setMarkerValue('test.tcl', 'testStatus', ElementState.Idle);
+    component.fields = sampleFieldSetup;
 
     // when
     fixture.detectChanges();
 
     // then
-    let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.classes['fa-spinner']).toBeFalsy();
-    expect(icon.classes['fa-circle']).toBeFalsy();
-    expect(icon.classes['test-success']).toBeFalsy();
-    expect(icon.classes['test-failure']).toBeFalsy();
+    expect(getItemKey().query(By.css('.fa-spinner'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.fa-cirlce'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.test-success'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.test-failure'))).toBeFalsy();
   });
 
   it('does not show any icon for non-executable files', () => {
     // given
-    initWorkspaceWithElement(component, { name: 'file.txt', path: 'file.txt', type: 'file', children: [] });
+    initWorkspaceWithNestedElement(component, { name: 'file.txt', path: 'file.txt', type: 'file', children: [] });
+    component.fields = sampleFieldSetup;
 
     // when
     fixture.detectChanges();
 
     // then
-    let icon = getItemKey().query(By.css('#test-state-running'));
-    expect(icon.classes['fa-spinner']).toBeFalsy();
-    expect(icon.classes['fa-circle']).toBeFalsy();
-    expect(icon.classes['test-success']).toBeFalsy();
-    expect(icon.classes['test-failure']).toBeFalsy();
+    expect(getItemKey().query(By.css('.fa-spinner'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.fa-cirlce'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.test-success'))).toBeFalsy();
+    expect(getItemKey().query(By.css('.test-failure'))).toBeFalsy();
   });
+
+  it('shows delete box when not representing root element', async(() => {
+    // given
+    initWorkspaceWithNestedElement(component, singleFile);
+    component.level = 1;
+    component.fields = sampleFieldSetup;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(fixture.debugElement.query(By.css('.icon-delete.fa.fa-times'))).toBeTruthy();
+    });
+  }));
+
+  it('shows test status box for executable files', async(() => {
+    // given
+    initWorkspaceWithNestedElement(component, { name: 'test.tcl', path: 'test.tcl', type: 'file', children: [] });
+    component.workspace.setMarkerValue('test.tcl', 'testStatus', ElementState.Running);
+    component.level = 1;
+    component.fields = sampleFieldSetup;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(fixture.debugElement.query(By.css('.icon-delete.fa.fa-times'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('.fa.fa-spinner.fa-spin'))).toBeTruthy();
+    });
+  }));
 
 });
