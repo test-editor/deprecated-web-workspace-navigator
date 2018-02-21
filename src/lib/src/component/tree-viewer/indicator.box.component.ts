@@ -12,7 +12,7 @@ export class IndicatorBoxComponent {
 
   get cssClasses(): string {
     if (this.isInitialized()) {
-      const activeState = this.model.possibleStates.find((state) => state.condition(this.getMarkers()));
+      const activeState = this.getActiveState();
       if (activeState != null) {
         return activeState.cssClasses;
       }
@@ -22,7 +22,7 @@ export class IndicatorBoxComponent {
 
   get label(): string {
     if (this.isInitialized()) {
-      const activeState = this.model.possibleStates.find((state) => state.condition(this.getMarkers()));
+      const activeState = this.getActiveState();
       if (activeState) {
         return activeState.label(this.getMarkers());
       }
@@ -43,7 +43,7 @@ export class IndicatorBoxComponent {
     return this.model.possibleStates.find((state) => {
       try {
         return state.condition(this.getMarkers())
-      } catch(error) {
+      } catch (error) {
         console.log(error);
         return false;
       }

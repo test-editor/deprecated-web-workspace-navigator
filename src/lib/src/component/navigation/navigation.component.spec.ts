@@ -901,8 +901,8 @@ describe('NavigationComponent', () => {
       }}]);
 
     // then
-    const tclFileMarker = component.workspace.getMarker(tclFile.path);
-    const lastElementMarker = component.workspace.getMarker(lastElement.path);
+    const tclFileMarker = component.workspace.getMarkers(tclFile.path);
+    const lastElementMarker = component.workspace.getMarkers(lastElement.path);
     expect(tclFileMarker.testStatus).toEqual(ElementState.Running);
     expect(tclFileMarker.validation.errors).toEqual(3);
     expect(tclFileMarker.validation.warnings).toEqual(2);
@@ -947,7 +947,7 @@ describe('NavigationComponent', () => {
 
     // then
     fixture.whenStable().then(() => {
-      const tclFileMarker = component.workspace.getMarker(tclFile.path);
+      const tclFileMarker = component.workspace.getMarkers(tclFile.path);
       expect(component.workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunFailed);
     });
   });
