@@ -7,3 +7,5 @@ export const NAVIGATION_OPEN = 'navigation.open';
 export const NAVIGATION_SELECT = 'navigation.select';
 export const WORKSPACE_MARKER_UPDATE = 'workspace.marker.update';
 export const WORKSPACE_MARKER_OBSERVE = 'workspace.marker.observe';
+export const WORKSPACE_RELOAD_REQUEST = 'workspace.reload.request';
+export const WORKSPACE_RELOAD_RESPONSE = 'workspace.reload.response';

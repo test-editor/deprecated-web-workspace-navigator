@@ -15,6 +15,7 @@ import { Subscriber } from 'rxjs/Subscriber';
 import { Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { MarkerObserver } from '../../common/markers/marker.observer';
+import { WorkspaceElement } from '../../common/workspace-element';
 
 @Component({
   selector: 'app-navigation',
@@ -50,15 +51,30 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.stopPollingTestStatus.complete();
   }
 
-  retrieveWorkspaceRoot(): Promise<Workspace | undefined> {
-    return this.persistenceService.listFiles().then(element => {
-      this.workspace.reload(element);
-      this.updateTestStates();
-      return this.workspace;
-    }).catch(() => {
-      this.errorMessage = 'Could not retrieve workspace!';
-      return undefined;
+  retrieveWorkspaceRoot(onResponse?: (root: WorkspaceElement) => void): void {
+    const responseSubscription = this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
+      responseSubscription.unsubscribe();
+      if (onResponse != null) {
+        onResponse(root);
+      } else {
+        this.onWorkspaceReloadResponse(root);
+      }
+
     });
+    this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, null);
+  }
+
+  private onWorkspaceReloadResponse(root: WorkspaceElement) {
+    if (this.isWorkspaceElement(root)) {
+      this.workspace.reload(root);
+      this.updateTestStates();
+    } else {
+      this.errorMessage = 'Could not retrieve workspace!';
+    }
+  }
+
+  private isWorkspaceElement(element: WorkspaceElement): boolean {
+    return element != null && element.children !== undefined && element.name && element.path !== undefined && element.type !== undefined;
   }
 
   private updateTestStates(): void {
@@ -104,8 +120,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
       }
       this.workspace.setDirty(element.path, false);
       this.workspace.setExpanded(element.path, false);
-      this.retrieveWorkspaceRoot();
-      this.changeDetectorRef.detectChanges();
+      this.retrieveWorkspaceRoot((root) => {
+        this.onWorkspaceReloadResponse(root);
+        this.changeDetectorRef.detectChanges();
+      });
     });
     this.messagingService.subscribe(events.NAVIGATION_CREATED, payload => {
       this.handleNavigationCreated(payload);
@@ -124,12 +142,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
     });
     this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
       this.workspace.observeMarker(observer);
-    })
+    });
   }
 
   handleNavigationCreated(payload: any): void {
-    this.retrieveWorkspaceRoot().then(workspace => {
-      if (workspace) {
+    this.retrieveWorkspaceRoot((root: WorkspaceElement) => {
+      this.onWorkspaceReloadResponse(root);
+      if (root) {
         this.revealElement(payload.path);
         this.selectElement(payload.path);
       }

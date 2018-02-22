@@ -11,6 +11,8 @@ import { TestExecutionService } from '../../service/execution/test.execution.ser
 import { Response, ResponseOptions } from '@angular/http';
 import { ElementState } from '../../common/element-state';
 import { IndicatorFieldSetup } from '../../common/markers/field';
+import { MessagingService } from '@testeditor/messaging-service';
+import * as events from '../event-types';
 
 export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
@@ -106,6 +108,13 @@ export function mockedPersistenceService() {
   return persistenceService;
 }
 
+export function mockWorkspaceReloadRequestOnce(messagingService: MessagingService, response: WorkspaceElement): void {
+  const subscription = messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
+    subscription.unsubscribe();
+    messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, response);
+});
+}
+
 export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService);
   setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
@@ -131,11 +140,10 @@ export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionSe
       .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
 }
 
-export function setupWorkspace(component: NavigationComponent, mockedPersistenceService: PersistenceService, fixture: ComponentFixture<NavigationComponent>): Promise<Workspace> {
+export function setupWorkspace(component: NavigationComponent, messagingService: MessagingService,
+  fixture: ComponentFixture<NavigationComponent>): void {
 
-  when(mockedPersistenceService.listFiles()).thenReturn(Promise.resolve(root));
-  return component.retrieveWorkspaceRoot().then(workspace => {
-    fixture.detectChanges();
-    return workspace;
-  });
+  component.retrieveWorkspaceRoot()
+  messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, root);
+  fixture.detectChanges();
 }

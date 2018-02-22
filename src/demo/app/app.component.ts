@@ -4,6 +4,7 @@ import { MessagingService } from '@testeditor/messaging-service';
 import * as events from '@testeditor/workspace-navigator';
 import { EDITOR_DIRTY_CHANGED, EDITOR_ACTIVE, EDITOR_CLOSE } from '../../lib/src/component/event-types';
 import { validationLabel } from './indicator.field.setup';
+import { WorkspaceElement, PersistenceService } from '@testeditor/workspace-navigator';
 
 @Component({
   selector: 'demo-app',
@@ -17,7 +18,7 @@ export class AppComponent {
   paths: string[] = [];
   private readonly validationStatus: Map<string, { validation: { errors: number, warnings: number, infos: number } }> = new Map();
 
-  constructor(private messagingService: MessagingService, private changeDetectorRef: ChangeDetectorRef) {
+  constructor(private messagingService: MessagingService, private changeDetectorRef: ChangeDetectorRef, private persistenceService: PersistenceService) {
     this.subscribeToEvents();
   }
 
@@ -34,6 +35,11 @@ export class AppComponent {
     });
     this.messagingService.subscribe(events.NAVIGATION_DELETED, element => {
       this.close(element.path);
+    });
+    this.messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
+      this.persistenceService.listFiles().then((root: WorkspaceElement) => {
+        this.messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, root);
+      });
     });
   }
 
@@ -57,7 +63,7 @@ export class AppComponent {
   }
 
   changeValidationStatus(path: string, type: string, increment: number): void {
-    if(!this.validationStatus.has(path)) {
+    if (!this.validationStatus.has(path)) {
       this.validationStatus.set(path, {validation: { errors: 0, warnings: 0, infos: 0} });
     }
     const elementStatus = this.validationStatus.get(path);
