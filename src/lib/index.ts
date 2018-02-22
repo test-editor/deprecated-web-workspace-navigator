@@ -7,4 +7,5 @@ export { TreeViewerComponent } from './src/component/tree-viewer/tree-viewer.com
 export { PersistenceService } from './src/service/persistence/persistence.service';
 export { TestExecutionService } from './src/service/execution/test.execution.service';
 export * from './src/component/event-types';
-export { IndicatorFieldSetup } from './src/common/markers/field';
+export { Field, IndicatorFieldSetup } from './src/common/markers/field';
+export { MarkerState } from './src/common/markers/marker.state';

@@ -14,6 +14,7 @@ import 'rxjs/add/operator/takeUntil';
 import { Subscriber } from 'rxjs/Subscriber';
 import { Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
+import { MarkerObserver } from '../../common/markers/marker.observer';
 
 @Component({
   selector: 'app-navigation',
@@ -113,6 +114,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.workspace.setSelected(element.path);
       this.changeDetectorRef.detectChanges();
     });
+    this.messagingService.subscribe(events.WORKSPACE_MARKER_UPDATE, updates => {
+      updates.forEach((pathMap: any) => {
+        for (const field of Object.keys(pathMap.markers)) {
+          this.workspace.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
+        }
+      });
+      this.changeDetectorRef.detectChanges();
+    });
+    this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
+      this.workspace.observeMarker(observer);
+    })
   }
 
   handleNavigationCreated(payload: any): void {

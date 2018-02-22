@@ -11,3 +11,15 @@ h1 {
 .test-failure {
   color: #d82300
 }
+
+.validation-errors {
+  color: #d82300
+}
+
+.validation-warnings {
+  color: #ffcc00
+}
+
+.validation-infos {
+  color: #3498DB
+}
