@@ -6,6 +6,7 @@ import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
 import { ElementState } from './element-state';
 import { MarkerObserver} from './markers/marker.observer';
+import { WorkspaceMarkerUpdate } from './markers/workspace.marker.update';
 
 @Injectable()
 export class Workspace {
@@ -86,6 +87,14 @@ export class Workspace {
     } else {
       throw new Error('empty field names are not allowed');
     }
+  }
+
+  updateMarkers(updates: WorkspaceMarkerUpdate[]): void {
+    updates.forEach((pathMap: any) => {
+      for (const field of Object.keys(pathMap.markers)) {
+        this.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
+      }
+    });
   }
 
   clearStaleMarkers(): void {
