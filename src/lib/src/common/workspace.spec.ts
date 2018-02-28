@@ -5,6 +5,8 @@ import { grandChild, createWorkspaceWithSubElements, middleChild, firstChild, la
 import { ElementState } from './element-state';
 import { fakeAsync, tick, flush } from '@angular/core/testing';
 import { MarkerObserver } from './markers/marker.observer';
+import { WorkspaceObserver } from './markers/workspace.observer';
+import { WorkspaceMarkerUpdate } from './markers/workspace.marker.update';
 
 function createWorkspaceWithRootFolder(path: string): Workspace {
   let element: WorkspaceElement = {
@@ -235,7 +237,7 @@ describe('Workspace Navigation', () => {
 describe('Workspace marker interface', () => {
   it('allows to set values initially', () => {
     // given
-    const workspace = new Workspace();
+    const workspace = createWorkspaceWithRootFolder('sample/path');
 
     // when
     workspace.setMarkerValue('sample/path', 'testStatus', ElementState.Running);
@@ -255,7 +257,7 @@ describe('Workspace marker interface', () => {
 
   it('throws error when trying to retrieve unknown marker fields', () => {
     // given
-    const workspace = new Workspace();
+    const workspace = createWorkspaceWithRootFolder('sample/path');
     workspace.setMarkerValue('sample/path', 'testStatus', ElementState.Running);
 
     // when + then
@@ -265,7 +267,7 @@ describe('Workspace marker interface', () => {
 
   it('allows to set and retrieve null values', () => {
     // given
-    const workspace = new Workspace();
+    const workspace = createWorkspaceWithRootFolder('sample/path');
     workspace.setMarkerValue('sample/path', 'testStatus', null);
 
     // when
@@ -277,7 +279,7 @@ describe('Workspace marker interface', () => {
 
   it('allows to set and retrieve values for the empty path', () => {
     // given
-    const workspace = new Workspace();
+    const workspace = createWorkspaceWithRootFolder('');
     workspace.setMarkerValue('', 'testStatus', ElementState.Running);
 
     // when
@@ -322,13 +324,13 @@ describe('Workspace marker interface', () => {
 
   it('allows to retrieve all markers for a given path', () => {
     // given
-    const workspace = new Workspace();
-    workspace.setMarkerValue('some/path', 'aField', 42);
-    workspace.setMarkerValue('some/path', 'anotherField', 'foo');
-    workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue(firstChild.path, 'aField', 42);
+    workspace.setMarkerValue(firstChild.path, 'anotherField', 'foo');
+    workspace.setMarkerValue(middleChild.path, 'anUnrelatedField', 'bar');
 
     // when
-    const actualMarker = workspace.getMarkers('some/path');
+    const actualMarker = workspace.getMarkers(firstChild.path);
 
     // then
     expect(actualMarker.aField).toEqual(42);
@@ -338,11 +340,11 @@ describe('Workspace marker interface', () => {
 
   it('returns empty object if there are no markers for a given path', () => {
     // given
-    const workspace = new Workspace();
-    workspace.setMarkerValue('some/other/path', 'anUnrelatedField', 'bar');
+    const workspace = createWorkspaceWithSubElements();
+    workspace.setMarkerValue(middleChild.path, 'anUnrelatedField', 'bar');
 
     // when
-    const actualMarker = workspace.getMarkers('some/path');
+    const actualMarker = workspace.getMarkers(firstChild.path);
 
     // then
     expect(actualMarker).toEqual({});
@@ -506,5 +508,93 @@ describe('Workspace marker polling', () => {
     // then
     expect(invocations).toEqual(4);
     expect(workspace.getMarkerValue(observer.path, observer.field)).toEqual(state[invocations]);
+  }));
+
+  it('observes and updates workspace state', fakeAsync(() => {
+    // given
+    const observer: WorkspaceObserver = {
+      observe: () => Promise.resolve([{path: firstChild.path, markers: { greeting: 'Hello, First Child Element!'}},
+          {path: root.path, markers: { greeting: 'Hello, Root!' }}]),
+      stopOn: (value) => true
+    }
+    const workspace = createWorkspaceWithSubElements();
+
+    // when
+    workspace.observe(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(firstChild.path, 'greeting')).toEqual('Hello, First Child Element!');
+    expect(workspace.getMarkerValue(root.path, 'greeting')).toEqual('Hello, Root!');
+  }));
+
+  it('keeps polling until exit condition is reached when observing the workspace', fakeAsync(() => {
+    // given
+    const stateBefore = [{path: firstChild.path, markers: { greeting: 'Hello, First Child Element!'}}];
+    const stateAfter = [{path: root.path, markers: { greeting: 'Hello, Root!' }}];
+    let invocations = 0;
+    const invocationsUntilChange = 3
+    const observer: WorkspaceObserver = {
+      observe: () => Promise.resolve(invocations++ < invocationsUntilChange ? stateBefore : stateAfter),
+      stopOn: (currentState) => currentState !== stateBefore
+    }
+    const workspace = createWorkspaceWithSubElements();
+
+    // when
+    workspace.observe(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(firstChild.path, 'greeting')).toEqual('Hello, First Child Element!');
+    expect(workspace.getMarkerValue(root.path, 'greeting')).toEqual('Hello, Root!');
+    expect(invocations).toEqual(invocationsUntilChange + 1);
+  }));
+
+  it('ignores non-existing paths when observing the workspace', fakeAsync(() => {
+    // given
+    const observer: WorkspaceObserver = {
+      observe: () => Promise.resolve([
+        {path: firstChild.path, markers: { greeting: 'Hello, First Child Element!'}},
+        {path: 'non-existant/path', markers: { greeting: 'This shouldn`t be here'}},
+        {path: root.path, markers: { greeting: 'Hello, Root!' }}]),
+      stopOn: (value) => true
+    }
+    const workspace = createWorkspaceWithSubElements();
+
+    // when
+    workspace.observe(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(firstChild.path, 'greeting')).toEqual('Hello, First Child Element!');
+    expect(workspace.getMarkerValue(root.path, 'greeting')).toEqual('Hello, Root!');
+    expect(() => workspace.getMarkerValue('non-existant/path', 'greeting'))
+        .toThrowError('There are no marker fields for path "non-existant/path".');
+  }));
+
+  it('handles empty updates gracefully when observing the workspace', fakeAsync(() => {
+    // given
+    const updates = [
+      [{path: firstChild.path, markers: { update: 'first'}}],
+      null,
+      [{path: firstChild.path, markers: { update: 'second'}}],
+      [],
+      [{path: firstChild.path, markers: { update: 'third'}}],
+      undefined,
+      [{path: firstChild.path, markers: { update: 'fourth'}}],
+    ]
+    let invocations = 0;
+    const observer: WorkspaceObserver = {
+      observe: () => Promise.resolve(updates[invocations++]),
+      stopOn: (currentState) => invocations >= 7
+    }
+    const workspace = createWorkspaceWithSubElements();
+
+    // when
+    workspace.observe(observer);
+    tick();
+
+    // then
+    expect(workspace.getMarkerValue(firstChild.path, 'update')).toEqual('fourth');
   }));
 });
