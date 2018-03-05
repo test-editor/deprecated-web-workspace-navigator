@@ -6,6 +6,8 @@ import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
 import { ElementState } from './element-state';
 import { MarkerObserver} from './markers/marker.observer';
+import { WorkspaceObserver } from './markers/workspace.observer';
+import { WorkspaceMarkerUpdate } from './markers/workspace.marker.update';
 
 @Injectable()
 export class Workspace {
@@ -78,14 +80,30 @@ export class Workspace {
   setMarkerValue(path: string, field: string, value: any): void {
     if (field && field !== '') {
       this.performIfNotNullOrUndefined('path', path, () => {
-        if (!this.markers[path]) {
-          this.markers[path] = {};
+        if (this.contains(path)) {
+          if (!this.markers[path]) {
+            this.markers[path] = {};
+          }
+          this.markers[path][field] = value;
+        } else {
+          throw new Error(`No element for path "${path}" in this workspace`)
         }
-        this.markers[path][field] = value;
       });
     } else {
       throw new Error('empty field names are not allowed');
     }
+  }
+
+  updateMarkers(updates: WorkspaceMarkerUpdate[]): void {
+    updates.forEach((pathMap: any) => {
+      for (const field of Object.keys(pathMap.markers)) {
+        try {
+          this.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
+        } catch (error) {
+          console.log(`Skipping update of marker "${field}" for path "${pathMap.path}". Reason: ${error}`)
+        }
+      }
+    });
   }
 
   clearStaleMarkers(): void {
@@ -94,6 +112,23 @@ export class Workspace {
         delete this.markers[path];
       }
     });
+  }
+
+  observe(observer: WorkspaceObserver): void {
+    observer.observe().then((updates) => this.updateMarkersAndContinueObserving(observer, updates))
+    .catch((reason) => {
+      this.logObserverErrorAndContinue(reason, observer, []);
+    });
+  }
+
+  updateMarkersAndContinueObserving(observer: WorkspaceObserver, updates: WorkspaceMarkerUpdate[]): void {
+    this.updateMarkers(updates);
+    if (!observer.stopOn(updates)) {
+      observer.observe().then((nextUpdates) => this.updateMarkersAndContinueObserving(observer, nextUpdates))
+      .catch((reason) => {
+        this.logObserverErrorAndContinue(reason, observer, updates);
+      });
+    }
   }
 
   observeMarker<VALUE_TYPE>(observer: MarkerObserver<VALUE_TYPE>): void {
@@ -122,11 +157,20 @@ export class Workspace {
     }
   }
 
-  private logObserverErrorAndContinue<VALUE_TYPE>(error: any, observer: MarkerObserver<VALUE_TYPE>, value: VALUE_TYPE): void {
-    console.log(`Problem occurred while observing "${observer.field}" of "${observer.path}". Cause: ${error}`);
-    this.updateMarkerValueAndContinueObserving(observer, value);
+  private logObserverErrorAndContinue<VALUE_TYPE>(error: any, observer: MarkerObserver<VALUE_TYPE> | WorkspaceObserver,
+      value: VALUE_TYPE | WorkspaceMarkerUpdate[]): void {
+    if (this.isMarkerObserver(observer)) {
+      console.log(`Problem occurred while observing "${observer.field}" of "${observer.path}". Cause: ${error}`);
+      this.updateMarkerValueAndContinueObserving(observer, <VALUE_TYPE>value);
+    } else {
+      console.log(`Problem occurred while observing markers of this workspace". Cause: ${error}`);
+      this.updateMarkersAndContinueObserving(observer, <WorkspaceMarkerUpdate[]>value)
+    }
   }
 
+  private isMarkerObserver<T>(observer:  MarkerObserver<T> | WorkspaceObserver): observer is MarkerObserver<T> {
+    return (<MarkerObserver<T>>observer).path !== undefined;
+  }
 
   private performIfNotNullOrUndefined(parameterName: string, parameterValue: any, action: () => any) {
     if (parameterValue != null) {

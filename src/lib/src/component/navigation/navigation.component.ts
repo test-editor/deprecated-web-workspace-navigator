@@ -16,6 +16,7 @@ import { Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { MarkerObserver } from '../../common/markers/marker.observer';
 import { WorkspaceElement } from '../../common/workspace-element';
+import { WorkspaceObserver } from '../../common/markers/workspace.observer';
 
 @Component({
   selector: 'app-navigation',
@@ -133,15 +134,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.WORKSPACE_MARKER_UPDATE, updates => {
-      updates.forEach((pathMap: any) => {
-        for (const field of Object.keys(pathMap.markers)) {
-          this.workspace.setMarkerValue(pathMap.path, field, pathMap.markers[field]);
-        }
-      });
+      this.workspace.updateMarkers(updates);
       this.changeDetectorRef.detectChanges();
     });
     this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
       this.workspace.observeMarker(observer);
+    });
+    this.messagingService.subscribe(events.WORKSPACE_OBSERVE, (observer: WorkspaceObserver) => {
+      this.workspace.observe(observer);
     });
   }
 

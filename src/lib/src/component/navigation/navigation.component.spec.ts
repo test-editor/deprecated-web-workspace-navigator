@@ -34,6 +34,7 @@ import { PathValidator } from '../tree-viewer/path-validator';
 import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MarkerObserver } from '../../common/markers/marker.observer';
+import { WorkspaceObserver } from '../../common/markers/workspace.observer';
 
 describe('NavigationComponent', () => {
 
@@ -900,8 +901,28 @@ describe('NavigationComponent', () => {
 
     // then
     fixture.whenStable().then(() => {
-      const tclFileMarker = component.workspace.getMarkers(tclFile.path);
       expect(component.workspace.getMarkerValue(observer.path, observer.field)).toEqual(ElementState.LastRunFailed);
+    });
+  }));
+
+  it('observes the workspace as a whole when WORKSPACE_OBSERVE message is received', async(() => {
+    // given
+    setupWorkspace(component, messagingService, fixture);
+    const subfolderMarkers = { greeting: 'Hello, Subfolder!', anotherField: 42 };
+    const rootMarkers = { greeting: 'Hello, Root!' };
+    const observer: WorkspaceObserver = {
+      observe: () => Promise.resolve([{path: subfolder.path, markers: subfolderMarkers},
+          {path: root.path, markers: rootMarkers}]),
+      stopOn: () => true
+    }
+
+    // when
+    messagingService.publish(events.WORKSPACE_OBSERVE, observer);
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(component.workspace.getMarkers(subfolder.path)).toEqual(subfolderMarkers);
+      expect(component.workspace.getMarkers(root.path)).toEqual(rootMarkers);
     });
   }));
 });

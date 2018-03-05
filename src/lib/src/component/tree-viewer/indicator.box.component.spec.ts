@@ -5,6 +5,7 @@ import { MarkerState } from '../../common/markers/marker.state';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Component, ViewChild } from '@angular/core';
+import { createWorkspaceWithSubElements, firstChild } from '../../common/workspace.spec.data';
 
 describe('IndicatorBoxComponent', () => {
   let component: IndicatorBoxComponent;
@@ -59,8 +60,8 @@ describe('IndicatorBoxComponent', () => {
 
   it('cssClasses returns a map of css class strings to boolean expressions', () => {
     // given
-    hostComponent.path = 'sample/path/to/test.tcl';
-    hostComponent.workspace = new Workspace();
+    hostComponent.path = firstChild.path;
+    hostComponent.workspace = createWorkspaceWithSubElements();
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates;
@@ -75,8 +76,8 @@ describe('IndicatorBoxComponent', () => {
 
   it('uses the active marker state`s label and css classes', () => {
     // given
-    hostComponent.path = 'sample/path/to/test.tcl';
-    hostComponent.workspace = new Workspace();
+    hostComponent.path = firstChild.path;
+    hostComponent.workspace = createWorkspaceWithSubElements();
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates;
@@ -92,8 +93,8 @@ describe('IndicatorBoxComponent', () => {
 
   it('changes label and css classes in accordance with changing marker states', () => {
     // given
-    hostComponent.path = 'sample/path/to/test.tcl';
-    hostComponent.workspace = new Workspace();
+    hostComponent.path = firstChild.path;
+    hostComponent.workspace = createWorkspaceWithSubElements();
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.Running);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates;
@@ -113,8 +114,8 @@ describe('IndicatorBoxComponent', () => {
 
   it('handles exceptions in condition expressions gracefully and allows other state to become active', () => {
     // given
-    hostComponent.path = 'sample/path/to/test.tcl';
-    hostComponent.workspace = new Workspace();
+    hostComponent.path = firstChild.path;
+    hostComponent.workspace = createWorkspaceWithSubElements();
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.LastRunSuccessful);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates.slice()
@@ -135,8 +136,8 @@ describe('IndicatorBoxComponent', () => {
 
   it('handles exceptions in condition expressions gracefully and resorts to defaults when no state is active', () => {
     // given
-    hostComponent.path = 'sample/path/to/test.tcl';
-    hostComponent.workspace = new Workspace();
+    hostComponent.path = firstChild.path;
+    hostComponent.workspace = createWorkspaceWithSubElements();
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', -1);
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'name', 'test');
     hostComponent.states = sampleMarkerStates.slice()
