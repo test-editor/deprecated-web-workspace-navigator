@@ -157,7 +157,4 @@ export class TreeViewerComponent {
     }, this);
   }
 
-  isRunning(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.Running}
-  lastRunSuccessful(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.LastRunSuccessful; }
-  lastRunFailed(): boolean { return this.workspace.getTestStatus(this.elementPath) === ElementState.LastRunFailed; }
 }
