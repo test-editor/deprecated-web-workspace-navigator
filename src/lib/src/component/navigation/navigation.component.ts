@@ -161,10 +161,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   handleTestExecutionStarted(payload: any): void {
+    this.workspace.setMarkerValue(payload.path, 'testStatus', { path: payload.path, status: ElementState.Running });
+    this.changeDetectorRef.markForCheck();
     this.showNotification(payload.message, payload.path);
   }
 
   handleTestExecutionStartFailed(payload: any): void {
+    this.workspace.setMarkerValue(payload.path, 'testStatus', { path: payload.path, status: ElementState.LastRunFailed });
+    this.changeDetectorRef.markForCheck();
     this.showErrorMessage(payload.message, payload.path);
   }
 
@@ -199,7 +203,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
     return contextElementPath != null && contextElementPath.endsWith('.tcl') &&
         (!this.workspace.hasMarker(contextElementPath, 'testStatus') ||
-         this.workspace.getMarkerValue(contextElementPath, 'testStatus') !== ElementState.Running);
+         this.workspace.getMarkerValue(contextElementPath, 'testStatus').status !== ElementState.Running);
   }
 
   private getContextElement(): string {

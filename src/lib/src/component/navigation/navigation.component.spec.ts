@@ -423,7 +423,7 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, messagingService, fixture);
     let runIcon = sidenav.query(By.css('#run'));
-    component.workspace.setMarkerValue(tclFile.path, 'testStatus', ElementState.Running);
+    component.workspace.setMarkerValue(tclFile.path, 'testStatus', { status: ElementState.Running });
 
     // when
     component.selectElement(tclFile.path);
