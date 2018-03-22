@@ -8,7 +8,6 @@ import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
-import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
@@ -44,12 +43,10 @@ describe('NavigationComponent', () => {
   let fixture: ComponentFixture<NavigationComponent>;
   let persistenceService: PersistenceService;
   let messagingService: MessagingService;
-  let executionService: TestExecutionService;
   let sidenav: DebugElement;
 
   beforeEach(async(() => {
     persistenceService = mockedPersistenceService();
-    executionService = mockedTestExecutionService();
 
     TestBed.configureTestingModule({
       declarations: [
@@ -65,7 +62,6 @@ describe('NavigationComponent', () => {
       ],
       providers: [
         { provide: PersistenceService, useValue: instance(persistenceService) },
-        { provide: TestExecutionService, useValue: instance(executionService) },
         { provide: WindowService, useValue: null},
         { provide: IndicatorFieldSetup, useValue: testEditorIndicatorFieldSetup},
         PathValidator
@@ -79,7 +75,6 @@ describe('NavigationComponent', () => {
     component = fixture.componentInstance;
     messagingService = TestBed.get(MessagingService);
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
-    setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED);
     tclFile.state = ElementState.Idle;
     mockWorkspaceReloadRequestOnce(messagingService, tclFile);
     fixture.detectChanges();
@@ -328,7 +323,6 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, messagingService, fixture);
     const newFolder = subfolder.children[0];
-    when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>()));
 
     // when
     messagingService.publish(events.NAVIGATION_CREATED, { path: newFolder.path });
@@ -355,56 +349,41 @@ describe('NavigationComponent', () => {
     });
   }));
 
-  it('invokes test execution for currently selected test file when "run" button is clicked', fakeAsync(() => {
+  it('publishes test execution request for currently selected test file when "run" button is clicked', fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
     component.getWorkspace().setSelected(tclFile.path);
     fixture.detectChanges();
     let runIcon = sidenav.query(By.css('#run'));
-    resetCalls(executionService);
+    let testExecCallback = jasmine.createSpy('testExecCallback');
+    messagingService.subscribe('test.execute.request', testExecCallback);
 
     // when
     runIcon.nativeElement.click();
-    tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+    tick();
 
     // then
-    verify(executionService.execute(tclFile.path)).once();
-    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
+    expect(testExecCallback).toHaveBeenCalledTimes(1);
+    expect(testExecCallback).toHaveBeenCalledWith(tclFile.path);
   }));
 
-  it('invokes test execution for currently active test file when "run" button is clicked and no file is selected', fakeAsync(() => {
+  it('publishes test execution request for currently active test file when "run" button is clicked and no file is selected', fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
     component.getWorkspace().setSelected(null);
     component.getWorkspace().setActive(tclFile.path);
     fixture.detectChanges();
     let runIcon = sidenav.query(By.css('#run'));
-    resetCalls(executionService);
+    let testExecCallback = jasmine.createSpy('testExecCallback');
+    messagingService.subscribe('test.execute.request', testExecCallback);
 
     // when
     runIcon.nativeElement.click();
     tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
 
     // then
-    verify(executionService.execute(tclFile.path)).once();
-    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
-  }));
-
-  it('monitors test status when execution is started', fakeAsync(() => {
-    // given
-    setupWorkspace(component, messagingService, fixture);
-    component.getWorkspace().setSelected(tclFile.path);
-    fixture.detectChanges();
-    let runIcon = sidenav.query(By.css('#run'));
-    resetCalls(executionService);
-
-    // when
-    runIcon.nativeElement.click();
-    flush();
-
-    // then
-    verify(executionService.status(tclFile.path)).thrice(); // mock returns 'RUNNING' twice, then 'SUCCESS'
-    expect(ElementState[component.getWorkspace().getTestStatus(tclFile.path)]).toEqual(ElementState[ElementState.LastRunSuccessful]);
+    expect(testExecCallback).toHaveBeenCalledTimes(1);
+    expect(testExecCallback).toHaveBeenCalledWith(tclFile.path);
   }));
 
   it('disables the run button when selecting a non-executable file', async(() => {
@@ -444,7 +423,7 @@ describe('NavigationComponent', () => {
     // given
     setupWorkspace(component, messagingService, fixture);
     let runIcon = sidenav.query(By.css('#run'));
-    component.workspace.setTestStatus(tclFile.path, ElementState.Running);
+    component.workspace.setMarkerValue(tclFile.path, 'testStatus', ElementState.Running);
 
     // when
     component.selectElement(tclFile.path);
@@ -510,15 +489,13 @@ describe('NavigationComponent', () => {
     expect(runIcon.properties['disabled']).toBeTruthy();
   }));
 
-  it('displays notification when test execution has been started', fakeAsync(() => {
+  it('displays notification when receiving the test execution started event', fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
-    component.getWorkspace().setSelected(tclFile.path);
     fixture.detectChanges();
-    let runIcon = sidenav.query(By.css('#run'));
 
     // when
-    runIcon.nativeElement.click();
+    messagingService.publish(events.TEST_EXECUTION_STARTED, { message: 'Execution of "\${}" has been started.', path: tclFile.path });
     tick();
 
     // then
@@ -534,12 +511,10 @@ describe('NavigationComponent', () => {
   it('removes notification sometime after test execution has been started', fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
-    component.getWorkspace().setSelected(tclFile.path);
     fixture.detectChanges();
-    let runIcon = sidenav.query(By.css('#run'));
 
     // when
-    runIcon.nativeElement.click();
+    messagingService.publish(events.TEST_EXECUTION_STARTED, { message: 'some message', path: tclFile.path });
     tick(NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
 
     // then
@@ -551,13 +526,10 @@ describe('NavigationComponent', () => {
   it('displays error message when test execution could not be started', fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
-    component.getWorkspace().setSelected(tclFile.path);
     fixture.detectChanges();
-    let runIcon = sidenav.query(By.css('#run'));
-    setTestExecutionServiceResponse(executionService, HTTP_STATUS_ERROR);
 
     // when
-    runIcon.nativeElement.click();
+    messagingService.publish(events.TEST_EXECUTION_START_FAILED, { message: 'The test "\${}" could not be started.', path: tclFile.path });
     tick();
 
     // then
@@ -768,80 +740,6 @@ describe('NavigationComponent', () => {
       path: tclFile.path
     }));
   });
-
-  it('re-retrieves test status when the workspace is refreshed', fakeAsync(() => {
-    // given
-    setupWorkspace(component, messagingService, fixture);
-    let pathInWorkspaceToBeRefreshed = tclFile.path;
-    let reloadedWorkspace = WorkspaceElement.copyOf(root);
-    when(executionService.statusAll()).thenReturn(Promise.resolve(
-      new Map<string, ElementState>([[tclFile.path, ElementState.LastRunFailed]])));
-    when(executionService.status(tclFile.path)).thenReturn(Promise.resolve(
-      new Response(new ResponseOptions({ body: 'FAILED' }))));
-
-    // when
-    component.refresh();
-    messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, reloadedWorkspace);
-
-    // then
-    tick();
-    let updatedTclFile = component.getWorkspace().getElementInfo(pathInWorkspaceToBeRefreshed);
-    // TODO alternative check!
-    // expect(updatedTclFile).not.toBe(tclFile);
-    expect(ElementState[component.workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.LastRunFailed]);
-  }));
-
-  it('stops all polling for test status on component destruction', fakeAsync(() => {
-    // given
-    setupWorkspace(component, messagingService, fixture);
-    component.selectElement(tclFile.path);
-    fixture.detectChanges();
-    let responseDelayMillis = 10;
-    mockTestStatusServiceWithPromiseRunning(executionService, responseDelayMillis);
-    component.run();
-    tick(responseDelayMillis);
-    verify(executionService.status(tclFile.path)).twice(); // once immediately, and again after the response delay
-    resetCalls(executionService);
-
-    // when
-    component.ngOnDestroy();
-
-    // then
-    flush();
-    verify(executionService.status(tclFile.path)).never();
-  }));
-
-  it('restarts polling for running tests on refresh', fakeAsync(() => {
-    // given
-    setupWorkspace(component, messagingService, fixture);
-    component.selectElement(tclFile.path);
-    fixture.detectChanges();
-    let responseDelayMillis = 10;
-    mockTestStatusServiceWithPromiseRunning(executionService, responseDelayMillis);
-    let reloadedWorkspace = WorkspaceElement.copyOf(root);
-    when(executionService.statusAll()).thenReturn(Promise.resolve(
-      new Map<string, ElementState>([[tclFile.path, ElementState.Running]])));
-    component.run();
-    tick(responseDelayMillis);
-    verify(executionService.status(tclFile.path)).twice();
-    resetCalls(executionService);
-    verify(executionService.status(tclFile.path)).never();
-
-    // when
-    component.refresh();
-    messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, reloadedWorkspace);
-
-    // then
-    tick(responseDelayMillis);
-    verify(executionService.status(tclFile.path)).twice();
-    let updatedTclFile = component.getWorkspace().getElementInfo(tclFile.path);
-    // TODO alternative check
-    // expect(updatedTclFile).not.toBe(tclFile);
-    expect(ElementState[component.workspace.getTestStatus(updatedTclFile.path)]).toEqual(ElementState[ElementState.Running]);
-    // tear down (stop observers that got started by component.run())
-    component.ngOnDestroy();
-    flush();
-  }));
 
   it('updates workspace markers when WORKSPACE_MARKER_UPDATE message is received', async(() => {
     // given
