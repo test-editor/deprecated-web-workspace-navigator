@@ -6,7 +6,6 @@ import { ElementType } from '../../common/element-type';
 import { Workspace } from '../../common/workspace';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
-import { TestExecutionService } from '../../service/execution/test.execution.service';
 import { ElementState } from '../../common/element-state';
 import { KeyActions } from '../../common/key.actions';
 import { Observable } from 'rxjs/Observable';
@@ -37,7 +36,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
     private messagingService: MessagingService,
     private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
-    private executionService: TestExecutionService
   ) {
     this.workspace = new Workspace();
   }
@@ -68,7 +66,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
   private onWorkspaceReloadResponse(root: WorkspaceElement) {
     if (this.isWorkspaceElement(root)) {
       this.workspace.reload(root);
-      this.updateTestStates();
     } else {
       this.errorMessage = 'Could not retrieve workspace!';
     }
@@ -76,18 +73,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   private isWorkspaceElement(element: WorkspaceElement): boolean {
     return element != null && element.children !== undefined && element.name && element.path !== undefined && element.type !== undefined;
-  }
-
-  private updateTestStates(): void {
-    this.stopPollingTestStatus.next(); // remaining polling tasks refer to elements potentially invalidated by a workspace refresh
-    this.executionService.statusAll().then(testStates => {
-      testStates.forEach((status, path) => {
-        this.workspace.setTestStatus(path, status);
-        if (status === ElementState.Running) {
-          this.monitorTestStatus(path);
-        }
-      });
-    });
   }
 
   getWorkspace() {
@@ -143,6 +128,12 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.messagingService.subscribe(events.WORKSPACE_OBSERVE, (observer: WorkspaceObserver) => {
       this.workspace.observe(observer);
     });
+    this.messagingService.subscribe(events.TEST_EXECUTION_STARTED, payload => {
+      this.handleTestExecutionStarted(payload);
+    });
+    this.messagingService.subscribe(events.TEST_EXECUTION_START_FAILED, payload => {
+      this.handleTestExecutionStartFailed(payload);
+    });
   }
 
   handleNavigationCreated(payload: any): void {
@@ -165,26 +156,34 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   run(): void {
-    let elementPathToBeExecuted = this.workspace.getSelected();
-    if (elementPathToBeExecuted == null) {
-      elementPathToBeExecuted = this.workspace.getActive();
-    }
+    const elementPathToBeExecuted = this.workspace.getSelected() || this.workspace.getActive();
+    this.messagingService.publish(events.TEST_EXECUTE_REQUEST, elementPathToBeExecuted);
+  }
 
-    this.executionService.execute(elementPathToBeExecuted).then(response => {
-      if (response.status === NavigationComponent.HTTP_STATUS_CREATED) {
-        this.workspace.setTestStatus(elementPathToBeExecuted, ElementState.Running);
-        this.notification = `Execution of "${this.workspace.nameWithoutFileExtension(elementPathToBeExecuted)}" has been started.`;
+  handleTestExecutionStarted(payload: any): void {
+    this.workspace.setMarkerValue(payload.path, 'testStatus', { path: payload.path, status: ElementState.Running });
+    this.changeDetectorRef.markForCheck();
+    this.showNotification(payload.message, payload.path);
+  }
+
+  handleTestExecutionStartFailed(payload: any): void {
+    this.workspace.setMarkerValue(payload.path, 'testStatus', { path: payload.path, status: ElementState.LastRunFailed });
+    this.changeDetectorRef.markForCheck();
+    this.showErrorMessage(payload.message, payload.path);
+  }
+
+  showNotification(notification: string, path: string): void {
+    this.notification = notification.replace("\${}", this.workspace.nameWithoutFileExtension(path));
         setTimeout(() => {
           this.notification = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
-        this.monitorTestStatus(elementPathToBeExecuted);
-      } else {
-        this.errorMessage = `The test "${this.workspace.nameWithoutFileExtension(elementPathToBeExecuted)}" could not be started.`;
+  }
+
+  showErrorMessage(errorMessage: string, path: string) : void {
+    this.errorMessage = errorMessage.replace("\${}", this.workspace.nameWithoutFileExtension(path));
         setTimeout(() => {
           this.errorMessage = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
-      }
-    });
   }
 
   collapseAll(): void {
@@ -204,7 +203,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
     return contextElementPath != null && contextElementPath.endsWith('.tcl') &&
         (!this.workspace.hasMarker(contextElementPath, 'testStatus') ||
-        this.workspace.getTestStatus(contextElementPath) !== ElementState.Running);
+         this.workspace.getMarkerValue(contextElementPath, 'testStatus').status !== ElementState.Running);
   }
 
   private getContextElement(): string {
@@ -234,40 +233,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
         break;
       }
       case KeyActions.OPEN_FILE: this.openFile(elementPath); break;
-    }
-  }
-
-  private monitorTestStatus(elementPath: string): void {
-    let self = this;
-    let observableTestStatus = new Observable<string>(observer => {
-      self.executionService.status(elementPath).then(response => {
-        self.evaluateGetStatusResponseAndRepeat(elementPath, response, observer, self);
-      });
-    });
-    observableTestStatus.takeUntil(this.stopPollingTestStatus).subscribe( status => this.setTestStatus(elementPath, status) );
-  }
-
-  private evaluateGetStatusResponseAndRepeat(testPath: string, lastResponse: Response, observer: Subscriber<string>, self: NavigationComponent): void {
-    let status = lastResponse.text();
-    if (!lastResponse.ok) {
-      observer.complete();
-    } else if (status !== 'RUNNING') {
-      observer.next(status);
-      observer.complete();
-    } else if (!observer.closed) {
-      observer.next(status);
-      self.executionService.status(testPath).then(response => {
-        self.evaluateGetStatusResponseAndRepeat(testPath, response, observer, self);
-      });
-    }
-  }
-
-  private setTestStatus(elementPath: string, status: string): void {
-    switch (status) {
-      case 'RUNNING': this.workspace.setTestStatus(elementPath, ElementState.Running); break;
-      case 'SUCCESS': this.workspace.setTestStatus(elementPath, ElementState.LastRunSuccessful); break;
-      case 'FAILED': this.workspace.setTestStatus(elementPath, ElementState.LastRunFailed); break;
-      case 'IDLE': default: this.workspace.setTestStatus(elementPath, ElementState.Idle);
     }
   }
 

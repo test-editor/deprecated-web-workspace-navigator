@@ -1,7 +1,6 @@
 import { WorkspaceElement, LinkedWorkspaceElement } from './workspace-element';
 import { Injectable } from '@angular/core';
 import { PersistenceService } from '../service/persistence/persistence.service';
-import { TestExecutionService } from '../service/execution/test.execution.service';
 import { ElementType } from './element-type';
 import { UiState } from '../component/ui-state';
 import { ElementState } from './element-state';
@@ -252,14 +251,6 @@ export class Workspace {
 
   hasSubElements(path: string): boolean {
     return this.getWorkspaceElement(path).children.length > 0;
-  }
-
-  setTestStatus(path: string, status: ElementState) {
-    this.setMarkerValue(path, 'testStatus', status);
-  }
-
-  getTestStatus(path: string): ElementState {
-    return this.getMarkerValue(path, 'testStatus');
   }
 
   nameWithoutFileExtension(path: string): string {
