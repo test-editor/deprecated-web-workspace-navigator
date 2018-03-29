@@ -21,7 +21,7 @@
   width: 100%;
 }
 
-.tree-view-item-key {
+.tree-view-item-key, .indicator-boxes {
   display: flex;
   justify-content: space-between;
 }
@@ -40,10 +40,6 @@
 
 .dirty {
   font-style: italic;
-}
-
-.dirty::after {
-  content: '*'
 }
 
 .selected:not(.header) {

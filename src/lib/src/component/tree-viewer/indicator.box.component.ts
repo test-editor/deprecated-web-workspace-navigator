@@ -14,10 +14,10 @@ export class IndicatorBoxComponent {
     if (this.isInitialized()) {
       const activeState = this.getActiveState();
       if (activeState != null) {
-        return activeState.cssClasses;
+        return activeState.cssClasses + ' fa-fw';
       }
     }
-    return '';
+    return 'fa-fw';
   }
 
   get label(): string {

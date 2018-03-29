@@ -71,7 +71,7 @@ describe('IndicatorBoxComponent', () => {
     const actualCssClasses = hostComponent.indicatorBoxComponentUnderTest.cssClasses;
 
     // then
-    expect(actualCssClasses).toEqual('fa fa-spinner fa-spin');
+    expect(actualCssClasses).toEqual('fa fa-spinner fa-spin fa-fw');
   })
 
   it('uses the active marker state`s label and css classes', () => {
@@ -88,7 +88,7 @@ describe('IndicatorBoxComponent', () => {
     // then
     const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Test "test" is running');
-    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin fa-fw');
   });
 
   it('changes label and css classes in accordance with changing marker states', () => {
@@ -101,7 +101,7 @@ describe('IndicatorBoxComponent', () => {
     fixture.detectChanges();
     const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Test "test" is running');
-    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-spinner fa-spin fa-fw');
 
     // when
     hostComponent.workspace.setMarkerValue(hostComponent.path, 'testStatus', ElementState.LastRunSuccessful);
@@ -109,7 +109,7 @@ describe('IndicatorBoxComponent', () => {
 
     // then
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Last run of test "test" was successful');
-    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success fa-fw');
   });
 
   it('handles exceptions in condition expressions gracefully and allows other state to become active', () => {
@@ -130,7 +130,7 @@ describe('IndicatorBoxComponent', () => {
 
     // then
     const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
-    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa fa-circle test-success fa-fw');
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('Last run of test "test" was successful');
   });
 
@@ -152,7 +152,7 @@ describe('IndicatorBoxComponent', () => {
 
     // then
     const indicatorBoxTag = fixture.debugElement.query(By.css('div'));
-    expect(indicatorBoxTag.nativeElement.className).toEqual('');
+    expect(indicatorBoxTag.nativeElement.className).toEqual('fa-fw');
     expect(indicatorBoxTag.nativeElement.attributes['title'].value).toEqual('');
   });
 });
