@@ -42,10 +42,6 @@
   font-style: italic;
 }
 
-.dirty::after {
-  content: '*'
-}
-
 .selected:not(.header) {
   background-color: #094771;
   color: #ffffff;
