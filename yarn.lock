@@ -2303,6 +2303,10 @@ karma-coverage@1.1.1:
     minimatch "^3.0.0"
     source-map "^0.5.1"
 
+karma-firefox-launcher@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/karma-firefox-launcher/-/karma-firefox-launcher-1.1.0.tgz#2c47030452f04531eb7d13d4fc7669630bb93339"
+
 karma-html-reporter@0.2.7:
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/karma-html-reporter/-/karma-html-reporter-0.2.7.tgz#fd73da9f1ac99fd5bafb309cf070942188e7ba63"
@@ -2330,7 +2334,7 @@ karma-remap-coverage@0.1.5:
   dependencies:
     remap-istanbul "^0.10"
 
-karma@2.0.0:
+karma@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/karma/-/karma-2.0.0.tgz#a02698dd7f0f05ff5eb66ab8f65582490b512e58"
   dependencies:
@@ -4392,6 +4396,10 @@ yargs@~3.10.0:
     cliui "^2.1.0"
     decamelize "^1.0.0"
     window-size "0.1.0"
+
+yarn@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/yarn/-/yarn-1.5.1.tgz#e8680360e832ac89521eb80dad3a7bc27a40bab4"
 
 yeast@0.1.2:
   version "0.1.2"

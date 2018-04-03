@@ -6,7 +6,18 @@ node_js:
 os:
   - linux
 cache: yarn
+env: 
+  - FIREFOX_VERSION="latest"
+  - FIREFOX_VERSION="59.0.2"
+
 before_install:
+  # Install firefox for testing.
+  - echo $FIREFOX_VERSION
+  - export FIREFOX_SOURCE_URL='https://download.mozilla.org/?product=firefox-'$FIREFOX_VERSION'&lang=en-US&os=linux64'
+  - wget --no-verbose -O /tmp/firefox-$FIREFOX_VERSION.tar.bz2 $FIREFOX_SOURCE_URL
+  - mkdir /tmp/firefox-$FIREFOX_VERSION
+  - tar -xvf /tmp/firefox-$FIREFOX_VERSION.tar.bz2 -C /tmp/firefox-$FIREFOX_VERSION
+  - export PATH=/tmp/firefox-$FIREFOX_VERSION/firefox:$PATH 
   # Use a virtual display.
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -21,6 +32,7 @@ install:
   - yarn install
 script:
   - npm run lint
+  - firefox --version
   - npm run test:once
   - npm run integration
   - npm run coverage

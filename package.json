@@ -43,7 +43,7 @@
     "coverage": "karma start karma-coverage.conf.js --single-run",
     "pretest:once": "npm run build-test",
     "test:once": "karma start karma.conf.js --single-run",
-    "preintegration": "npm run build && cd integration && npm run clean && yarn install",
+    "preintegration": "npm run build && cd integration && npm run clean && yarn install && webdriver-manager update --ignore_ssl --gecko=false",
     "integration": "npm run integration:aot && npm run integration:jit",
     "integration:jit": "cd integration && npm run e2e",
     "integration:aot": "cd integration && npm run e2e:aot",
@@ -78,10 +78,11 @@
     "font-awesome": "4.7.0",
     "glob": "7.1.2",
     "jasmine-core": "2.9.1",
-    "karma": "2.0.0",
+    "karma": "^2.0.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-cli": "1.0.1",
     "karma-coverage": "1.1.1",
+    "karma-firefox-launcher": "^1.1.0",
     "karma-html-reporter": "0.2.7",
     "karma-jasmine": "1.1.1",
     "karma-jasmine-html-reporter": "0.2.2",
@@ -99,5 +100,8 @@
     "tslint": "5.9.1",
     "typescript": "2.6.2",
     "zone.js": "0.8.20"
+  },
+  "dependencies": {
+        "yarn": "^1.5.1"
   }
 }
