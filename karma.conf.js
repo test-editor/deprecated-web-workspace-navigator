@@ -96,7 +96,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome_travis_ci', 'Firefox'],
+    browsers: ['Firefox'],
     singleRun: false
   })
 }
