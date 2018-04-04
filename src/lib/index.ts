@@ -9,3 +9,4 @@ export { TestExecutionService } from './src/service/execution/test.execution.ser
 export * from './src/component/event-types';
 export { Field, IndicatorFieldSetup } from './src/common/markers/field';
 export { MarkerState } from './src/common/markers/marker.state';
+export { MarkerObserver } from './src/common/markers/marker.observer';
