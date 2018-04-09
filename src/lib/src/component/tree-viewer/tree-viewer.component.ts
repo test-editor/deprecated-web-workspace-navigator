@@ -68,8 +68,8 @@ export class TreeViewerComponent {
   openFile() {
     if (this.isImage()) {
       this.windowReference.open(() => {
-        return this.persistenceService.getBinaryResource(this.elementPath).then((response) => {
-          return new URL(URL.createObjectURL(response.blob()));
+        return this.persistenceService.getBinaryResource(this.elementPath).then((blob) => {
+          return new URL(URL.createObjectURL(blob));
         });
       });
     } else {

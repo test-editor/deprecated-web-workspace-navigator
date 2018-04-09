@@ -1,5 +1,5 @@
 import { Response } from '@angular/http';
-import { AuthHttp } from 'angular2-jwt';
+import { HttpClient } from '@angular/common/http';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
@@ -14,20 +14,20 @@ export class TestExecutionService {
   private static readonly statusAllURLPath = '/status/all';
   private serviceUrl: string;
 
-  constructor(private http: AuthHttp, config: TestExecutionServiceConfig) {
+  constructor(private httpClient: HttpClient, config: TestExecutionServiceConfig) {
     this.serviceUrl = config.testExecutionServiceUrl;
   }
 
   execute(path: string): Promise<Response> {
-    return this.http.post(this.getURL(path, TestExecutionService.executeURLPath), '').toPromise();
+    return this.httpClient.post<Response>(this.getURL(path, TestExecutionService.executeURLPath), '').toPromise();
   }
 
   status(path: string): Promise<Response> {
-    return this.http.get(this.getURL(path, TestExecutionService.statusURLPath) + '&wait=true').toPromise();
+    return this.httpClient.get<Response>(this.getURL(path, TestExecutionService.statusURLPath) + '&wait=true').toPromise();
   }
 
   statusAll(): Promise<Map<string, ElementState>> {
-    return this.http.get(`${this.serviceUrl}${TestExecutionService.statusAllURLPath}`).toPromise().then(response => {
+    return this.httpClient.get<Response>(`${this.serviceUrl}${TestExecutionService.statusAllURLPath}`).toPromise().then(response => {
       let statusUpdates: TestStatusInfo[] = response.json();
       return new Map(statusUpdates.map(update => [update.path, this.toElementState(update.status)] as [string, ElementState]));
     });

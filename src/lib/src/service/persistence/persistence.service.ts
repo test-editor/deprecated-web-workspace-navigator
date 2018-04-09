@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response, RequestOptionsArgs, ResponseContentType } from '@angular/http';
-import { AuthHttp } from 'angular2-jwt';
-
+import { Headers, Response, RequestOptionsArgs, ResponseContentType } from '@angular/http';
+import { HttpClient }  from '@angular/common/http';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
 
@@ -13,13 +12,13 @@ export class PersistenceService {
   private serviceUrl: string;
   private listFilesUrl: string;
 
-  constructor(private http: AuthHttp, config: PersistenceServiceConfig) {
+  constructor(private httpClient: HttpClient, config: PersistenceServiceConfig) {
     this.serviceUrl = config.persistenceServiceUrl;
     this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
   }
 
   listFiles(): Promise<WorkspaceElement> {
-    return this.http.get(this.listFilesUrl).toPromise()
+    return this.httpClient.get<Response>(this.listFilesUrl).toPromise()
       .then(response => response.json());
   }
 
@@ -28,15 +27,15 @@ export class PersistenceService {
     let requestOptions = {
       params: { type: type }
     };
-    return this.http.post(this.getURL(path), '', requestOptions).toPromise();
+    return this.httpClient.post<Response>(this.getURL(path), '', requestOptions).toPromise();
   }
 
   deleteResource(path: string): Promise<Response> {
-    return this.http.delete(this.getURL(path)).toPromise();
+    return this.httpClient.delete<Response>(this.getURL(path)).toPromise();
   }
 
-  getBinaryResource(path: string): Promise<Response> {
-    return this.http.get(this.getURL(path), { responseType: ResponseContentType.Blob}).toPromise();
+  getBinaryResource(path: string): Promise<Blob> {
+    return this.httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise();
   }
 
   getURL(path: string): string {
