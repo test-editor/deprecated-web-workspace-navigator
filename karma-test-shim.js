@@ -58,6 +58,7 @@ System.config({
     'system-loader': 'demo/systemjs-angular-loader.js',
     '@angular/core': 'npm:@angular/core/bundles/core.umd.js',
     '@angular/common': 'npm:@angular/common/bundles/common.umd.js',
+    '@angular/common/http': 'npm:@angular/common/bundles/common-http.umd.js',
     '@angular/compiler': 'npm:@angular/compiler/bundles/compiler.umd.js',
     '@angular/platform-browser': 'npm:@angular/platform-browser/bundles/platform-browser.umd.js',
     '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
@@ -68,10 +69,12 @@ System.config({
     '@testeditor/messaging-service': 'npm:@testeditor/messaging-service/bundles/messaging-service.umd.js',
     'ts-mockito': 'npm:ts-mockito/lib/ts-mockito.js',
     'lodash': 'npm:lodash/lodash.js',
+    'tslib': 'npm:tslib/tslib.js', // @angular/common/http depends on this lib
 
     // Testing bundles
     '@angular/core/testing': 'npm:@angular/core/bundles/core-testing.umd.js',
     '@angular/common/testing': 'npm:@angular/common/bundles/common-testing.umd.js',
+    '@angular/common/http/testing': 'npm:@angular/common/bundles/common-http-testing.umd.js',
     '@angular/compiler/testing': 'npm:@angular/compiler/bundles/compiler-testing.umd.js',
     '@angular/platform-browser/testing': 'npm:@angular/platform-browser/bundles/platform-browser-testing.umd.js',
     '@angular/platform-browser-dynamic/testing': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic-testing.umd.js',

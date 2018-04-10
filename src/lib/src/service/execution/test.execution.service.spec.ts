@@ -1,7 +1,6 @@
-import { TestExecutionService, TestExecutionState } from './test.execution.service';
+import { TestExecutionService, TestExecutionState, DefaultTestExecutionService } from './test.execution.service';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Observable } from 'rxjs/Observable';
-import { HttpClientModule } from '@angular/common/http';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { Injector, ReflectiveInjector } from '@angular/core';
 import { inject } from '@angular/core/testing';
@@ -9,6 +8,7 @@ import { TestBed } from '@angular/core/testing';
 import { fakeAsync } from '@angular/core/testing';
 import { HTTP_STATUS_CREATED, HTTP_STATUS_OK } from '../../component/navigation/navigation.component.test.setup';
 import { ElementState } from '../../common/element-state';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 describe('TestExecutionService', () => {
   let serviceConfig: TestExecutionServiceConfig;
@@ -16,14 +16,13 @@ describe('TestExecutionService', () => {
   beforeEach(() => {
     serviceConfig = new TestExecutionServiceConfig();
     serviceConfig.serviceUrl = 'http://localhost:9080/tests';
-    // dummy jwt token
-    let authToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.t-IDcSemACt8x4iTMCda8Yhe3iZaWbvV5XKSTbuAn0M';
 
     TestBed.configureTestingModule({
-      imports: [HttpClientModule],
+      imports: [HttpClientTestingModule, HttpClientModule],
       providers: [
         { provide: TestExecutionServiceConfig, useValue: serviceConfig },
-        TestExecutionService
+        { provide: TestExecutionService, useClass: DefaultTestExecutionService },
+        HttpClient
       ]
     });
   });
@@ -38,7 +37,7 @@ describe('TestExecutionService', () => {
 
     // then
     .then(response => {
-      expect(response.status).toBe(HTTP_STATUS_CREATED);
+      expect(response).toBe('');
     });
 
       httpMock.match({
@@ -62,7 +61,7 @@ describe('TestExecutionService', () => {
     });
 
       httpMock.match({
-        url: serviceConfig.serviceUrl + '/tests/status?resource=' + tclFilePath + '&wait=true',
+        url: serviceConfig.serviceUrl + '/status?resource=' + tclFilePath + '&wait=true',
         method: 'GET'
       })[0].flush({ status: 'IDLE', path: tclFilePath });
   })));

@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
 import { mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
-import { testBedSetup, createResponse } from './tree-viewer.component.spec';
+import { testBedSetup } from './tree-viewer.component.spec';
 
 import { ElementType } from '../../common/element-type';
 import { WorkspaceElement } from '../../common/workspace-element';

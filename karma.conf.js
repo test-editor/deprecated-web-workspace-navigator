@@ -56,6 +56,7 @@ module.exports = function (config) {
       { pattern: 'node_modules/@testeditor/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/ts-mockito/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/lodash/**/*.js', included: false, watched: false },
+      { pattern: 'node_modules/tslib/**/*.js', included: false, watched: false },
 
       { pattern: 'src/demo/systemjs-angular-loader.js', included: false, watched: false },
 

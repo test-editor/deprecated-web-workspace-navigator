@@ -7,7 +7,7 @@ import { ElementType } from '../../common/element-type';
 import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { TestExecutionService } from '../../service/execution/test.execution.service';
+import { TestExecutionService, TestExecutionState } from '../../service/execution/test.execution.service';
 import { ElementState } from '../../common/element-state';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MessagingService } from '@testeditor/messaging-service';
@@ -92,8 +92,8 @@ export const root: WorkspaceElement = {
   children: [subfolder]
 };
 
-export const responseBeforeTermination = 'RUNNING';
-const responseAfterTermination = 'SUCCESS';
+export const responseBeforeTermination = { path: tclFile.path, status: TestExecutionState.Running };
+const responseAfterTermination = { path: tclFile.path, status: TestExecutionState.LastRunSuccessful };
 
 export function mockedPersistenceService() {
   const persistenceService = mock(PersistenceService);
@@ -112,24 +112,23 @@ export function mockedTestExecutionService() {
   const executionService = mock(TestExecutionService);
   setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
   mockTestStatusServiceWithRunningRunningSuccessSequence(executionService);
-  when(executionService.statusAll()).thenReturn(Promise.resolve(new Map<string, ElementState>([])));
+  when(executionService.getAllStatus()).thenReturn(Promise.resolve([]));
   return executionService;
 }
 
 export function setTestExecutionServiceResponse(service: TestExecutionService, statusCode: number) {
-  const response = new Response(new ResponseOptions({status: statusCode}));
-  when(service.execute(tclFile.path)).thenReturn(Promise.resolve(response));
+  when(service.execute(tclFile.path)).thenReturn(Promise.resolve(statusCode));
 }
 
 export function mockTestStatusServiceWithRunningRunningSuccessSequence(service: TestExecutionService) {
-  when(service.status(tclFile.path))
+  when(service.getStatus(tclFile.path))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseBeforeTermination))
       .thenReturn(Promise.resolve(responseAfterTermination));
 }
 
 export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionService, delayMillis: number) {
-  when(service.status(tclFile.path))
+  when(service.getStatus(tclFile.path))
       .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
 }
 
