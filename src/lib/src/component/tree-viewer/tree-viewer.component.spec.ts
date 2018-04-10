@@ -36,7 +36,7 @@ export function testBedSetup(providers?: any[]): void {
   }).compileComponents();
 }
 
-export function createResponse(status: number = 200, body: string = ""): Response {
+export function createResponse(status: number = 200, body: string = ''): Response {
   return new Response(new ResponseOptions({
     body: body,
     status: status,
@@ -204,7 +204,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["fa-chevron-right"]).toBeTruthy();
+    expect(icon.classes['fa-chevron-right']).toBeTruthy();
   });
 
   it('has chevron-down icon for expanded folders', () => {
@@ -215,7 +215,7 @@ describe('TreeViewerComponent', () => {
     let icon = getItemKey().query(By.css('.icon-type'));
 
     // then
-    expect(icon.classes["fa-chevron-down"]).toBeTruthy();
+    expect(icon.classes['fa-chevron-down']).toBeTruthy();
   });
 
   it('sets expanded state when clicked on chevron icon', () => {
@@ -288,7 +288,7 @@ describe('TreeViewerComponent', () => {
     // some random bytes to stand in for an actual png
     let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
     when(response.blob()).thenReturn(imageBlob);
-    when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(instance(response)));
+    when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(imageBlob));
 
     // when
     component.onDoubleClick();
@@ -362,7 +362,7 @@ describe('TreeViewerComponent', () => {
 
   it('deletes element if confirmed', () => {
     // given
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
     initWorkspaceWithElement(component, singleFile);
     component.confirmDelete = true;
     fixture.detectChanges();
@@ -394,7 +394,7 @@ describe('TreeViewerComponent', () => {
   it('displays error when deletion failed', (done: () => void) => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject("unsupported"));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
 
     // when
     component.onDeleteConfirm();

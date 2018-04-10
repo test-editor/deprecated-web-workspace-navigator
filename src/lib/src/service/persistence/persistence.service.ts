@@ -18,16 +18,11 @@ export class PersistenceService {
   }
 
   listFiles(): Promise<WorkspaceElement> {
-    return this.httpClient.get<Response>(this.listFilesUrl).toPromise()
-      .then(response => response.json());
+    return this.httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise();
   }
 
-  // TODO - should be renamed createResource
-  createDocument(path: string, type: string): Promise<Response> {
-    let requestOptions = {
-      params: { type: type }
-    };
-    return this.httpClient.post<Response>(this.getURL(path), '', requestOptions).toPromise();
+  createResource(path: string, type: string): Promise<string> {
+    return this.httpClient.post(this.getURL(path), '', { responseType: 'text', params: { type: type } }).toPromise();
   }
 
   deleteResource(path: string): Promise<Response> {
@@ -38,7 +33,7 @@ export class PersistenceService {
     return this.httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise();
   }
 
-  getURL(path: string): string {
+  private getURL(path: string): string {
     let encodedPath = path.split('/').map(encodeURIComponent).join('/');
     return `${this.serviceUrl}/documents/${encodedPath}`;
   }

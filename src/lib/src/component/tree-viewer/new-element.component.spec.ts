@@ -24,8 +24,8 @@ describe('NewElementComponent', () => {
 
   let requestWithDummySelected = {
     selectedElement: {
-      name: "dummy.txt",
-      path: "some/path/dummy.txt",
+      name: 'dummy.txt',
+      path: 'some/path/dummy.txt',
       type: ElementType.File,
       children: [] as WorkspaceElement[]
     },
@@ -46,7 +46,7 @@ describe('NewElementComponent', () => {
     component.workspace = new Workspace();
     component.workspace.setSelected(null);
     component.workspace.newElement(ElementType.Folder);
-    input = fixture.debugElement.query(By.css("input"));
+    input = fixture.debugElement.query(By.css('input'));
     messagingService = TestBed.get(MessagingService);
   });
 
@@ -87,7 +87,7 @@ describe('NewElementComponent', () => {
 
   it('adds padding when nothing is selected', () => {
     // when + then
-    expect(component.getPaddingLeft()).toEqual("12px");
+    expect(component.getPaddingLeft()).toEqual('12px');
   });
 
   it('does not add padding-left when a file is selected', () => {
@@ -97,7 +97,7 @@ describe('NewElementComponent', () => {
     component.workspace.newElement(requestWithDummySelected.type);
 
     // when + then
-    expect(component.getPaddingLeft()).toEqual("0px");
+    expect(component.getPaddingLeft()).toEqual('0px');
   });
 
   it('hides error message by default', () => {
@@ -108,9 +108,9 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let alert = fixture.debugElement.query(By.css(".alert"));
+    let alert = fixture.debugElement.query(By.css('.alert'));
     expect(isVisible(alert)).toBeFalsy();
-    expect(input.classes["input-error"]).toBeFalsy();
+    expect(input.classes['input-error']).toBeFalsy();
   });
 
   it('displays error message when set', () => {
@@ -121,39 +121,39 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let alert = fixture.debugElement.query(By.css(".alert"));
+    let alert = fixture.debugElement.query(By.css('.alert'));
     expect(isVisible(alert)).toBeTruthy();
     expect(alert.nativeElement.textContent).toBe('the error message to show');
-    expect(input.classes["input-error"]).toBeTruthy();
+    expect(input.classes['input-error']).toBeTruthy();
   });
 
   it('calls createDocument with type file when enter is pressed', () => {
     // given
     component.workspace.newElement(ElementType.File);
-    input.nativeElement.value = "something-new.txt";
+    input.nativeElement.value = 'something-new.txt';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("something-new.txt", "file")).once();
+    verify(persistenceService.createResource('something-new.txt', 'file')).once();
   });
 
   it('calls createDocument with type folder when enter is pressed', () => {
     // given
     component.workspace.newElement(ElementType.Folder);
-    input.nativeElement.value = "newFolder";
+    input.nativeElement.value = 'newFolder';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("newFolder", ElementType.Folder)).once();
+    verify(persistenceService.createResource('newFolder', ElementType.Folder)).once();
   });
 
   it('calls createDocument with the proper path when enter is pressed', () => {
     // given
-    input.nativeElement.value = "something-new.txt";
+    input.nativeElement.value = 'something-new.txt';
     component.workspace.reload(requestWithDummySelected.selectedElement);
     component.workspace.setSelected(requestWithDummySelected.selectedElement.path);
     component.workspace.newElement(requestWithDummySelected.type);
@@ -162,15 +162,14 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument("some/path/something-new.txt", ElementType.File)).once();
+    verify(persistenceService.createResource('some/path/something-new.txt', ElementType.File)).once();
   });
 
   it('removes itself and emits navigation.created event when createDocument returns', async(() => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
-    let response = createResponse(200, 'some/path');
-    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.resolve(response));
+    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Promise.resolve('some/path'));
 
     // when
     component.onEnter();
@@ -186,7 +185,7 @@ describe('NewElementComponent', () => {
 
   it('signals an error when createDocument failed', async(() => {
     // given
-    when(persistenceService.createDocument(anyString(), anyString())).thenReturn(Promise.reject("failed"));
+    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Promise.reject('failed'));
 
     // when
     component.onEnter();
@@ -207,8 +206,8 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["fa-file"]).toBeTruthy();
+    let iconType = fixture.debugElement.query(By.css('.icon-type'));
+    expect(iconType.classes['fa-file']).toBeTruthy();
   });
 
   it('shows folder icon when a new folder should be created', () => {
@@ -219,13 +218,13 @@ describe('NewElementComponent', () => {
     fixture.detectChanges();
 
     // then
-    let iconType = fixture.debugElement.query(By.css(".icon-type"));
-    expect(iconType.classes["fa-folder"]).toBeTruthy();
+    let iconType = fixture.debugElement.query(By.css('.icon-type'));
+    expect(iconType.classes['fa-folder']).toBeTruthy();
   });
 
   it('validation for valid input does not show error message', () => {
     // given
-    input.nativeElement.value = "valid.txt";
+    input.nativeElement.value = 'valid.txt';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
@@ -237,21 +236,21 @@ describe('NewElementComponent', () => {
 
   it('validation for invalid input shows error message', () => {
     // given
-    input.nativeElement.value = "../invalid.txt";
+    input.nativeElement.value = '../invalid.txt';
 
     // when
     input.triggerEventHandler('keyup.enter', {});
     fixture.detectChanges();
 
     // then
-    let alert = fixture.debugElement.query(By.css(".alert"));
+    let alert = fixture.debugElement.query(By.css('.alert'));
     expect(isVisible(alert)).toBeTruthy();
     expect(alert.nativeElement.textContent.trim()).toBe('Relative path segments such as "../" are not allowed.');
   });
 
   it('does not call anything on invalid input when enter is pressed', () => {
     // given
-    input.nativeElement.value = "../invalid.txt";
+    input.nativeElement.value = '../invalid.txt';
     component.workspace.reload(requestWithDummySelected.selectedElement);
     component.workspace.setSelected(requestWithDummySelected.selectedElement.path);
     component.workspace.newElement(requestWithDummySelected.type);
@@ -260,7 +259,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createDocument(anyString(), anyString())).never();
+    verify(persistenceService.createResource(anyString(), anyString())).never();
   });
 
 });
