@@ -1,5 +1,3 @@
-import { Response, ResponseOptions } from '@angular/http';
-import { AuthHttp } from 'angular2-jwt';
 import { Injectable } from '@angular/core';
 import { ElementState } from '@testeditor/workspace-navigator';
 
@@ -7,32 +5,26 @@ import { ElementState } from '@testeditor/workspace-navigator';
 export class TestExecutionServiceMock {
 private readonly statusMap = new Map<string, string>();
 
-  execute(path: string): Promise<Response> {
+  execute(path: string): Promise<string> {
     console.log(`Received execute(path: '${path}')`);
     this.statusMap[path] = 'RUNNING';
-    return Promise.resolve(new Response(new ResponseOptions({ status: 201 })));
+    return Promise.resolve('');
   }
 
-  status(path: string): Promise<Response> {
+  status(path: string): Promise<string> {
     console.log(`Received status(path: '${path}')`);
     let timeout: number;
     if (this.statusMap[path] === 'RUNNING') {
       let self = this;
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(new Response(new ResponseOptions({
-            status: 200,
-            body: 'RUNNING'
-          })));
+          resolve('RUNNING');
         }, 5000);
         self.statusMap[path] = Math.random() < 0.5 ? 'SUCCESS' : 'FAILED';
         console.log(`Test '${path}' will complete with status '${self.statusMap[path]}'`);
       });
     } else {
-      return Promise.resolve(new Response(new ResponseOptions({
-            status: 200,
-            body: this.statusMap[path]
-          })));
+      return Promise.resolve(this.statusMap[path]);
     }
   }
 

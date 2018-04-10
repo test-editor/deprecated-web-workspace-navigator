@@ -8,7 +8,6 @@ import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { TestExecutionService } from '../../service/execution/test.execution.service';
-import { Response, ResponseOptions } from '@angular/http';
 import { ElementState } from '../../common/element-state';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MessagingService } from '@testeditor/messaging-service';
@@ -93,14 +92,8 @@ export const root: WorkspaceElement = {
   children: [subfolder]
 };
 
-export const responseBeforeTermination = new Response(new ResponseOptions({
-  status: HTTP_STATUS_OK,
-  body: 'RUNNING'
-}));
-const responseAfterTermination = new Response(new ResponseOptions({
-  status: HTTP_STATUS_OK,
-  body: 'SUCCESS'
-}));
+export const responseBeforeTermination = 'RUNNING';
+const responseAfterTermination = 'SUCCESS';
 
 export function mockedPersistenceService() {
   const persistenceService = mock(PersistenceService);

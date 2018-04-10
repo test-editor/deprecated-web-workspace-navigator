@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { Http, RequestOptions, HttpModule } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 
 import { BrowserModule } from '@angular/platform-browser';
@@ -21,7 +20,7 @@ import { testEditorIndicatorFieldSetup } from './indicator.field.setup';
     WorkspaceNavigatorModule.forRoot({
       persistenceServiceUrl: 'http://localhost:9080',
     }, {
-      testExecutionServiceUrl: 'http://localhost:9080/tests'
+      serviceUrl: 'http://localhost:9080/tests'
     }, testEditorIndicatorFieldSetup)
   ],
   declarations: [ AppComponent ],

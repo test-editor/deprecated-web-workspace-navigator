@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Headers, Response, RequestOptionsArgs, ResponseContentType } from '@angular/http';
 import { HttpClient }  from '@angular/common/http';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
@@ -25,8 +24,8 @@ export class PersistenceService {
     return this.httpClient.post(this.getURL(path), '', { responseType: 'text', params: { type: type } }).toPromise();
   }
 
-  deleteResource(path: string): Promise<Response> {
-    return this.httpClient.delete<Response>(this.getURL(path)).toPromise();
+  deleteResource(path: string): Promise<string> {
+    return this.httpClient.delete(this.getURL(path), {responseType: 'text'}).toPromise();
   }
 
   getBinaryResource(path: string): Promise<Blob> {

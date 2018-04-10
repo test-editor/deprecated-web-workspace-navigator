@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, Response, ResponseOptions } from '@angular/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
@@ -57,14 +57,15 @@ describe('NavigationComponent', () => {
       ],
       imports: [
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         MessagingModule.forRoot()
       ],
       providers: [
         { provide: PersistenceService, useValue: instance(persistenceService) },
         { provide: WindowService, useValue: null},
         { provide: IndicatorFieldSetup, useValue: testEditorIndicatorFieldSetup},
-        PathValidator
+        PathValidator,
+        HttpClient
       ]
     })
       .compileComponents();

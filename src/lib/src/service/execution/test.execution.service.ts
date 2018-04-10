@@ -1,48 +1,72 @@
-import { Response } from '@angular/http';
-import { HttpClient } from '@angular/common/http';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { ElementState } from '../../common/element-state';
-import { TestStatusInfo } from '../../common/test-status-info';
+import { HttpClient } from '@angular/common/http';
+
+export enum TestExecutionState {
+  Idle = 0,
+  LastRunSuccessful = 1,
+  LastRunFailed = 2,
+  Running = 3
+}
+
+
+export interface TestExecutionStatus {
+  path: string;
+  status: TestExecutionState;
+}
+
+export abstract class TestExecutionService {
+  abstract execute(path: string): Promise<any>;
+  abstract getStatus(path: string): Promise<TestExecutionStatus>;
+  abstract getAllStatus(): Promise<TestExecutionStatus[]>;
+}
 
 @Injectable()
-export class TestExecutionService {
+export class DefaultTestExecutionService extends TestExecutionService {
 
   private static readonly statusURLPath = '/status';
   private static readonly executeURLPath = '/execute';
   private static readonly statusAllURLPath = '/status/all';
   private serviceUrl: string;
 
-  constructor(private httpClient: HttpClient, config: TestExecutionServiceConfig) {
-    this.serviceUrl = config.testExecutionServiceUrl;
+  constructor(private http: HttpClient, config: TestExecutionServiceConfig) {
+    super();
+    this.serviceUrl = config.serviceUrl;
   }
 
-  execute(path: string): Promise<Response> {
-    return this.httpClient.post<Response>(this.getURL(path, TestExecutionService.executeURLPath), '').toPromise();
+  execute(path: string): Promise<any> {
+    return this.http.post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
   }
 
-  status(path: string): Promise<Response> {
-    return this.httpClient.get<Response>(this.getURL(path, TestExecutionService.statusURLPath) + '&wait=true').toPromise();
+  getStatus(path: string): Promise<TestExecutionStatus> {
+    return this.http.get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
+      .toPromise().then(text => {
+        const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
+        return status;
+      });
   }
 
-  statusAll(): Promise<Map<string, ElementState>> {
-    return this.httpClient.get<Response>(`${this.serviceUrl}${TestExecutionService.statusAllURLPath}`).toPromise().then(response => {
-      let statusUpdates: TestStatusInfo[] = response.json();
-      return new Map(statusUpdates.map(update => [update.path, this.toElementState(update.status)] as [string, ElementState]));
+  getAllStatus(): Promise<TestExecutionStatus[]> {
+    return this.http.get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise().then(statusResponse => {
+      const status: any[] = statusResponse;
+      status.forEach((value) => { value.status = this.toTestExecutionState(value.status); });
+      return status;
     });
   }
 
   private getURL(workspaceElementPath: string, urlPath: string = ''): string {
-    let encodedPath = workspaceElementPath.split('/').map(encodeURIComponent).join('/');
+    const encodedPath = workspaceElementPath.split('/').map(encodeURIComponent).join('/');
     return `${this.serviceUrl}${urlPath}?resource=${encodedPath}`;
   }
 
-  private toElementState(status: string): ElementState {
-    switch (status) {
-      case 'RUNNING': return ElementState.Running;
-      case 'SUCCESS': return ElementState.LastRunSuccessful;
-      case 'FAILED': return ElementState.LastRunFailed;
+  private toTestExecutionState(state: string): TestExecutionState {
+    switch (state) {
+      case 'RUNNING': return TestExecutionState.Running;
+      case 'FAILED': return TestExecutionState.LastRunFailed;
+      case 'SUCCESS': return TestExecutionState.LastRunSuccessful;
+      case 'IDLE': return TestExecutionState.Idle;
+      default: return TestExecutionState.Idle;
     }
   }
+
 }

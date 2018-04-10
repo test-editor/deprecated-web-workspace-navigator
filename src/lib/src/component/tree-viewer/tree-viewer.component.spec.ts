@@ -1,7 +1,6 @@
 import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Response, ResponseOptions } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { mock, instance, verify, when, anyString, anything, deepEqual, strictEqual, capture } from 'ts-mockito';
 
@@ -34,15 +33,6 @@ export function testBedSetup(providers?: any[]): void {
     ],
     providers: providers
   }).compileComponents();
-}
-
-export function createResponse(status: number = 200, body: string = ''): Response {
-  return new Response(new ResponseOptions({
-    body: body,
-    status: status,
-    headers: null,
-    url: null
-  }));
 }
 
 export function initWorkspaceWithElement(component: TreeViewerComponent, root: WorkspaceElement) {
@@ -287,7 +277,7 @@ describe('TreeViewerComponent', () => {
     let response = mock(Response);
     // some random bytes to stand in for an actual png
     let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
-    when(response.blob()).thenReturn(imageBlob);
+    when(response.blob()).thenReturn(Promise.resolve(imageBlob));
     when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(imageBlob));
 
     // when
@@ -414,8 +404,7 @@ describe('TreeViewerComponent', () => {
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    let response = createResponse();
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(response));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(''));
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_DELETED, callback);
 

@@ -11,7 +11,6 @@ import { KeyActions } from '../../common/key.actions';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/takeUntil';
 import { Subscriber } from 'rxjs/Subscriber';
-import { Response } from '@angular/http';
 import { Subject } from 'rxjs/Subject';
 import { MarkerObserver } from '../../common/markers/marker.observer';
 import { WorkspaceElement } from '../../common/workspace-element';

@@ -35,12 +35,6 @@
   dependencies:
     tslib "^1.7.1"
 
-"@angular/http@5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@angular/http/-/http-5.2.2.tgz#d33c128d5737f8d701bbac3e7e23d831deec3457"
-  dependencies:
-    tslib "^1.7.1"
-
 "@angular/platform-browser-dynamic@5.2.2":
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/@angular/platform-browser-dynamic/-/platform-browser-dynamic-5.2.2.tgz#2ddd7fa28bb34ae9e181e6f286dfe4c96bde95a6"
@@ -118,10 +112,6 @@ ajv@^4.9.1:
   dependencies:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
-
-angular2-jwt@0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/angular2-jwt/-/angular2-jwt-0.2.3.tgz#54efdda3ceedba85f6a37b165f22ac22b8adf021"
 
 ansi-regex@^0.2.0, ansi-regex@^0.2.1:
   version "0.2.1"

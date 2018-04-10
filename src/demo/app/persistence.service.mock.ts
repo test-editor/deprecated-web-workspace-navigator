@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response, Http, ResponseContentType } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 
 import { ElementType, WorkspaceElement } from '@testeditor/workspace-navigator';
 
@@ -58,25 +58,25 @@ export class PersistenceServiceMock {
     ]
   };
 
-  constructor(private http: Http) {}
+  constructor(private http: HttpClient) {}
 
   listFiles(): Promise<WorkspaceElement> {
     return Promise.resolve(this.data);
   }
 
-  createDocument(path: string, type: string): Promise<Response> {
+  createDocument(path: string, type: string): Promise<string> {
     console.log(`Received createDocument(path: '${path}', type: '${type}')`);
     return Promise.reject("not supported by mock");
   }
 
-  deleteResource(path: string): Promise<Response> {
+  deleteResource(path: string): Promise<string> {
     console.log(`Received deleteResource(path: '${path}')`);
     return Promise.reject("not supported by mock");
   }
 
-  getBinaryResource(path: string): Promise<Response> {
+  getBinaryResource(path: string): Promise<Blob> {
     console.log(`Received getResource(path: '${path}')`);
-    return this.http.get(this.getURL(path), { responseType: ResponseContentType.Blob}).toPromise();
+    return this.http.get(this.getURL(path), { responseType: 'blob' }).toPromise();
   }
 
   getURL(path: string): string {
