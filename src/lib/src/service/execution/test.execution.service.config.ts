@@ -1,5 +1,5 @@
 export class TestExecutionServiceConfig {
 
-    serviceUrl: string;
+    testExecutionServiceUrl: string;
 
   }

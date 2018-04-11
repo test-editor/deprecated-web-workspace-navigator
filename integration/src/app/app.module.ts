@@ -20,7 +20,7 @@ import { testEditorIndicatorFieldSetup } from './indicator.field.setup';
     WorkspaceNavigatorModule.forRoot({
       persistenceServiceUrl: 'http://localhost:9080',
     }, {
-      serviceUrl: 'http://localhost:9080/tests'
+      testExecutionServiceUrl: 'http://localhost:9080/tests'
     }, testEditorIndicatorFieldSetup)
   ],
   declarations: [ AppComponent ],

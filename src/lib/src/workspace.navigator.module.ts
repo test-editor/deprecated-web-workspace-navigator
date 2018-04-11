@@ -36,7 +36,9 @@ import { IndicatorFieldSetup } from './common/markers/field';
 })
 export class WorkspaceNavigatorModule {
 
-  static forRoot(persistanceConfig: PersistenceServiceConfig, testExecutionConfig: TestExecutionServiceConfig, indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
+  static forRoot(persistanceConfig: PersistenceServiceConfig,
+                 testExecutionConfig: TestExecutionServiceConfig,
+                 indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [

@@ -31,7 +31,7 @@ export class DefaultTestExecutionService extends TestExecutionService {
 
   constructor(private http: HttpClient, config: TestExecutionServiceConfig) {
     super();
-    this.serviceUrl = config.serviceUrl;
+    this.serviceUrl = config.testExecutionServiceUrl;
   }
 
   execute(path: string): Promise<any> {

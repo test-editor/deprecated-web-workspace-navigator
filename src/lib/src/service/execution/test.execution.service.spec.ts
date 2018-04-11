@@ -15,7 +15,7 @@ describe('TestExecutionService', () => {
 
   beforeEach(() => {
     serviceConfig = new TestExecutionServiceConfig();
-    serviceConfig.serviceUrl = 'http://localhost:9080/tests';
+    serviceConfig.testExecutionServiceUrl = 'http://localhost:9080/tests';
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, HttpClientModule],
@@ -42,7 +42,7 @@ describe('TestExecutionService', () => {
 
       httpMock.match({
         method: 'POST',
-        url: serviceConfig.serviceUrl + '/execute?resource=path/to/file%3F.tcl'
+        url: serviceConfig.testExecutionServiceUrl + '/execute?resource=path/to/file%3F.tcl'
       })[0].flush('');
   })));
 
@@ -61,12 +61,13 @@ describe('TestExecutionService', () => {
     });
 
       httpMock.match({
-        url: serviceConfig.serviceUrl + '/status?resource=' + tclFilePath + '&wait=true',
+        url: serviceConfig.testExecutionServiceUrl + '/status?resource=' + tclFilePath + '&wait=true',
         method: 'GET'
       })[0].flush({ status: 'IDLE', path: tclFilePath });
   })));
 
-  it('Translates server response to "statusAll" request to properly typed map', fakeAsync(inject([HttpTestingController, TestExecutionService],
+  it('Translates server response to "statusAll" request to properly typed map',
+     fakeAsync(inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
 
@@ -82,7 +83,7 @@ describe('TestExecutionService', () => {
       });
       httpMock.match({
         method: 'GET',
-        url: serviceConfig.serviceUrl + '/status/all'
+        url: serviceConfig.testExecutionServiceUrl + '/status/all'
       })[0].flush([{ status: 'FAILED',  path: 'failedTest.tcl' },
                    { status: 'RUNNING', path: 'runningTest.tcl' },
                    { status: 'SUCCESS', path: 'successfulTest.tcl' }]);
