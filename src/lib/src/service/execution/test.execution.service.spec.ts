@@ -29,63 +29,61 @@ describe('TestExecutionService', () => {
 
   it('invokes REST endpoint with encoded path', fakeAsync(inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
-    // given
-    const tclFilePath = 'path/to/file?.tcl';
+      // given
+      const tclFilePath = 'path/to/file?.tcl';
+      const request = { method: 'POST',
+                        url: serviceConfig.testExecutionServiceUrl + '/execute?resource=path/to/file%3F.tcl' };
+      const mockResponse = 'something'
 
-    // when
-    executionService.execute(tclFilePath)
+      // when
+      executionService.execute(tclFilePath)
 
-    // then
-    .then(response => {
-      expect(response).toBe('');
-    });
+      // then
+        .then(response => {
+          expect(response).toBe('something');
+        });
 
-      httpMock.match({
-        method: 'POST',
-        url: serviceConfig.testExecutionServiceUrl + '/execute?resource=path/to/file%3F.tcl'
-      })[0].flush('');
+      httpMock.match(request)[0].flush(mockResponse);
   })));
 
   it('invokes REST test status endpoint', fakeAsync(inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
-    // given
-    let tclFilePath = 'path/to/file.tcl';
+      // given
+      const tclFilePath = 'path/to/file.tcl';
+      const request = { method: 'GET',
+                        url: serviceConfig.testExecutionServiceUrl + '/status?resource=' + tclFilePath + '&wait=true' };
+      const mockResponse = { status: 'IDLE', path: tclFilePath };
 
-    // when
-    executionService.getStatus(tclFilePath)
+      // when
+      executionService.getStatus(tclFilePath)
 
-    // then
-    .then(response => {
-      expect(response.status).toBe(TestExecutionState.Idle);
-      expect(response.path).toBe(tclFilePath);
-    });
+      // then
+        .then(result => {
+          expect(result).toEqual({ status: TestExecutionState.Idle, path: tclFilePath });
+        });
 
-      httpMock.match({
-        url: serviceConfig.testExecutionServiceUrl + '/status?resource=' + tclFilePath + '&wait=true',
-        method: 'GET'
-      })[0].flush({ status: 'IDLE', path: tclFilePath });
+      httpMock.match(request)[0].flush(mockResponse);
   })));
 
-  it('Translates server response to "statusAll" request to properly typed map',
+  it('translates server response to "getAllStatus" request to properly typed array of TestExecutionStatus',
      fakeAsync(inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
+      const request = { method: 'GET',
+                        url: serviceConfig.testExecutionServiceUrl + '/status/all' };
+      const mockResponse = [{ status: 'FAILED',  path: 'failedTest.tcl' },
+                            { status: 'RUNNING', path: 'runningTest.tcl' },
+                            { status: 'SUCCESS', path: 'successfulTest.tcl' }];
 
       // when
       executionService.getAllStatus()
 
       // then
       .then(statusUpdates => {
-        expect(statusUpdates.length).toEqual(3);
-        // expect(statusUpdates.get('failedTest.tcl')).toEqual(ElementState.LastRunFailed);
-        // expect(statusUpdates.get('runningTest.tcl')).toEqual(ElementState.Running);
-        // expect(statusUpdates.get('successfulTest.tcl')).toEqual(ElementState.LastRunSuccessful);
-      });
-      httpMock.match({
-        method: 'GET',
-        url: serviceConfig.testExecutionServiceUrl + '/status/all'
-      })[0].flush([{ status: 'FAILED',  path: 'failedTest.tcl' },
-                   { status: 'RUNNING', path: 'runningTest.tcl' },
-                   { status: 'SUCCESS', path: 'successfulTest.tcl' }]);
-    })));
+        expect(statusUpdates).toEqual([{ status: TestExecutionState.LastRunFailed,     path: 'failedTest.tcl' },
+                                       { status: TestExecutionState.Running,           path: 'runningTest.tcl' },
+                                       { status: TestExecutionState.LastRunSuccessful, path: 'successfulTest.tcl' }]);
+
+      httpMock.match(request)[0].flush(mockResponse);
+  })})));
 });
