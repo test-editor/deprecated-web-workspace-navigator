@@ -64,9 +64,7 @@ return Promise.resolve()
         '@angular/core': 'ng.core',
         '@angular/common': 'ng.common',
         '@angular/forms': 'ng.forms',
-        '@angular/http': 'ng.http',
-        '@testeditor/messaging-service': 'te.messagingService',
-        'angular2-jwt': 'angular2-jwt'
+        '@testeditor/messaging-service': 'te.messagingService'
       }
     };
     const inputRollupBaseConfig = {
@@ -76,8 +74,6 @@ return Promise.resolve()
         '@angular/core',
         '@angular/common',
         '@angular/forms',
-        '@angular/http',
-        'angular2-jwt',
         'rxjs/add/operator/toPromise',
         '@testeditor/messaging-service'
       ],

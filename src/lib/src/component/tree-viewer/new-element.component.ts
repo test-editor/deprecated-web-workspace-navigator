@@ -15,7 +15,7 @@ import { Workspace } from '../../common/workspace';
 })
 export class NewElementComponent implements AfterViewInit {
 
-  @ViewChild("theInput") input: ElementRef;
+  @ViewChild('theInput') input: ElementRef;
   @Input() workspace: Workspace;
 
   errorMessage: string;
@@ -55,10 +55,10 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
-    this.persistenceService.createDocument(newPath, type).then(response => {
+    this.persistenceService.createResource(newPath, type).then(pathString => {
       this.remove();
       this.messagingService.publish(events.NAVIGATION_CREATED, {
-        path: response.text()
+        path: pathString
       });
     }).catch(() => {
       this.errorMessage = 'Error while creating element!';
@@ -72,10 +72,10 @@ export class NewElementComponent implements AfterViewInit {
   getPaddingLeft(): string {
     if (this.workspace.hasNewElementRequest()) {
       let selectedElement = this.workspace.getNewElement();
-      let isFileSelected = selectedElement && selectedElement.type == ElementType.File;
-      return isFileSelected ? "0px" : "12px";
+      let isFileSelected = selectedElement && selectedElement.type === ElementType.File;
+      return isFileSelected ? '0px' : '12px';
     }
-    return "0px";
+    return '0px';
   }
 
 }

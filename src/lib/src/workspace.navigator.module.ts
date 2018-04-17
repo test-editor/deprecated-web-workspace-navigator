@@ -1,7 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 
 import { NavigationComponent } from './component/navigation/navigation.component';
 import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.component';
@@ -10,7 +10,7 @@ import { PathValidator } from './component/tree-viewer/path-validator';
 import { PersistenceService } from './service/persistence/persistence.service';
 import { PersistenceServiceConfig } from './service/persistence/persistence.service.config';
 import { NewElementComponent } from './component/tree-viewer/new-element.component';
-import { TestExecutionService } from './service/execution/test.execution.service';
+import { DefaultTestExecutionService } from './service/execution/test.execution.service';
 import { TestExecutionServiceConfig } from './service/execution/test.execution.service.config';
 import { WindowService } from './service/browserObjectModel/window.service';
 import { DefaultWindowService } from './service/browserObjectModel/default.window.service';
@@ -21,7 +21,7 @@ import { IndicatorFieldSetup } from './common/markers/field';
   imports: [
     CommonModule,
     FormsModule,
-    HttpModule
+    HttpClientModule
   ],
   declarations: [
     NavigationComponent,
@@ -36,7 +36,9 @@ import { IndicatorFieldSetup } from './common/markers/field';
 })
 export class WorkspaceNavigatorModule {
 
-  static forRoot(persistanceConfig: PersistenceServiceConfig, testExecutionConfig: TestExecutionServiceConfig, indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
+  static forRoot(persistanceConfig: PersistenceServiceConfig,
+                 testExecutionConfig: TestExecutionServiceConfig,
+                 indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [
@@ -46,7 +48,7 @@ export class WorkspaceNavigatorModule {
         { provide: IndicatorFieldSetup, useValue: indicatorFieldSetup},
         PathValidator,
         PersistenceService,
-        TestExecutionService
+        DefaultTestExecutionService
       ]
     };
   }

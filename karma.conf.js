@@ -9,7 +9,7 @@ module.exports = function (config) {
     plugins: [
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
-      require('karma-firefox-launcher'), 
+      require('karma-firefox-launcher'),
       require('karma-jasmine-html-reporter')
     ],
 
@@ -47,9 +47,6 @@ module.exports = function (config) {
       { pattern: 'node_modules/rxjs/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/rxjs/**/*.js.map', included: false, watched: false },
 
-      // angular2-jwt
-      { pattern: 'node_modules/angular2-jwt/**/*.js', included: false, watched: false },
-
       // Paths loaded via module imports:
       // Angular itself
       { pattern: 'node_modules/@angular/**/*.js', included: false, watched: false },
@@ -59,6 +56,7 @@ module.exports = function (config) {
       { pattern: 'node_modules/@testeditor/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/ts-mockito/**/*.js', included: false, watched: false },
       { pattern: 'node_modules/lodash/**/*.js', included: false, watched: false },
+      { pattern: 'node_modules/tslib/**/*.js', included: false, watched: false },
 
       { pattern: 'src/demo/systemjs-angular-loader.js', included: false, watched: false },
 
