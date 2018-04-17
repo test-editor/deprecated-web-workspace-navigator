@@ -2,9 +2,15 @@ import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpClientModule }  from '@angular/common/http';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
+import { Conflict } from './conflict';
 
 import 'rxjs/add/operator/toPromise';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/catch';
 
+export const HTTP_STATUS_NO_CONTENT = 204;
+export const HTTP_STATUS_CONFLICT = 409;
+export const HTTP_HEADER_CONTENT_LOCATION = 'content-location';
 @Injectable()
 export class PersistenceService {
 
@@ -29,8 +35,18 @@ export class PersistenceService {
     return this.getHttpClient().get<WorkspaceElement>(this.listFilesUrl).toPromise();
   }
 
-  createResource(path: string, type: string): Promise<string> {
-    return this.getHttpClient().post(this.getURL(path), '', { responseType: 'text', params: { type: type } }).toPromise();
+  createResource(path: string, type: string): Observable<string | Conflict> {
+    return this.getHttpClient().post(this.getURL(path), '', {
+      observe: 'response',
+      responseType: 'text',
+      params: { type: type }
+    }).map(response => response.body).catch(response => {
+      if (response.status === HTTP_STATUS_CONFLICT) {
+        return Observable.of(new Conflict(response.error));
+      } else {
+        Observable.throw(new Error(response.body));
+      }
+    });
   }
 
   deleteResource(path: string): Promise<string> {
