@@ -64,7 +64,7 @@ export class DefaultTestExecutionService extends TestExecutionService {
       case 'RUNNING': return TestExecutionState.Running;
       case 'FAILED': return TestExecutionState.LastRunFailed;
       case 'SUCCESS': return TestExecutionState.LastRunSuccessful;
-      case 'IDLE': return TestExecutionState.Idle;
+      case 'IDLE':
       default: return TestExecutionState.Idle;
     }
   }
