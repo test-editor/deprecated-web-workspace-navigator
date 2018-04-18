@@ -20,8 +20,7 @@ import { IndicatorFieldSetup } from './common/markers/field';
 @NgModule({
   imports: [
     CommonModule,
-    FormsModule,
-    HttpClientModule
+    FormsModule
   ],
   declarations: [
     NavigationComponent,
