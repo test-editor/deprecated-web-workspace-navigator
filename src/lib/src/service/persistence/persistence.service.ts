@@ -4,9 +4,11 @@ import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
 import { Conflict } from './conflict';
 
+
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/of';
 
 export const HTTP_STATUS_NO_CONTENT = 204;
 export const HTTP_STATUS_CONFLICT = 409;
@@ -44,13 +46,23 @@ export class PersistenceService {
       if (response.status === HTTP_STATUS_CONFLICT) {
         return Observable.of(new Conflict(response.error));
       } else {
-        Observable.throw(new Error(response.body));
+        Observable.throw(new Error(response.error));
       }
     });
   }
 
-  deleteResource(path: string): Promise<string> {
-    return this.getHttpClient().delete(this.getURL(path), {responseType: 'text'}).toPromise();
+  deleteResource(path: string): Observable<string | Conflict> {
+    // return this.httpClient.delete(this.getURL(path), {responseType: 'text'}).toPromise();
+    return this.getHttpClient().delete(this.getURL(path),  {
+      observe: 'response',
+      responseType: 'text',
+      }).map(response => response.body).catch(response => {
+      if (response.status === HTTP_STATUS_CONFLICT) {
+        return Observable.of(new Conflict(response.error));
+      } else {
+        Observable.throw(new Error(response.error));
+      }
+    });
   }
 
   getBinaryResource(path: string): Promise<Blob> {

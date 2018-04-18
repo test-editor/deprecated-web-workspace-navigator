@@ -36,7 +36,7 @@ describe('PersistenceService', () => {
       persistenceService.deleteResource(tclFilePath)
 
         // then
-        .then(response => {
+        .subscribe(response => {
           expect(response).toBe('');
         });
 
@@ -58,7 +58,7 @@ describe('PersistenceService', () => {
         const expectedResult = new Conflict(message);
 
         // when
-        const actualObservableResult = persistenceService.createResource(tclFilePath, 'file')
+        const actualObservableResult = persistenceService.createResource(tclFilePath, 'file');
 
         // then
         actualObservableResult.subscribe(actualResult => {
@@ -68,6 +68,30 @@ describe('PersistenceService', () => {
         const actualRequest = httpMock.expectOne({ method: 'POST' });
         expect(actualRequest.request.url).toEqual('http://localhost:9080/documents/path/to/file.tcl');
         expect(actualRequest.request.params.get('type')).toEqual('file');
+        actualRequest.flush(message, {status: 409, statusText: 'Conflict'});
+      }));
+
+      it('deleteResource returns Conflict object if HTTP status code is CONFLICT',
+      inject([HttpTestingController, PersistenceService],
+      (httpMock: HttpTestingController, persistenceService: PersistenceService) => {
+        // given
+        let tclFilePath = 'path/to/file.tcl';
+        const url = `${serviceConfig.persistenceServiceUrl}/documents/${tclFilePath}`;
+        const message = `The file '${tclFilePath}' does not exist.`;
+        const mockResponse = new HttpResponse({ body: message, status: 409, statusText: 'Conflict' });
+
+        const expectedResult = new Conflict(message);
+
+        // when
+        const actualObservableResult = persistenceService.deleteResource(tclFilePath);
+
+        // then
+        actualObservableResult.subscribe(actualResult => {
+          expect(actualResult).toEqual(expectedResult);
+        });
+
+        const actualRequest = httpMock.expectOne({ method: 'DELETE' });
+        expect(actualRequest.request.url).toEqual('http://localhost:9080/documents/path/to/file.tcl');
         actualRequest.flush(message, {status: 409, statusText: 'Conflict'});
       }));
 });

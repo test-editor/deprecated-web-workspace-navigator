@@ -19,6 +19,8 @@ import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { IndicatorBoxComponent } from './indicator.box.component';
+import { Observable } from 'rxjs/Observable';
+import { Conflict } from '../../service/persistence/conflict';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -352,7 +354,7 @@ describe('TreeViewerComponent', () => {
 
   it('deletes element if confirmed', () => {
     // given
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Observable.throw('unsupported'));
     initWorkspaceWithElement(component, singleFile);
     component.confirmDelete = true;
     fixture.detectChanges();
@@ -384,7 +386,7 @@ describe('TreeViewerComponent', () => {
   it('displays error when deletion failed', (done: () => void) => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Observable.throw('unsupported'));
 
     // when
     component.onDeleteConfirm();
@@ -401,10 +403,32 @@ describe('TreeViewerComponent', () => {
     });
   });
 
+  it('displays error when deleted file is updated', (done: () => void) => {
+
+    const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.CONFLICT, callback);
+    when(persistenceService.deleteResource(anyString())).thenReturn(Observable.of(conflict));
+
+    // when
+    component.onDeleteConfirm();
+
+    // then
+    fixture.whenStable().then(() => {
+      fixture.whenStable().then(() => {
+        fixture.detectChanges();
+        expect(component.errorMessage).toEqual(conflict.message);
+        let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
+        expect(errorMessage).toBeTruthy();
+        done();
+      })
+    });
+  });
+
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(''));
+    when(persistenceService.deleteResource(anyString())).thenReturn(Observable.of(''));
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_DELETED, callback);
 
