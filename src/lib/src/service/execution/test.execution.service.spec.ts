@@ -2,7 +2,7 @@ import { TestExecutionService, TestExecutionState, DefaultTestExecutionService }
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Observable } from 'rxjs/Observable';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
-import { Injector, ReflectiveInjector } from '@angular/core';
+import { Injector } from '@angular/core';
 import { inject } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { fakeAsync } from '@angular/core/testing';
