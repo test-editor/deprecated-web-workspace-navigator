@@ -1,7 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 import { NavigationComponent } from './component/navigation/navigation.component';
 import { TreeViewerComponent } from './component/tree-viewer/tree-viewer.component';
@@ -37,14 +37,16 @@ export class WorkspaceNavigatorModule {
 
   static forRoot(persistanceConfig: PersistenceServiceConfig,
                  testExecutionConfig: TestExecutionServiceConfig,
-                 indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
+                 indicatorFieldSetup: IndicatorFieldSetup,
+                 httpClient: HttpClient): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [
         { provide: PersistenceServiceConfig, useValue: persistanceConfig },
         { provide: TestExecutionServiceConfig, useValue: testExecutionConfig },
-        { provide: WindowService, useClass: DefaultWindowService},
-        { provide: IndicatorFieldSetup, useValue: indicatorFieldSetup},
+        { provide: WindowService, useClass: DefaultWindowService },
+        { provide: IndicatorFieldSetup, useValue: indicatorFieldSetup },
+        { provide: HttpClient, useValue: httpClient },
         PathValidator,
         PersistenceService,
         DefaultTestExecutionService
