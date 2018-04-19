@@ -1,11 +1,9 @@
-import { Injectable, ReflectiveInjector, Type, Injector } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpClientModule }  from '@angular/common/http';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
 
 import 'rxjs/add/operator/toPromise';
-
-declare let Reflect: any;
 
 @Injectable()
 export class PersistenceService {
@@ -13,7 +11,7 @@ export class PersistenceService {
   private serviceUrl: string;
   private listFilesUrl: string;
 
-  private httpClientX: HttpClient;
+  private httpClient: HttpClient;
 
   constructor(config: PersistenceServiceConfig, private injector: Injector) {
     this.serviceUrl = config.persistenceServiceUrl;
@@ -21,10 +19,10 @@ export class PersistenceService {
   }
 
   private getHttpClient(): HttpClient {
-    if (!this.httpClientX) {
-      this.httpClientX = this.injector.get(HttpClient);
+    if (!this.httpClient) {
+      this.httpClient = this.injector.get(HttpClient);
     }
-    return this.httpClientX;
+    return this.httpClient;
   }
 
   listFiles(): Promise<WorkspaceElement> {
