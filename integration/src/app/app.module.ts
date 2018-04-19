@@ -18,7 +18,7 @@ import { testEditorIndicatorFieldSetup } from './indicator.field.setup';
     HttpClientModule,
     MessagingModule.forRoot(),
     WorkspaceNavigatorModule.forRoot({
-      persistenceServiceUrl: 'http://localhost:9080',
+      persistenceServiceUrl: 'http://localhost:9080'
     }, {
       testExecutionServiceUrl: 'http://localhost:9080/tests'
     }, testEditorIndicatorFieldSetup)

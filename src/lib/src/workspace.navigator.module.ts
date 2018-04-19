@@ -37,8 +37,7 @@ export class WorkspaceNavigatorModule {
 
   static forRoot(persistanceConfig: PersistenceServiceConfig,
                  testExecutionConfig: TestExecutionServiceConfig,
-                 indicatorFieldSetup: IndicatorFieldSetup,
-                 httpClient: HttpClient): ModuleWithProviders {
+                 indicatorFieldSetup: IndicatorFieldSetup): ModuleWithProviders {
     return {
       ngModule: WorkspaceNavigatorModule,
       providers: [
@@ -46,7 +45,6 @@ export class WorkspaceNavigatorModule {
         { provide: TestExecutionServiceConfig, useValue: testExecutionConfig },
         { provide: WindowService, useClass: DefaultWindowService },
         { provide: IndicatorFieldSetup, useValue: indicatorFieldSetup },
-        { provide: HttpClient, useValue: httpClient },
         PathValidator,
         PersistenceService,
         DefaultTestExecutionService
