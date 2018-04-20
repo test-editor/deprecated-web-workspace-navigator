@@ -1,6 +1,11 @@
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MessagingService } from '@testeditor/messaging-service';
+import { Observable } from 'rxjs/Observable';
+
+const HTTP_CLIENT_NEEDED = 'httpClient.needed';
+const HTTP_CLIENT_SUPPLIED = 'httpClient.supplied';
 
 export enum TestExecutionState {
   Idle = 0,
@@ -17,9 +22,9 @@ export interface TestExecutionStatus {
 
 
 export abstract class TestExecutionService {
-  abstract execute(path: string): Promise<any>;
-  abstract getStatus(path: string): Promise<TestExecutionStatus>;
-  abstract getAllStatus(): Promise<TestExecutionStatus[]>;
+  abstract execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void
+  abstract getStatus(path: string, onThen?: (status: TestExecutionStatus) => void, onError?: (error: any) => void): void
+  abstract getAllStatus(onThen?: (status: TestExecutionStatus[]) => void, onError?: (error: any) => void): void
 }
 
 
@@ -33,36 +38,58 @@ export class DefaultTestExecutionService extends TestExecutionService {
 
   private httpClient: HttpClient;
 
-  constructor(config: TestExecutionServiceConfig, private injector: Injector) {
+  constructor(config: TestExecutionServiceConfig, private messagingService: MessagingService) {
     super();
     this.serviceUrl = config.testExecutionServiceUrl;
   }
 
-  private getHttpClient(): HttpClient {
-    if (!this.httpClient) {
-      this.httpClient = this.injector.get(HttpClient);
-    }
-    return this.httpClient;
-  }
-
-  execute(path: string): Promise<any> {
-    return this.getHttpClient().post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
-  }
-
-  getStatus(path: string): Promise<TestExecutionStatus> {
-    return this.getHttpClient().get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
-      .toPromise().then(text => {
-        const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
-        return status;
+  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
+                            onThen?: (some: any) => void,
+                            onError?: (error: any) => void): void {
+    const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+      responseSubscription.unsubscribe();
+      onResponse(httpClientPayload.httpClient).then((some) => {
+        if (onThen) {
+          onThen(some);
+        }
+      }).catch((error) => {
+        if (onError) {
+          onError(error);
+        } else {
+          throw(error);
+        }
       });
+    });
+    this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
   }
 
-  getAllStatus(): Promise<TestExecutionStatus[]> {
-    return this.getHttpClient().get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise().then(statusResponse => {
+  execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute(httpClient => {
+      return httpClient.post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
+    }, onThen, onError );
+  }
+
+  getStatus(path: string,
+            onThen?: (status: TestExecutionStatus) => void,
+            onError?: (error: any) => void): void { // Promise<TestExecutionStatus> {
+    this.httpClientExecute(httpClient => {
+      return httpClient.get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
+        .toPromise();
+    }, text => {
+      const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
+      onThen(status);
+    }, onError);
+  }
+
+  getAllStatus(onThen?: (status: TestExecutionStatus[]) => void,
+               onError?: (error: any) => void): void { //  Promise<TestExecutionStatus[]> {
+    this.httpClientExecute(httpClient => {
+      return httpClient.get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise();
+    }, statusResponse => {
       const status: any[] = statusResponse;
       status.forEach((value) => { value.status = this.toTestExecutionState(value.status); });
-      return status;
-    });
+      onThen(status);
+    }, onError);
   }
 
   private getURL(workspaceElementPath: string, urlPath: string = ''): string {

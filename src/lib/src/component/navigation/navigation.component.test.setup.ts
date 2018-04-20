@@ -108,30 +108,6 @@ export function mockWorkspaceReloadRequestOnce(messagingService: MessagingServic
 });
 }
 
-export function mockedTestExecutionService() {
-  const executionService = mock(TestExecutionService);
-  setTestExecutionServiceResponse(executionService, HTTP_STATUS_CREATED​​);
-  mockTestStatusServiceWithRunningRunningSuccessSequence(executionService);
-  when(executionService.getAllStatus()).thenReturn(Promise.resolve([]));
-  return executionService;
-}
-
-export function setTestExecutionServiceResponse(service: TestExecutionService, statusCode: number) {
-  when(service.execute(tclFile.path)).thenReturn(Promise.resolve(statusCode));
-}
-
-export function mockTestStatusServiceWithRunningRunningSuccessSequence(service: TestExecutionService) {
-  when(service.getStatus(tclFile.path))
-      .thenReturn(Promise.resolve(responseBeforeTermination))
-      .thenReturn(Promise.resolve(responseBeforeTermination))
-      .thenReturn(Promise.resolve(responseAfterTermination));
-}
-
-export function mockTestStatusServiceWithPromiseRunning(service: TestExecutionService, delayMillis: number) {
-  when(service.getStatus(tclFile.path))
-      .thenCall(() => new Promise(resolve => setTimeout(() => resolve(responseBeforeTermination), delayMillis)));
-}
-
 export function setupWorkspace(component: NavigationComponent, messagingService: MessagingService,
   fixture: ComponentFixture<NavigationComponent>): void {
 
