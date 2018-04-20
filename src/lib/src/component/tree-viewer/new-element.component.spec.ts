@@ -262,7 +262,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource(anyString(), anyString())).never();
+    verify(persistenceService.createResource(anyString(), anyString(), anyFunction(), anyFunction())).never();
   });
 
 });

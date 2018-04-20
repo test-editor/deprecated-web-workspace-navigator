@@ -23,7 +23,10 @@ describe('Workspace Navigator tests', function () {
     let heightPromise = browser.executeScript(
       'var result = 1; \
        if (window.module != "aot") { \
-         result = parseInt(window.getComputedStyle(document.getElementById("new-file", null)).getPropertyValue("height"), 10); \
+         var element = document.getElementById("new-file", null); \
+         if (element) { \
+           result = parseInt(window.getComputedStyle(element).getPropertyValue("height"), 10); \
+         } \
        } \
        return result;'
     )

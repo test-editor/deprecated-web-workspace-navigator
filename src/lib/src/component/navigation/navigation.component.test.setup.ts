@@ -97,7 +97,6 @@ const responseAfterTermination = { path: tclFile.path, status: TestExecutionStat
 
 export function mockedPersistenceService() {
   const persistenceService = mock(PersistenceService);
-  when(persistenceService.listFiles()).thenReturn(Promise.resolve(tclFile));
   return persistenceService;
 }
 

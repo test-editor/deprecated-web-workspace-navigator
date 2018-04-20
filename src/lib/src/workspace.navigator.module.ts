@@ -21,8 +21,8 @@ import { HttpClientModule } from '@angular/common/http/src/module';
 @NgModule({
   imports: [
     CommonModule,
-    FormsModule,
-    HttpClientModule
+    FormsModule
+    // HttpClientModule
   ],
   declarations: [
     NavigationComponent,
