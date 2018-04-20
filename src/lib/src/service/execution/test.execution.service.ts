@@ -46,21 +46,32 @@ export class DefaultTestExecutionService extends TestExecutionService {
   private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
                             onThen?: (some: any) => void,
                             onError?: (error: any) => void): void {
-    const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
-      responseSubscription.unsubscribe();
-      onResponse(httpClientPayload.httpClient).then((some) => {
-        if (onThen) {
-          onThen(some);
-        }
-      }).catch((error) => {
-        if (onError) {
-          onError(error);
-        } else {
-          throw(error);
-        }
+    if (this.httpClient) {
+      this.httpClientExecuteCached(onResponse, onThen, onError);
+    } else {
+      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+        responseSubscription.unsubscribe();
+        this.httpClient = httpClientPayload.httpClient;
+        this.httpClientExecuteCached(onResponse, onThen, onError);
       });
+      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
+    }
+  }
+
+  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
+                                  onThen?: (some: any) => void,
+                                  onError?: (error: any) => void): void {
+    onResponse(this.httpClient).then((some) => {
+      if (onThen) {
+        onThen(some);
+      }
+    }).catch((error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        throw(error);
+      }
     });
-    this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
   }
 
   execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void {

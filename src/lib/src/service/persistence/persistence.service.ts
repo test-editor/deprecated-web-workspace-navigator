@@ -4,6 +4,10 @@ import { WorkspaceElement } from '../../common/workspace-element';
 import { PersistenceServiceConfig } from './persistence.service.config';
 
 import 'rxjs/add/operator/toPromise';
+import { MessagingService } from '@testeditor/messaging-service';
+
+const HTTP_CLIENT_NEEDED = 'httpClient.needed';
+const HTTP_CLIENT_SUPPLIED = 'httpClient.supplied';
 
 @Injectable()
 export class PersistenceService {
@@ -13,32 +17,58 @@ export class PersistenceService {
 
   private httpClient: HttpClient;
 
-  constructor(config: PersistenceServiceConfig, private injector: Injector) {
+  constructor(config: PersistenceServiceConfig, private messagingService: MessagingService) {
     this.serviceUrl = config.persistenceServiceUrl;
     this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
   }
 
-  private getHttpClient(): HttpClient {
-    if (!this.httpClient) {
-      this.httpClient = this.injector.get(HttpClient);
+  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
+                            onThen?: (some: any) => void,
+                            onError?: (error: any) => void): void {
+    if (this.httpClient) {
+      this.httpClientExecuteCached(onResponse, onThen, onError);
+    } else {
+      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+        responseSubscription.unsubscribe();
+        this.httpClient = httpClientPayload.httpClient;
+        this.httpClientExecuteCached(onResponse, onThen, onError);
+      });
+      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
     }
-    return this.httpClient;
   }
 
-  listFiles(): Promise<WorkspaceElement> {
-    return this.getHttpClient().get<WorkspaceElement>(this.listFilesUrl).toPromise();
+  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
+                                  onThen?: (some: any) => void,
+                                  onError?: (error: any) => void): void {
+    onResponse(this.httpClient).then((some) => {
+      if (onThen) {
+        onThen(some);
+      }
+    }).catch((error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        throw(error);
+      }
+    });
   }
 
-  createResource(path: string, type: string): Promise<string> {
-    return this.getHttpClient().post(this.getURL(path), '', { responseType: 'text', params: { type: type } }).toPromise();
+  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) { // : Promise<WorkspaceElement> {
+    this.httpClientExecute( httpClient => httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise(), onThen, onError);
   }
 
-  deleteResource(path: string): Promise<string> {
-    return this.getHttpClient().delete(this.getURL(path), {responseType: 'text'}).toPromise();
+  createResource(path: string, type: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute(
+      httpClient => httpClient.post(this.getURL(path), '', { responseType: 'text', params: { type: type } }).toPromise(),
+      onThen, onError);
   }
 
-  getBinaryResource(path: string): Promise<Blob> {
-    return this.getHttpClient().get(this.getURL(path), { responseType: 'blob' }).toPromise();
+  deleteResource(path: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute( httpClient => httpClient.delete(this.getURL(path), {responseType: 'text'}).toPromise(), onThen, onError);
+  }
+
+  getBinaryResource(path: string, onThen: (blob: Blob) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute( httpClient => httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise(), onThen, onError);
   }
 
   private getURL(path: string): string {

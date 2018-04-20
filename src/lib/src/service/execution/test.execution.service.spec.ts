@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { TestExecutionService, TestExecutionState, DefaultTestExecutionService } from './test.execution.service';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Observable } from 'rxjs/Observable';
@@ -15,7 +15,7 @@ describe('TestExecutionService', () => {
   let messagingService: MessagingService;
   let httpClient: HttpClient;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     serviceConfig = new TestExecutionServiceConfig();
     serviceConfig.testExecutionServiceUrl = 'http://localhost:9080/tests';
 
@@ -30,13 +30,15 @@ describe('TestExecutionService', () => {
         { provide: TestExecutionService, useClass: DefaultTestExecutionService },
         HttpClient
       ]
-    }).compileComponents();
+    });
 
-  }));
-
-  beforeEach(() => {
     messagingService = TestBed.get(MessagingService);
     httpClient = TestBed.get(HttpClient);
+
+    const subscription = messagingService.subscribe('httpClient.needed', () => {
+      subscription.unsubscribe();
+      messagingService.publish('httpClient.supplied', { httpClient: httpClient });
+    });
   });
 
   it('invokes REST endpoint with encoded path', fakeAsync(inject([HttpTestingController, TestExecutionService],
@@ -46,10 +48,6 @@ describe('TestExecutionService', () => {
       const request = { method: 'POST',
                         url: serviceConfig.testExecutionServiceUrl + '/execute?resource=path/to/file%3F.tcl' };
       const mockResponse = 'something'
-      const subscription = messagingService.subscribe('httpClient.needed', () => {
-        subscription.unsubscribe();
-        messagingService.publish('httpClient.supplied', { httpClient: httpClient });
-      });
 
       // when
       executionService.execute(
@@ -70,10 +68,6 @@ describe('TestExecutionService', () => {
       const request = { method: 'GET',
                         url: serviceConfig.testExecutionServiceUrl + '/status?resource=' + tclFilePath + '&wait=true' };
       const mockResponse = { status: 'IDLE', path: tclFilePath };
-      const subscription = messagingService.subscribe('httpClient.needed', () => {
-        subscription.unsubscribe();
-        messagingService.publish('httpClient.supplied', { httpClient: httpClient });
-      });
 
       // when
       executionService.getStatus(
@@ -96,10 +90,6 @@ describe('TestExecutionService', () => {
       const mockResponse = [{ status: 'FAILED',  path: 'failedTest.tcl' },
                             { status: 'RUNNING', path: 'runningTest.tcl' },
                             { status: 'SUCCESS', path: 'successfulTest.tcl' }];
-      const subscription = messagingService.subscribe('httpClient.needed', () => {
-        subscription.unsubscribe();
-        messagingService.publish('httpClient.supplied', { httpClient: httpClient });
-      });
 
       // when
       executionService.getAllStatus(

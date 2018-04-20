@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing'
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { mock, instance, verify, when, anyString, anything, deepEqual, strictEqual, capture } from 'ts-mockito';
+import { anyFunction, mock, instance, verify, when, anyString, anything, deepEqual, strictEqual, capture } from 'ts-mockito';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
@@ -274,18 +274,19 @@ describe('TreeViewerComponent', () => {
   it('onDoubleClick() on image file opens it in a new tab/window', async(() => {
     // given
     initWorkspaceWithElement(component, imageFile);
-    let response = mock(Response);
+    // let response = mock(Response);
     // some random bytes to stand in for an actual png
-    let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
-    when(response.blob()).thenReturn(Promise.resolve(imageBlob));
-    when(persistenceService.getBinaryResource(component.elementPath)).thenReturn(Promise.resolve(imageBlob));
+    // let imageBlob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00])], { type: 'image/png' });
+    // when(response.blob()).thenReturn(Promise.resolve(imageBlob));
+    let triedToOpenBinary: boolean = false;
+    when(persistenceService.getBinaryResource(component.elementPath, anyFunction())).thenCall(()=> { triedToOpenBinary = true; });
 
     // when
     component.onDoubleClick();
 
     // then
     fixture.whenStable().then(() => {
-      verify(windowService.open(anything())).once();
+      expect(triedToOpenBinary).toBeTruthy();
     });
   }));
 
@@ -347,12 +348,14 @@ describe('TreeViewerComponent', () => {
     fixture.detectChanges();
     let confirm = fixture.debugElement.query(By.css('.tree-view .confirm-delete'));
     expect(confirm).toBeTruthy();
-    verify(persistenceService.deleteResource(anyString())).never();
+    verify(persistenceService.deleteResource(anyString(), anyFunction())).never();
   });
 
-  it('deletes element if confirmed', () => {
+  it('deletes element if confirmed', async(() => {
     // given
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
+    let deleteSingleFileCalled: boolean = false;
+    when(persistenceService.deleteResource(singleFile.path, anyFunction(), anyFunction())).thenCall(
+      () => { deleteSingleFileCalled = true; });
     initWorkspaceWithElement(component, singleFile);
     component.confirmDelete = true;
     fixture.detectChanges();
@@ -363,8 +366,9 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(component.confirmDelete).toBeFalsy();
-    verify(persistenceService.deleteResource(singleFile.path)).once();
-  });
+    fixture.whenStable().then(
+      () => expect(deleteSingleFileCalled).toBeTruthy());
+  }));
 
   it('does not delete element when cancelled', () => {
     // given
@@ -378,16 +382,17 @@ describe('TreeViewerComponent', () => {
 
     // then
     expect(component.confirmDelete).toBeFalsy();
-    verify(persistenceService.deleteResource(anyString())).never();
+    verify(persistenceService.deleteResource(anyString(), anyFunction())).never();
   });
 
   it('displays error when deletion failed', (done: () => void) => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.reject('unsupported'));
 
     // when
     component.onDeleteConfirm();
+    const [pathString, thenFunction, errorFunction] = capture(persistenceService.deleteResource).last();
+    errorFunction.apply('failed');
 
     // then
     fixture.whenStable().then(() => {
@@ -404,12 +409,13 @@ describe('TreeViewerComponent', () => {
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given
     initWorkspaceWithElement(component, singleFile);
-    when(persistenceService.deleteResource(anyString())).thenReturn(Promise.resolve(''));
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_DELETED, callback);
 
     // when
     component.onDeleteConfirm();
+    const [path, onSuccess, onError] = capture(persistenceService.deleteResource).last();
+    onSuccess.apply('')
 
     // then
     fixture.whenStable().then(() => {

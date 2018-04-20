@@ -1,7 +1,7 @@
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
-import { mock, instance, verify, when, anyString } from 'ts-mockito';
+import { capture, anyFunction, mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
 import { testBedSetup } from './tree-viewer.component.spec';
 
@@ -58,7 +58,7 @@ describe('NewElementComponent', () => {
     return element.nativeElement.offsetWidth > 0 && element.nativeElement.offsetHeight > 0;
   }
 
-  it('focuses on the input after view initialized', () => {
+  it('focuses on the input after view initialized', async(() => {
     // given
     let focusSpy = spyOn(input.nativeElement, 'focus');
 
@@ -66,8 +66,9 @@ describe('NewElementComponent', () => {
     component.ngAfterViewInit();
 
     // then
-    expect(focusSpy).toHaveBeenCalled();
-  });
+    fixture.whenStable().then(()=>{
+      expect(focusSpy).toHaveBeenCalled()});
+  }));
 
   it('removes itself when focus is lost', () => {
     // when
@@ -136,7 +137,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('something-new.txt', 'file')).once();
+    verify(persistenceService.createResource('something-new.txt', 'file', anyFunction(), anyFunction())).once();
   });
 
   it('calls createDocument with type folder when enter is pressed', () => {
@@ -148,7 +149,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('newFolder', ElementType.Folder)).once();
+    verify(persistenceService.createResource('newFolder', ElementType.Folder, anyFunction(), anyFunction())).once();
   });
 
   it('calls createDocument with the proper path when enter is pressed', () => {
@@ -162,17 +163,18 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('some/path/something-new.txt', ElementType.File)).once();
+    verify(persistenceService.createResource('some/path/something-new.txt', ElementType.File, anyFunction(), anyFunction())).once();
   });
 
   it('removes itself and emits navigation.created event when createDocument returns', async(() => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
-    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Promise.resolve('some/path'));
 
     // when
     component.onEnter();
+    const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
+    onSuccess.apply(null, ['some/path']);
 
     // then
     fixture.whenStable().then(() => {
@@ -185,10 +187,11 @@ describe('NewElementComponent', () => {
 
   it('signals an error when createDocument failed', async(() => {
     // given
-    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Promise.reject('failed'));
 
     // when
     component.onEnter();
+    const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
+    onError.apply('failed');
 
     // then
     fixture.whenStable().then(() => {
