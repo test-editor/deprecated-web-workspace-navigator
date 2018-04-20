@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, inject, fakeAsync, tick, flush } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
@@ -403,27 +403,22 @@ describe('TreeViewerComponent', () => {
     });
   });
 
-  it('displays error when deleted file is updated', (done: () => void) => {
+  it('displays error when deleteDocument returns with a conflict', fakeAsync(() => {
 
-    const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
-    let callback = jasmine.createSpy('callback');
-    messagingService.subscribe(events.CONFLICT, callback);
+    const conflict = new Conflict(`The file 'something-new.txt' already exists.`);
     when(persistenceService.deleteResource(anyString())).thenReturn(Observable.of(conflict));
 
     // when
     component.onDeleteConfirm();
 
     // then
-    fixture.whenStable().then(() => {
-      fixture.whenStable().then(() => {
-        fixture.detectChanges();
-        expect(component.errorMessage).toEqual(conflict.message);
-        let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
-        expect(errorMessage).toBeTruthy();
-        done();
-      })
-    });
-  });
+    tick();
+    fixture.detectChanges();
+    expect(component.errorMessage).toEqual(conflict.message);
+    let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
+    expect(errorMessage).toBeTruthy();
+    flush();
+  }));
 
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given

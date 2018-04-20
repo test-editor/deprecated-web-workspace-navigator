@@ -202,12 +202,13 @@ describe('NewElementComponent', () => {
     });
   }));
 
-  it('emits persistence.conflict event when createDocument returns with a conflict', async(() => {
+  it('displays error and refreshes workspace when createDocument returns with a conflict', async(() => {
     // given
     const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
     let callback = jasmine.createSpy('callback');
-    messagingService.subscribe(events.CONFLICT, callback);
+    messagingService.subscribe(events.NAVIGATION_CREATED, callback);
     when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.of(conflict));
+    component.input.nativeElement.value = 'path/to/fileThatAlreadyExists'
 
     // when
     component.onEnter();
@@ -215,9 +216,10 @@ describe('NewElementComponent', () => {
     // then
     fixture.whenStable().then(() => {
       expect(callback).toHaveBeenCalledTimes(1);
-      let expectedPayload = jasmine.objectContaining(conflict);
+      let expectedPayload = jasmine.objectContaining({ path: 'path/to/fileThatAlreadyExists' });
       expect(callback).toHaveBeenCalledWith(expectedPayload);
-      expect(component.workspace.hasNewElementRequest()).toBeFalsy();
+      expect(component.errorMessage).toEqual(conflict.message);
+      expect(component.input.nativeElement.value).toEqual('');
     });
   }));
 

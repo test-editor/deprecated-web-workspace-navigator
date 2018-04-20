@@ -52,7 +52,6 @@ export class PersistenceService {
   }
 
   deleteResource(path: string): Observable<string | Conflict> {
-    // return this.httpClient.delete(this.getURL(path), {responseType: 'text'}).toPromise();
     return this.getHttpClient().delete(this.getURL(path),  {
       observe: 'response',
       responseType: 'text',

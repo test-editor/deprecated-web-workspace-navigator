@@ -57,14 +57,16 @@ export class NewElementComponent implements AfterViewInit {
 
   private sendCreateRequest(newPath: string, type: string): void {
     this.persistenceService.createResource(newPath, type).subscribe(result => {
-      this.remove();
+      let createdPath: string;
       if (isConflict(result)) {
-        this.messagingService.publish(events.CONFLICT, result);
+        this.errorMessage = result.message;
+        this.input.nativeElement.value = '';
+        createdPath = newPath;
       } else {
-        this.messagingService.publish(events.NAVIGATION_CREATED, {
-            path: <string>result
-        });
+        this.remove();
+        createdPath = result;
       }
+      this.messagingService.publish(events.NAVIGATION_CREATED, { path: createdPath });
     }, () => this.errorMessage = 'Error while creating element!');
   }
 
