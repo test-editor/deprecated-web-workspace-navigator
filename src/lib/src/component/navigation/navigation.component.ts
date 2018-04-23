@@ -30,6 +30,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
   errorMessage: string;
   notification: string;
+  private workspaceReloadResponse = (root: WorkspaceElement) => this.defaultWorkspaceReloadResponse(root);
 
   constructor(
     private messagingService: MessagingService,
@@ -40,8 +41,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.retrieveWorkspaceRoot();
     this.subscribeToEvents();
+    this.retrieveWorkspaceRoot();
   }
 
   ngOnDestroy(): void {
@@ -50,19 +51,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   retrieveWorkspaceRoot(onResponse?: (root: WorkspaceElement) => void): void {
-    const responseSubscription = this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
-      responseSubscription.unsubscribe();
-      if (onResponse != null) {
-        onResponse(root);
-      } else {
-        this.onWorkspaceReloadResponse(root);
-      }
-
-    });
+    if (onResponse != null) {
+      this.workspaceReloadResponse = onResponse;
+    }
     this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, null);
   }
 
-  private onWorkspaceReloadResponse(root: WorkspaceElement) {
+  private defaultWorkspaceReloadResponse(root: WorkspaceElement) {
     if (this.isWorkspaceElement(root)) {
       this.workspace.reload(root);
     } else {
@@ -79,6 +74,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   subscribeToEvents(): void {
+    this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
+      this.workspaceReloadResponse(root);
+      this.workspaceReloadResponse = (root_) => this.defaultWorkspaceReloadResponse(root_);
+    });
     this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
       this.workspace.setActive(element.path);
       this.workspace.setSelected(null);
@@ -106,7 +105,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.workspace.setDirty(element.path, false);
       this.workspace.setExpanded(element.path, false);
       this.retrieveWorkspaceRoot((root) => {
-        this.onWorkspaceReloadResponse(root);
+        this.defaultWorkspaceReloadResponse(root);
         this.changeDetectorRef.detectChanges();
       });
     });
@@ -137,7 +136,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   handleNavigationCreated(payload: any): void {
     this.retrieveWorkspaceRoot((root: WorkspaceElement) => {
-      this.onWorkspaceReloadResponse(root);
+      this.defaultWorkspaceReloadResponse(root);
       if (root) {
         this.revealElement(payload.path);
         this.selectElement(payload.path);
