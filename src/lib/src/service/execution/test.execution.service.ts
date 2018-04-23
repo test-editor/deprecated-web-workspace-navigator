@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { MessagingService } from '@testeditor/messaging-service';
 import { Observable } from 'rxjs/Observable';
 
+// code duplication with persistence service and test-editor-web, removal planned with next refactoring
 const HTTP_CLIENT_NEEDED = 'httpClient.needed';
 const HTTP_CLIENT_SUPPLIED = 'httpClient.supplied';
 
@@ -36,42 +37,11 @@ export class DefaultTestExecutionService extends TestExecutionService {
   private static readonly statusAllURLPath = '/status/all';
   private serviceUrl: string;
 
-  private httpClient: HttpClient;
+  private cachedHttpClient: HttpClient;
 
   constructor(config: TestExecutionServiceConfig, private messagingService: MessagingService) {
     super();
     this.serviceUrl = config.testExecutionServiceUrl;
-  }
-
-  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
-                            onThen?: (some: any) => void,
-                            onError?: (error: any) => void): void {
-    if (this.httpClient) {
-      this.httpClientExecuteCached(onResponse, onThen, onError);
-    } else {
-      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
-        responseSubscription.unsubscribe();
-        this.httpClient = httpClientPayload.httpClient;
-        this.httpClientExecuteCached(onResponse, onThen, onError);
-      });
-      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
-    }
-  }
-
-  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
-                                  onThen?: (some: any) => void,
-                                  onError?: (error: any) => void): void {
-    onResponse(this.httpClient).then((some) => {
-      if (onThen) {
-        onThen(some);
-      }
-    }).catch((error) => {
-      if (onError) {
-        onError(error);
-      } else {
-        throw(error);
-      }
-    });
   }
 
   execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void {
@@ -116,6 +86,38 @@ export class DefaultTestExecutionService extends TestExecutionService {
       case 'IDLE':
       default: return TestExecutionState.Idle;
     }
+  }
+
+  // code duplication with persistence service, removal planned with next refactoring
+  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
+                            onThen?: (some: any) => void,
+                            onError?: (error: any) => void): void {
+    if (this.cachedHttpClient) {
+      this.httpClientExecuteCached(onResponse, onThen, onError);
+    } else {
+      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+        responseSubscription.unsubscribe();
+        this.cachedHttpClient = httpClientPayload.httpClient;
+        this.httpClientExecuteCached(onResponse, onThen, onError);
+      });
+      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
+    }
+  }
+
+  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
+                                  onThen?: (some: any) => void,
+                                  onError?: (error: any) => void): void {
+    onResponse(this.cachedHttpClient).then((some) => {
+      if (onThen) {
+        onThen(some);
+      }
+    }).catch((error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        throw(error);
+      }
+    });
   }
 
 }

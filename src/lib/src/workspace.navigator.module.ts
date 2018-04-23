@@ -16,13 +16,11 @@ import { WindowService } from './service/browserObjectModel/window.service';
 import { DefaultWindowService } from './service/browserObjectModel/default.window.service';
 import { IndicatorBoxComponent } from './component/tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from './common/markers/field';
-import { HttpClientModule } from '@angular/common/http/src/module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule
-    // HttpClientModule
   ],
   declarations: [
     NavigationComponent,

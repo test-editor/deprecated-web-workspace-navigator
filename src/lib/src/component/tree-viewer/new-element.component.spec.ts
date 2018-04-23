@@ -1,6 +1,6 @@
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { async, TestBed, ComponentFixture } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture, tick } from '@angular/core/testing';
 import { capture, anyFunction, mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
 import { testBedSetup } from './tree-viewer.component.spec';
@@ -58,7 +58,7 @@ describe('NewElementComponent', () => {
     return element.nativeElement.offsetWidth > 0 && element.nativeElement.offsetHeight > 0;
   }
 
-  it('focuses on the input after view initialized', async(() => {
+  it('focuses on the input after view initialized', () => {
     // given
     let focusSpy = spyOn(input.nativeElement, 'focus');
 
@@ -66,9 +66,8 @@ describe('NewElementComponent', () => {
     component.ngAfterViewInit();
 
     // then
-    fixture.whenStable().then(()=>{
-      expect(focusSpy).toHaveBeenCalled()});
-  }));
+    expect(focusSpy).toHaveBeenCalled();
+  });
 
   it('removes itself when focus is lost', () => {
     // when
@@ -173,6 +172,8 @@ describe('NewElementComponent', () => {
 
     // when
     component.onEnter();
+
+    // and given that
     const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
     onSuccess.apply(null, ['some/path']);
 
@@ -190,6 +191,8 @@ describe('NewElementComponent', () => {
 
     // when
     component.onEnter();
+
+    // and given that
     const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
     onError.apply('failed');
 

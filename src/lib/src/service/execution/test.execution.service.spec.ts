@@ -42,7 +42,7 @@ describe('TestExecutionService', () => {
   });
 
   it('invokes REST endpoint with encoded path', fakeAsync(inject([HttpTestingController, TestExecutionService],
-      (httpMock: HttpTestingController, executionService: TestExecutionService) => {
+    (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
       const tclFilePath = 'path/to/file?.tcl';
       const request = { method: 'POST',

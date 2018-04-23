@@ -6,6 +6,7 @@ import { PersistenceServiceConfig } from './persistence.service.config';
 import 'rxjs/add/operator/toPromise';
 import { MessagingService } from '@testeditor/messaging-service';
 
+// code duplication with test execution service and test-editor-web, removal planned with next refactoring
 const HTTP_CLIENT_NEEDED = 'httpClient.needed';
 const HTTP_CLIENT_SUPPLIED = 'httpClient.supplied';
 
@@ -15,42 +16,11 @@ export class PersistenceService {
   private serviceUrl: string;
   private listFilesUrl: string;
 
-  private httpClient: HttpClient;
+  private cachedHttpClient: HttpClient;
 
   constructor(config: PersistenceServiceConfig, private messagingService: MessagingService) {
     this.serviceUrl = config.persistenceServiceUrl;
     this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
-  }
-
-  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
-                            onThen?: (some: any) => void,
-                            onError?: (error: any) => void): void {
-    if (this.httpClient) {
-      this.httpClientExecuteCached(onResponse, onThen, onError);
-    } else {
-      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
-        responseSubscription.unsubscribe();
-        this.httpClient = httpClientPayload.httpClient;
-        this.httpClientExecuteCached(onResponse, onThen, onError);
-      });
-      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
-    }
-  }
-
-  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
-                                  onThen?: (some: any) => void,
-                                  onError?: (error: any) => void): void {
-    onResponse(this.httpClient).then((some) => {
-      if (onThen) {
-        onThen(some);
-      }
-    }).catch((error) => {
-      if (onError) {
-        onError(error);
-      } else {
-        throw(error);
-      }
-    });
   }
 
   listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) { // : Promise<WorkspaceElement> {
@@ -74,6 +44,38 @@ export class PersistenceService {
   private getURL(path: string): string {
     let encodedPath = path.split('/').map(encodeURIComponent).join('/');
     return `${this.serviceUrl}/documents/${encodedPath}`;
+  }
+
+  // code duplication with test execution service, removal planned with next refactoring
+  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
+                            onThen?: (some: any) => void,
+                            onError?: (error: any) => void): void {
+    if (this.cachedHttpClient) {
+      this.httpClientExecuteCached(onResponse, onThen, onError);
+    } else {
+      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+        responseSubscription.unsubscribe();
+        this.cachedHttpClient = httpClientPayload.httpClient;
+        this.httpClientExecuteCached(onResponse, onThen, onError);
+      });
+      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
+    }
+  }
+
+  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
+                                  onThen?: (some: any) => void,
+                                  onError?: (error: any) => void): void {
+    onResponse(this.cachedHttpClient).then((some) => {
+      if (onThen) {
+        onThen(some);
+      }
+    }).catch((error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        throw(error);
+      }
+    });
   }
 
 }
