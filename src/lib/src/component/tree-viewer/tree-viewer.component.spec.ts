@@ -415,7 +415,7 @@ describe('TreeViewerComponent', () => {
     tick();
     fixture.detectChanges();
     expect(component.errorMessage).toEqual(conflict.message);
-    let errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
+    const errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
     expect(errorMessage).toBeTruthy();
     flush();
   }));

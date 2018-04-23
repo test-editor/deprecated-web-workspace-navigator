@@ -42,7 +42,8 @@ export class PersistenceService {
       observe: 'response',
       responseType: 'text',
       params: { type: type }
-    }).map(response => response.body).catch(response => {
+    }).map(response => response.body)
+    .catch(response => {
       if (response.status === HTTP_STATUS_CONFLICT) {
         return Observable.of(new Conflict(response.error));
       } else {
@@ -55,7 +56,8 @@ export class PersistenceService {
     return this.getHttpClient().delete(this.getURL(path),  {
       observe: 'response',
       responseType: 'text',
-      }).map(response => response.body).catch(response => {
+      }).map(response => response.body)
+      .catch(response => {
       if (response.status === HTTP_STATUS_CONFLICT) {
         return Observable.of(new Conflict(response.error));
       } else {

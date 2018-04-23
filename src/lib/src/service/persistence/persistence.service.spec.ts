@@ -66,7 +66,7 @@ describe('PersistenceService', () => {
     });
 
     const actualRequest = httpMock.expectOne({ method: 'POST' });
-    expect(actualRequest.request.url).toEqual('http://localhost:9080/documents/path/to/file.tcl');
+    expect(actualRequest.request.url).toEqual(url);
     expect(actualRequest.request.params.get('type')).toEqual('file');
     actualRequest.flush(message, {status: 409, statusText: 'Conflict'});
   }));
@@ -91,7 +91,7 @@ describe('PersistenceService', () => {
     });
 
     const actualRequest = httpMock.expectOne({ method: 'DELETE' });
-    expect(actualRequest.request.url).toEqual('http://localhost:9080/documents/path/to/file.tcl');
+    expect(actualRequest.request.url).toEqual(url);
     actualRequest.flush(message, {status: 409, statusText: 'Conflict'});
   }));
 });
