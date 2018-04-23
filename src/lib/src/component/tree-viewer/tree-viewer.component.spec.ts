@@ -388,8 +388,8 @@ describe('TreeViewerComponent', () => {
     component.onDeleteConfirm();
 
     // and given that
-    const [pathString, thenFunction, errorFunction] = capture(persistenceService.deleteResource).last();
-    errorFunction.apply('failed');
+    const [pathString, onSuccess, onError] = capture(persistenceService.deleteResource).last();
+    onError('failed');
 
     // then
     fixture.whenStable().then(() => {
@@ -414,7 +414,7 @@ describe('TreeViewerComponent', () => {
 
     // and given that
     const [path, onSuccess, onError] = capture(persistenceService.deleteResource).last();
-    onSuccess.apply('')
+    onSuccess('');
 
     // then
     fixture.whenStable().then(() => {

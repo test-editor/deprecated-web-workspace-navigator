@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TestExecutionService, TestExecutionState, DefaultTestExecutionService } from './test.execution.service';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Observable } from 'rxjs/Observable';
@@ -41,7 +41,7 @@ describe('TestExecutionService', () => {
     });
   });
 
-  it('invokes REST endpoint with encoded path', fakeAsync(inject([HttpTestingController, TestExecutionService],
+  it('invokes REST endpoint with encoded path', inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
       const tclFilePath = 'path/to/file?.tcl';
@@ -59,9 +59,9 @@ describe('TestExecutionService', () => {
         });
 
       httpMock.match(request)[0].flush(mockResponse);
-  })));
+  }));
 
-  it('invokes REST test status endpoint', fakeAsync(inject([HttpTestingController, TestExecutionService],
+  it('invokes REST test status endpoint', inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
       const tclFilePath = 'path/to/file.tcl';
@@ -79,10 +79,10 @@ describe('TestExecutionService', () => {
         });
 
       httpMock.match(request)[0].flush(mockResponse);
-  })));
+  }));
 
   it('translates server response to "getAllStatus" request to properly typed array of TestExecutionStatus',
-     fakeAsync(inject([HttpTestingController, TestExecutionService],
+     inject([HttpTestingController, TestExecutionService],
     (httpMock: HttpTestingController, executionService: TestExecutionService) => {
       // given
       const request = { method: 'GET',
@@ -101,5 +101,5 @@ describe('TestExecutionService', () => {
                                        { status: TestExecutionState.LastRunSuccessful, path: 'successfulTest.tcl' }])});
 
       httpMock.match(request)[0].flush(mockResponse);
-  })));
+  }));
 });

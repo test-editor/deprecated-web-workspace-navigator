@@ -1,6 +1,6 @@
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { async, TestBed, ComponentFixture, tick } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture } from '@angular/core/testing';
 import { capture, anyFunction, mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
 import { testBedSetup } from './tree-viewer.component.spec';
@@ -175,7 +175,7 @@ describe('NewElementComponent', () => {
 
     // and given that
     const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
-    onSuccess.apply(null, ['some/path']);
+    onSuccess('some/path')
 
     // then
     fixture.whenStable().then(() => {
@@ -194,7 +194,7 @@ describe('NewElementComponent', () => {
 
     // and given that
     const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
-    onError.apply('failed');
+    onError('failed');
 
     // then
     fixture.whenStable().then(() => {

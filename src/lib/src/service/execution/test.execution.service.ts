@@ -52,7 +52,7 @@ export class DefaultTestExecutionService extends TestExecutionService {
 
   getStatus(path: string,
             onThen?: (status: TestExecutionStatus) => void,
-            onError?: (error: any) => void): void { // Promise<TestExecutionStatus> {
+            onError?: (error: any) => void): void {
     this.httpClientExecute(httpClient => {
       return httpClient.get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
         .toPromise();
@@ -63,7 +63,7 @@ export class DefaultTestExecutionService extends TestExecutionService {
   }
 
   getAllStatus(onThen?: (status: TestExecutionStatus[]) => void,
-               onError?: (error: any) => void): void { //  Promise<TestExecutionStatus[]> {
+               onError?: (error: any) => void): void {
     this.httpClientExecute(httpClient => {
       return httpClient.get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise();
     }, statusResponse => {
