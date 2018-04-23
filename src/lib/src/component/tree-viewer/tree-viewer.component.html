@@ -8,7 +8,7 @@
         'selected': workspace.isSelected(elementInfo.path)
       }">
 
-      <div>
+      <div class="tree-view-element">
         <span class="icon-type fa" [ngClass]="{
         'fa-question': isUnknown(),
         'fa-folder': isEmptyFolder(),
@@ -18,7 +18,7 @@
         'fa-image': isImage()
       }" (click)="onIconClick()">
         </span>
-        <span>{{elementInfo.name}}</span>
+        <span title="{{elementInfo.name}}">{{elementInfo.name}}</span>
       </div>
 
       <div class="indicator-boxes">
