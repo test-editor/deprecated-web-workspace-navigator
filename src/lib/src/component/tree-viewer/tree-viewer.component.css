@@ -26,6 +26,12 @@
   justify-content: space-between;
 }
 
+.tree-view-element {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tree-view-item-key:not(.selected) {
   color: #CCCCCC;
 }
