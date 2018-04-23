@@ -26,6 +26,8 @@ describe('Workspace Navigator tests', function () {
          var element = document.getElementById("new-file", null); \
          if (element) { \
            result = parseInt(window.getComputedStyle(element).getPropertyValue("height"), 10); \
+         } else { \
+           result = 2; \
          } \
        } \
        return result;'

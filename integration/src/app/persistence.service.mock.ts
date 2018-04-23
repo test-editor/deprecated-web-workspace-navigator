@@ -45,18 +45,16 @@ export class PersistenceServiceMock {
     ]
   }
 
-  listFiles(): Promise<WorkspaceElement> {
-    return Promise.resolve(this.data);
+  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
+    onThen(this.data);
   }
 
-  createDocument(path: string, type: string): Promise<string> {
-    console.log(`Received createDocument(path: '${path}', type: '${type}')`);
-    return Promise.reject("not supported by mock");
+  createResource(path: string, type: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+    onError('not supported by mock');
   }
 
-  deleteResource(path: string): Promise<Response> {
-    console.log(`Received deleteResource(path: '${path}')`);
-    return Promise.reject("not supported by mock");
+  deleteResource(path: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+    onError('not supported by mock');
   }
 
 }

@@ -23,7 +23,7 @@ export class PersistenceService {
     this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
   }
 
-  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) { // : Promise<WorkspaceElement> {
+  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
     this.httpClientExecute( httpClient => httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise(), onThen, onError);
   }
 
