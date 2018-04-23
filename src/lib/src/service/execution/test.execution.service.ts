@@ -23,9 +23,9 @@ export interface TestExecutionStatus {
 
 
 export abstract class TestExecutionService {
-  abstract execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void
-  abstract getStatus(path: string, onThen?: (status: TestExecutionStatus) => void, onError?: (error: any) => void): void
-  abstract getAllStatus(onThen?: (status: TestExecutionStatus[]) => void, onError?: (error: any) => void): void
+  abstract execute(path: string, onResponse?: (some: any) => void, onError?: (error: any) => void): void
+  abstract getStatus(path: string, onResponse?: (status: TestExecutionStatus) => void, onError?: (error: any) => void): void
+  abstract getAllStatus(onResponse?: (status: TestExecutionStatus[]) => void, onError?: (error: any) => void): void
 }
 
 
@@ -44,32 +44,32 @@ export class DefaultTestExecutionService extends TestExecutionService {
     this.serviceUrl = config.testExecutionServiceUrl;
   }
 
-  execute(path: string, onThen?: (some: any) => void, onError?: (error: any) => void): void {
+  execute(path: string, onResponse?: (some: any) => void, onError?: (error: any) => void): void {
     this.httpClientExecute(httpClient => {
       return httpClient.post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
-    }, onThen, onError );
+    }, onResponse, onError );
   }
 
   getStatus(path: string,
-            onThen?: (status: TestExecutionStatus) => void,
+            onResponse?: (status: TestExecutionStatus) => void,
             onError?: (error: any) => void): void {
     this.httpClientExecute(httpClient => {
       return httpClient.get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
         .toPromise();
     }, text => {
       const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
-      onThen(status);
+      onResponse(status);
     }, onError);
   }
 
-  getAllStatus(onThen?: (status: TestExecutionStatus[]) => void,
+  getAllStatus(onResponse?: (status: TestExecutionStatus[]) => void,
                onError?: (error: any) => void): void {
     this.httpClientExecute(httpClient => {
       return httpClient.get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise();
     }, statusResponse => {
       const status: any[] = statusResponse;
       status.forEach((value) => { value.status = this.toTestExecutionState(value.status); });
-      onThen(status);
+      onResponse(status);
     }, onError);
   }
 
@@ -89,27 +89,27 @@ export class DefaultTestExecutionService extends TestExecutionService {
   }
 
   // code duplication with persistence service, removal planned with next refactoring
-  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
-                            onThen?: (some: any) => void,
+  private httpClientExecute(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                            onResponse?: (some: any) => void,
                             onError?: (error: any) => void): void {
     if (this.cachedHttpClient) {
-      this.httpClientExecuteCached(onResponse, onThen, onError);
+      this.httpClientExecuteCached(onHttpClient, onResponse, onError);
     } else {
       const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
         responseSubscription.unsubscribe();
         this.cachedHttpClient = httpClientPayload.httpClient;
-        this.httpClientExecuteCached(onResponse, onThen, onError);
+        this.httpClientExecuteCached(onHttpClient, onResponse, onError);
       });
       this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
     }
   }
 
-  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
-                                  onThen?: (some: any) => void,
+  private httpClientExecuteCached(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                                  onResponse?: (some: any) => void,
                                   onError?: (error: any) => void): void {
-    onResponse(this.cachedHttpClient).then((some) => {
-      if (onThen) {
-        onThen(some);
+    onHttpClient(this.cachedHttpClient).then((some) => {
+      if (onResponse) {
+        onResponse(some);
       }
     }).catch((error) => {
       if (onError) {

@@ -27,7 +27,8 @@ describe('Workspace Navigator tests', function () {
          if (element) { \
            result = parseInt(window.getComputedStyle(element).getPropertyValue("height"), 10); \
          } else { \
-           result = 2; \
+           console.log("new-file element was not found on page. (did the application start correctly?)"); \
+           result = 0; \
          } \
        } \
        return result;'
