@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, inject, fakeAsync, tick, flush } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
@@ -19,6 +19,8 @@ import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { IndicatorBoxComponent } from './indicator.box.component';
+import { Observable } from 'rxjs/Observable';
+import { Conflict } from '../../service/persistence/conflict';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -402,6 +404,26 @@ describe('TreeViewerComponent', () => {
       });
     });
   });
+
+  it('displays error when deleteDocument returns with a conflict', fakeAsync(() => {
+    // given
+    const conflict = new Conflict(`The file 'something-new.txt' already exists.`);
+
+    // when
+    component.onDeleteConfirm();
+
+    // and given that
+    const [path, onResponse, onError] = capture(persistenceService.deleteResource).last();
+    onResponse(conflict);
+
+    // then
+    tick();
+    fixture.detectChanges();
+    expect(component.errorMessage).toEqual(conflict.message);
+    const errorMessage = fixture.debugElement.query(By.css('.tree-view-item .alert'));
+    expect(errorMessage).toBeTruthy();
+    flush();
+  }));
 
   it('removes confirmation and emits navigation.deleted event when deletion succeeds', async(() => {
     // given

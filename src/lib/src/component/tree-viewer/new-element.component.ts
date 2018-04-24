@@ -7,6 +7,7 @@ import { PersistenceService } from '../../service/persistence/persistence.servic
 import { MessagingService } from '@testeditor/messaging-service';
 import * as events from '../event-types';
 import { Workspace } from '../../common/workspace';
+import { isConflict } from '../../service/persistence/conflict';
 
 @Component({
   selector: 'nav-new-element',
@@ -55,14 +56,18 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
-    this.persistenceService.createResource(newPath, type, (pathString: string) => {
-      this.remove();
-      this.messagingService.publish(events.NAVIGATION_CREATED, {
-        path: pathString
-      });
-    }, () => {
-      this.errorMessage = 'Error while creating element!';
-    });
+    this.persistenceService.createResource(newPath, type, (result) => {
+      let createdPath: string;
+      if (isConflict(result)) {
+        this.errorMessage = result.message;
+        this.input.nativeElement.value = '';
+        createdPath = newPath;
+      } else {
+        this.remove();
+        createdPath = result;
+      }
+      this.messagingService.publish(events.NAVIGATION_CREATED, { path: createdPath });
+    }, () => this.errorMessage = 'Error while creating element!');
   }
 
   remove(): void {

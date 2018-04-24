@@ -11,6 +11,7 @@ import { Workspace } from '../../common/workspace';
 import { LinkedWorkspaceElement } from '../../common/workspace-element';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { MarkerState } from '../../common/markers/marker.state';
+import { isConflict } from '../../service/persistence/conflict';
 
 @Component({
   selector: 'nav-tree-viewer',
@@ -89,16 +90,20 @@ export class TreeViewerComponent {
   }
 
   onDeleteConfirm(): void {
-    this.persistenceService.deleteResource(this.elementPath, () => {
-      this.messagingService.publish(events.NAVIGATION_DELETED, this.elementInfo);
-    }, () => {
-      this.handleDeleteFailed();
+    this.persistenceService.deleteResource(this.elementPath, (result) =>  {
+      if (isConflict(result)) {
+        this.handleDeleteFailed(result.message);
+      } else {
+        this.messagingService.publish(events.NAVIGATION_DELETED, this.elementInfo);
+      }
+    } , () => {
+      this.handleDeleteFailed('Error while deleting element!');
     });
     this.confirmDelete = false;
   }
 
-  handleDeleteFailed(): void {
-    this.errorMessage = 'Error while deleting element!';
+  handleDeleteFailed(message: string): void {
+    this.errorMessage = message;
     setTimeout(() => {
       this.errorMessage = null;
     }, 3000);
@@ -130,7 +135,7 @@ export class TreeViewerComponent {
   }
 
   isEmptyFolder(): boolean {
-    return this.elementInfo.childPaths.length == 0 && this.isFolder();
+    return this.elementInfo.childPaths.length === 0 && this.isFolder();
   }
 
   isUnknown(): boolean {
@@ -141,9 +146,9 @@ export class TreeViewerComponent {
     if (this.workspace.hasNewElementRequest()) {
       let selectedElement = this.workspace.getNewElement();
       if (selectedElement) {
-        return selectedElement.path == this.elementPath;
+        return selectedElement.path === this.elementPath;
       } else {
-        return this.level == 0; // display at root
+        return this.level === 0; // display at root
       }
     }
     return false;

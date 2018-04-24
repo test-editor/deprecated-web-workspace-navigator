@@ -13,6 +13,10 @@ import { NewElementComponent } from './new-element.component';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { Workspace } from '../../common/workspace';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/of';
+import 'rxjs/add/observable/throw';
+import { Conflict } from '../../service/persistence/conflict';
 
 describe('NewElementComponent', () => {
 
@@ -169,6 +173,7 @@ describe('NewElementComponent', () => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
+    // when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.of('some/path'));
 
     // when
     component.onEnter();
@@ -188,6 +193,7 @@ describe('NewElementComponent', () => {
 
   it('signals an error when createDocument failed', async(() => {
     // given
+    // when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.throw('failed'));
 
     // when
     component.onEnter();
@@ -201,6 +207,30 @@ describe('NewElementComponent', () => {
       fixture.whenStable().then(() => {
         expect(component.errorMessage).toBeTruthy();
       });
+    });
+  }));
+
+  it('displays error and refreshes workspace when createDocument returns with a conflict', async(() => {
+    // given
+    const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
+    let callback = jasmine.createSpy('callback');
+    messagingService.subscribe(events.NAVIGATION_CREATED, callback);
+    component.input.nativeElement.value = 'path/to/fileThatAlreadyExists'
+
+    // when
+    component.onEnter();
+
+    // and given
+    const [name, path, onResponse, onError] = capture(persistenceService.createResource).last();
+    onResponse(conflict);
+
+    // then
+    fixture.whenStable().then(() => {
+      expect(callback).toHaveBeenCalledTimes(1);
+      let expectedPayload = jasmine.objectContaining({ path: 'path/to/fileThatAlreadyExists' });
+      expect(callback).toHaveBeenCalledWith(expectedPayload);
+      expect(component.errorMessage).toEqual(conflict.message);
+      expect(component.input.nativeElement.value).toEqual('');
     });
   }));
 
