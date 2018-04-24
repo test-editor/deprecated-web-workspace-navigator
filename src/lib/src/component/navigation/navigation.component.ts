@@ -15,6 +15,7 @@ import { Subject } from 'rxjs/Subject';
 import { MarkerObserver } from '../../common/markers/marker.observer';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { WorkspaceObserver } from '../../common/markers/workspace.observer';
+import { ISubscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-navigation',
@@ -26,10 +27,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   static readonly HTTP_STATUS_CREATED = 201;
   static readonly NOTIFICATION_TIMEOUT_MILLIS = 4000;
 
-  workspace: Workspace;
   private stopPollingTestStatus: Subject<void> = new Subject<void>();
+  private subscriptions: ISubscription[] = [];
+
+  workspace: Workspace;
   errorMessage: string;
   notification: string;
+
   private workspaceReloadResponse = (root: WorkspaceElement) => this.defaultWorkspaceReloadResponse(root);
 
   constructor(
@@ -48,6 +52,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopPollingTestStatus.next();
     this.stopPollingTestStatus.complete();
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
   }
 
   retrieveWorkspaceRoot(onResponse?: (root: WorkspaceElement) => void): void {
@@ -74,16 +79,16 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   subscribeToEvents(): void {
-    this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
+    this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
       this.workspaceReloadResponse(root);
       this.workspaceReloadResponse = (root_) => this.defaultWorkspaceReloadResponse(root_);
-    });
-    this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
       this.workspace.setActive(element.path);
       this.workspace.setSelected(null);
       this.changeDetectorRef.detectChanges();
-    });
-    this.messagingService.subscribe(events.EDITOR_CLOSE, element => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.EDITOR_CLOSE, element => {
       if (element.path === this.workspace.getActive()) {
         this.workspace.setActive(null);
         this.changeDetectorRef.detectChanges();
@@ -92,12 +97,12 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.workspace.setDirty(element.path, false);
         this.changeDetectorRef.detectChanges();
       }
-    });
-    this.messagingService.subscribe(events.EDITOR_DIRTY_CHANGED, element => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.EDITOR_DIRTY_CHANGED, element => {
       this.workspace.setDirty(element.path, element.dirty);
       this.changeDetectorRef.detectChanges();
-    });
-    this.messagingService.subscribe(events.NAVIGATION_DELETED, element => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.NAVIGATION_DELETED, element => {
       let isSelectedElement = this.workspace.getSelected() && this.workspace.getSelected() === element.path;
       if (isSelectedElement) {
         this.workspace.setSelected(null);
@@ -108,30 +113,30 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.defaultWorkspaceReloadResponse(root);
         this.changeDetectorRef.detectChanges();
       });
-    });
-    this.messagingService.subscribe(events.NAVIGATION_CREATED, payload => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.NAVIGATION_CREATED, payload => {
       this.handleNavigationCreated(payload);
-    });
-    this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.NAVIGATION_SELECT, element => {
       this.workspace.setSelected(element.path);
       this.changeDetectorRef.detectChanges();
-    });
-    this.messagingService.subscribe(events.WORKSPACE_MARKER_UPDATE, updates => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_MARKER_UPDATE, updates => {
       this.workspace.updateMarkers(updates);
       this.changeDetectorRef.detectChanges();
-    });
-    this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_MARKER_OBSERVE, (observer: MarkerObserver<any>) => {
       this.workspace.observeMarker(observer);
-    });
-    this.messagingService.subscribe(events.WORKSPACE_OBSERVE, (observer: WorkspaceObserver) => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_OBSERVE, (observer: WorkspaceObserver) => {
       this.workspace.observe(observer);
-    });
-    this.messagingService.subscribe(events.TEST_EXECUTION_STARTED, payload => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.TEST_EXECUTION_STARTED, payload => {
       this.handleTestExecutionStarted(payload);
-    });
-    this.messagingService.subscribe(events.TEST_EXECUTION_START_FAILED, payload => {
+    }));
+    this.subscriptions.push(this.messagingService.subscribe(events.TEST_EXECUTION_START_FAILED, payload => {
       this.handleTestExecutionStartFailed(payload);
-    });
+    }));
   }
 
   handleNavigationCreated(payload: any): void {
