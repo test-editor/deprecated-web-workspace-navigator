@@ -29,40 +29,40 @@ export class PersistenceService {
     this.listFilesUrl = `${config.persistenceServiceUrl}/workspace/list-files`;
   }
 
-  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
-    this.httpClientExecute( httpClient => httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise(), onThen, onError);
+  listFiles(onResponse: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
+    this.httpClientExecute( httpClient => httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise(), onResponse, onError);
   }
 
-  deleteResource(path: string, onThen: (some: Conflict | string) => void, onError?: (error: any) => void): void {
+  deleteResource(path: string, onResponse: (some: Conflict | string) => void, onError?: (error: any) => void): void {
     this.httpClientExecute(
       httpClient => httpClient.delete(this.getURL(path), { observe: 'response', responseType: 'text'}).toPromise(),
       (response) => {
-        onThen(response.body);
+        onResponse(response.body);
       }, (response) => {
       if (response.status === HTTP_STATUS_CONFLICT) {
-        onThen(new Conflict(response.error));
+        onResponse(new Conflict(response.error));
       } else {
         onError(new Error(response.error));
       }
       });
   }
 
-  createResource(path: string, type: string, onThen: (some: Conflict | string) => void, onError?: (error: any) => void): void {
+  createResource(path: string, type: string, onResponse: (some: Conflict | string) => void, onError?: (error: any) => void): void {
     this.httpClientExecute(
       httpClient => httpClient.post(this.getURL(path), '', { observe: 'response', responseType: 'text', params: { type: type } }).toPromise(),
       (response) => {
-        onThen(response.body);
+        onResponse(response.body);
       }, (response) => {
         if (response.status === HTTP_STATUS_CONFLICT) {
-          onThen(new Conflict(response.error));
+          onResponse(new Conflict(response.error));
         } else {
           onError(response.error);
         }
       });
   }
 
-  getBinaryResource(path: string, onThen: (blob: Blob) => void, onError?: (error: any) => void): void {
-    this.httpClientExecute( httpClient => httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise(), onThen, onError);
+  getBinaryResource(path: string, onResponse: (blob: Blob) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute( httpClient => httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise(), onResponse, onError);
   }
 
   private getURL(path: string): string {
@@ -71,27 +71,27 @@ export class PersistenceService {
   }
 
   // code duplication with test execution service, removal planned with next refactoring
-  private httpClientExecute(onResponse: (httpClient: HttpClient) => Promise<any>,
-                            onThen?: (some: any) => void,
+  private httpClientExecute(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                            onResponse?: (some: any) => void,
                             onError?: (error: any) => void): void {
     if (this.cachedHttpClient) {
-      this.httpClientExecuteCached(onResponse, onThen, onError);
+      this.httpClientExecuteCached(onHttpClient, onResponse, onError);
     } else {
       const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
         responseSubscription.unsubscribe();
         this.cachedHttpClient = httpClientPayload.httpClient;
-        this.httpClientExecuteCached(onResponse, onThen, onError);
+        this.httpClientExecuteCached(onHttpClient, onResponse, onError);
       });
       this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
     }
   }
 
-  private httpClientExecuteCached(onResponse: (httpClient: HttpClient) => Promise<any>,
-                                  onThen?: (some: any) => void,
+  private httpClientExecuteCached(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                                  onResponse?: (some: any) => void,
                                   onError?: (error: any) => void): void {
-    onResponse(this.cachedHttpClient).then((some) => {
-      if (onThen) {
-        onThen(some);
+    onHttpClient(this.cachedHttpClient).then((some) => {
+      if (onResponse) {
+        onResponse(some);
       }
     }).catch((error) => {
       if (onError) {

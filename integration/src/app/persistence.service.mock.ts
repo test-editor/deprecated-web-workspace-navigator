@@ -45,15 +45,15 @@ export class PersistenceServiceMock {
     ]
   }
 
-  listFiles(onThen: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
-    onThen(this.data);
+  listFiles(onResponse: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
+    onResponse(this.data);
   }
 
-  createResource(path: string, type: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+  createResource(path: string, type: string, onResonse: (some: any) => void, onError?: (error: any) => void): void {
     onError('not supported by mock');
   }
 
-  deleteResource(path: string, onThen: (some: string) => void, onError?: (error: any) => void): void {
+  deleteResource(path: string, onResponse: (some: any) => void, onError?: (error: any) => void): void {
     onError('not supported by mock');
   }
 
