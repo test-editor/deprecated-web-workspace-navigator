@@ -18,6 +18,7 @@
     "e2e": "concurrently \"npm run serve:e2e\" \"npm run protractor\" --kill-others --success first",
     "pree2e:aot": "npm run build:e2e && npm run build:aot",
     "e2e:aot": "concurrently \"npm run serve:e2e-aot\" \"npm run protractor\" --kill-others --success first",
+    "preprotractor": "webdriver-manager update --ignore_ssl --gecko=false",
     "protractor": "protractor protractor.config.js"
   },
   "keywords": [],
@@ -52,7 +53,8 @@
     "rollup-plugin-commonjs": "8.3.0",
     "rollup-plugin-node-resolve": "3.0.2",
     "rollup-plugin-uglify": "3.0.0",
-    "typescript": "2.7.1"
+    "typescript": "2.7.1",
+    "webdriver-manager": "^12.0.6"
   },
   "repository": {}
 }

@@ -23,7 +23,13 @@ describe('Workspace Navigator tests', function () {
     let heightPromise = browser.executeScript(
       'var result = 1; \
        if (window.module != "aot") { \
-         result = parseInt(window.getComputedStyle(document.getElementById("new-file", null)).getPropertyValue("height"), 10); \
+         var element = document.getElementById("new-file", null); \
+         if (element) { \
+           result = parseInt(window.getComputedStyle(element).getPropertyValue("height"), 10); \
+         } else { \
+           console.log("new-file element was not found on page. (did the application start correctly?)"); \
+           result = 0; \
+         } \
        } \
        return result;'
     )

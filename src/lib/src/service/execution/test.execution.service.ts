@@ -1,6 +1,11 @@
 import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { MessagingService } from '@testeditor/messaging-service';
+
+// code duplication with persistence service and test-editor-web, removal planned with next refactoring
+const HTTP_CLIENT_NEEDED = 'httpClient.needed';
+const HTTP_CLIENT_SUPPLIED = 'httpClient.supplied';
 
 export enum TestExecutionState {
   Idle = 0,
@@ -17,9 +22,9 @@ export interface TestExecutionStatus {
 
 
 export abstract class TestExecutionService {
-  abstract execute(path: string): Promise<any>;
-  abstract getStatus(path: string): Promise<TestExecutionStatus>;
-  abstract getAllStatus(): Promise<TestExecutionStatus[]>;
+  abstract execute(path: string, onResponse?: (some: any) => void, onError?: (error: any) => void): void
+  abstract getStatus(path: string, onResponse?: (status: TestExecutionStatus) => void, onError?: (error: any) => void): void
+  abstract getAllStatus(onResponse?: (status: TestExecutionStatus[]) => void, onError?: (error: any) => void): void
 }
 
 
@@ -31,38 +36,40 @@ export class DefaultTestExecutionService extends TestExecutionService {
   private static readonly statusAllURLPath = '/status/all';
   private serviceUrl: string;
 
-  private httpClient: HttpClient;
+  private cachedHttpClient: HttpClient;
 
-  constructor(config: TestExecutionServiceConfig, private injector: Injector) {
+  constructor(config: TestExecutionServiceConfig, private messagingService: MessagingService) {
     super();
     this.serviceUrl = config.testExecutionServiceUrl;
   }
 
-  private getHttpClient(): HttpClient {
-    if (!this.httpClient) {
-      this.httpClient = this.injector.get(HttpClient);
-    }
-    return this.httpClient;
+  execute(path: string, onResponse?: (some: any) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute(httpClient => {
+      return httpClient.post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
+    }, onResponse, onError );
   }
 
-  execute(path: string): Promise<any> {
-    return this.getHttpClient().post(this.getURL(path, DefaultTestExecutionService.executeURLPath), '').toPromise();
+  getStatus(path: string,
+            onResponse?: (status: TestExecutionStatus) => void,
+            onError?: (error: any) => void): void {
+    this.httpClientExecute(httpClient => {
+      return httpClient.get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
+        .toPromise();
+    }, text => {
+      const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
+      onResponse(status);
+    }, onError);
   }
 
-  getStatus(path: string): Promise<TestExecutionStatus> {
-    return this.getHttpClient().get(this.getURL(path, DefaultTestExecutionService.statusURLPath) + '&wait=true', { responseType: 'text' })
-      .toPromise().then(text => {
-        const status: TestExecutionStatus = { path: path, status: this.toTestExecutionState(text) };
-        return status;
-      });
-  }
-
-  getAllStatus(): Promise<TestExecutionStatus[]> {
-    return this.getHttpClient().get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise().then(statusResponse => {
+  getAllStatus(onResponse?: (status: TestExecutionStatus[]) => void,
+               onError?: (error: any) => void): void {
+    this.httpClientExecute(httpClient => {
+      return httpClient.get<any[]>(`${this.serviceUrl}${DefaultTestExecutionService.statusAllURLPath}`).toPromise();
+    }, statusResponse => {
       const status: any[] = statusResponse;
       status.forEach((value) => { value.status = this.toTestExecutionState(value.status); });
-      return status;
-    });
+      onResponse(status);
+    }, onError);
   }
 
   private getURL(workspaceElementPath: string, urlPath: string = ''): string {
@@ -78,6 +85,38 @@ export class DefaultTestExecutionService extends TestExecutionService {
       case 'IDLE':
       default: return TestExecutionState.Idle;
     }
+  }
+
+  // code duplication with persistence service, removal planned with next refactoring
+  private httpClientExecute(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                            onResponse?: (some: any) => void,
+                            onError?: (error: any) => void): void {
+    if (this.cachedHttpClient) {
+      this.httpClientExecuteCached(onHttpClient, onResponse, onError);
+    } else {
+      const responseSubscription = this.messagingService.subscribe(HTTP_CLIENT_SUPPLIED, (httpClientPayload) => {
+        responseSubscription.unsubscribe();
+        this.cachedHttpClient = httpClientPayload.httpClient;
+        this.httpClientExecuteCached(onHttpClient, onResponse, onError);
+      });
+      this.messagingService.publish(HTTP_CLIENT_NEEDED, null);
+    }
+  }
+
+  private httpClientExecuteCached(onHttpClient: (httpClient: HttpClient) => Promise<any>,
+                                  onResponse?: (some: any) => void,
+                                  onError?: (error: any) => void): void {
+    onHttpClient(this.cachedHttpClient).then((some) => {
+      if (onResponse) {
+        onResponse(some);
+      }
+    }).catch((error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        throw(error);
+      }
+    });
   }
 
 }

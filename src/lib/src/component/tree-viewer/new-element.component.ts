@@ -56,7 +56,7 @@ export class NewElementComponent implements AfterViewInit {
   }
 
   private sendCreateRequest(newPath: string, type: string): void {
-    this.persistenceService.createResource(newPath, type).subscribe(result => {
+    this.persistenceService.createResource(newPath, type, (result) => {
       let createdPath: string;
       if (isConflict(result)) {
         this.errorMessage = result.message;

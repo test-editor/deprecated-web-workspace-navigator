@@ -1,7 +1,7 @@
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
-import { mock, instance, verify, when, anyString } from 'ts-mockito';
+import { capture, anyFunction, mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
 import { testBedSetup } from './tree-viewer.component.spec';
 
@@ -13,9 +13,6 @@ import { NewElementComponent } from './new-element.component';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { Workspace } from '../../common/workspace';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/throw';
 import { Conflict } from '../../service/persistence/conflict';
 
 describe('NewElementComponent', () => {
@@ -140,7 +137,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('something-new.txt', 'file')).once();
+    verify(persistenceService.createResource('something-new.txt', 'file', anyFunction(), anyFunction())).once();
   });
 
   it('calls createDocument with type folder when enter is pressed', () => {
@@ -152,7 +149,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('newFolder', ElementType.Folder)).once();
+    verify(persistenceService.createResource('newFolder', ElementType.Folder, anyFunction(), anyFunction())).once();
   });
 
   it('calls createDocument with the proper path when enter is pressed', () => {
@@ -166,17 +163,20 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource('some/path/something-new.txt', ElementType.File)).once();
+    verify(persistenceService.createResource('some/path/something-new.txt', ElementType.File, anyFunction(), anyFunction())).once();
   });
 
   it('removes itself and emits navigation.created event when createDocument returns', async(() => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
-    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.of('some/path'));
 
     // when
     component.onEnter();
+
+    // and given that
+    const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
+    onSuccess('some/path')
 
     // then
     fixture.whenStable().then(() => {
@@ -188,11 +188,12 @@ describe('NewElementComponent', () => {
   }));
 
   it('signals an error when createDocument failed', async(() => {
-    // given
-    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.throw('failed'));
-
     // when
     component.onEnter();
+
+    // and given that
+    const [path, typeString, onSuccess, onError] = capture(persistenceService.createResource).last();
+    onError('failed');
 
     // then
     fixture.whenStable().then(() => {
@@ -207,11 +208,14 @@ describe('NewElementComponent', () => {
     const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
-    when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.of(conflict));
     component.input.nativeElement.value = 'path/to/fileThatAlreadyExists'
 
     // when
     component.onEnter();
+
+    // and given
+    const [name, path, onResponse, onError] = capture(persistenceService.createResource).last();
+    onResponse(conflict);
 
     // then
     fixture.whenStable().then(() => {
@@ -284,7 +288,7 @@ describe('NewElementComponent', () => {
     input.triggerEventHandler('keyup.enter', {});
 
     // then
-    verify(persistenceService.createResource(anyString(), anyString())).never();
+    verify(persistenceService.createResource(anyString(), anyString(), anyFunction(), anyFunction())).never();
   });
 
 });

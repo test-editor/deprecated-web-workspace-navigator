@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { BrowserModule } from '@angular/platform-browser';
 import { MessagingModule } from '@testeditor/messaging-service';
@@ -26,6 +26,7 @@ import { testEditorIndicatorFieldSetup } from './indicator.field.setup';
   declarations: [ AppComponent ],
   bootstrap: [ AppComponent ],
   providers: [
+    HttpClient,
     { provide: PersistenceService, useClass: PersistenceServiceMock },
     { provide: TestExecutionService, useClass: TestExecutionServiceMock }
   ]

@@ -43,7 +43,7 @@
     "coverage": "karma start karma-coverage.conf.js --single-run",
     "pretest:once": "npm run build-test",
     "test:once": "karma start karma.conf.js --single-run",
-    "preintegration": "npm run build && cd integration && npm run clean && yarn install && webdriver-manager update --ignore_ssl --gecko=false",
+    "preintegration": "npm run build && cd integration && npm run clean && yarn install",
     "integration": "npm run integration:aot && npm run integration:jit",
     "integration:jit": "cd integration && npm run e2e",
     "integration:aot": "cd integration && npm run e2e:aot",
@@ -96,9 +96,8 @@
     "ts-mockito": "2.2.9",
     "tslint": "5.9.1",
     "typescript": "2.6.2",
-    "zone.js": "0.8.20"
-  },
-  "dependencies": {
-    "yarn": "^1.5.1"
+    "zone.js": "0.8.20",
+    "webdriver-manager": "^12.0.6",
+    "yarn": "^1.6.0"
   }
 }

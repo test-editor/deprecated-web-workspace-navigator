@@ -68,10 +68,8 @@ export class TreeViewerComponent {
 
   openFile() {
     if (this.isImage()) {
-      this.windowReference.open(() => {
-        return this.persistenceService.getBinaryResource(this.elementPath).then((blob) => {
-          return new URL(URL.createObjectURL(blob));
-        });
+      this.persistenceService.getBinaryResource(this.elementPath, (blob: Blob) => {
+        this.windowReference.open(() => Promise.resolve(new URL(URL.createObjectURL(blob))));
       });
     } else {
       this.messagingService.publish(events.NAVIGATION_OPEN, {
@@ -92,7 +90,7 @@ export class TreeViewerComponent {
   }
 
   onDeleteConfirm(): void {
-    this.persistenceService.deleteResource(this.elementPath).subscribe(result =>  {
+    this.persistenceService.deleteResource(this.elementPath, (result) =>  {
       if (isConflict(result)) {
         this.handleDeleteFailed(result.message);
       } else {

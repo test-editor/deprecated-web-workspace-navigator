@@ -22,7 +22,7 @@ export class AppComponent {
       this.lastOpened = element;
     });
     messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
-      this.persistenceService.listFiles().then((root: WorkspaceElement) => {
+      this.persistenceService.listFiles((root: WorkspaceElement) => {
         messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, root);
       });
     });

@@ -19,9 +19,9 @@ import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
-import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService, mockedTestExecutionService,
-  setTestExecutionServiceResponse, HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile,
-  lastElement, mockTestStatusServiceWithPromiseRunning, responseBeforeTermination,
+import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService,
+  HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile,
+  lastElement, responseBeforeTermination,
   subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
