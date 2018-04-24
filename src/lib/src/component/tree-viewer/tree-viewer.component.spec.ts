@@ -19,7 +19,6 @@ import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { IndicatorBoxComponent } from './indicator.box.component';
-import { Observable } from 'rxjs/Observable';
 import { Conflict } from '../../service/persistence/conflict';
 
 export function testBedSetup(providers?: any[]): void {

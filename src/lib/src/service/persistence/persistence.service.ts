@@ -5,9 +5,6 @@ import { PersistenceServiceConfig } from './persistence.service.config';
 import { Conflict } from './conflict';
 import 'rxjs/add/operator/toPromise';
 import { MessagingService } from '@testeditor/messaging-service';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/of';
 
 // code duplication with test execution service and test-editor-web, removal planned with next refactoring
 const HTTP_CLIENT_NEEDED = 'httpClient.needed';

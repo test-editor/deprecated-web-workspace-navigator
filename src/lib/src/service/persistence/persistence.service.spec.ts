@@ -1,6 +1,5 @@
 import { PersistenceServiceConfig } from './persistence.service.config'
 import { PersistenceService } from './persistence.service'
-import { Observable } from 'rxjs/Observable';
 import { HttpClientModule, HttpClient, HttpResponse } from '@angular/common/http';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { Injector } from '@angular/core';

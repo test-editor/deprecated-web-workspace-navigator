@@ -2,7 +2,6 @@ import { TestExecutionServiceConfig } from './test.execution.service.config';
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MessagingService } from '@testeditor/messaging-service';
-import { Observable } from 'rxjs/Observable';
 
 // code duplication with persistence service and test-editor-web, removal planned with next refactoring
 const HTTP_CLIENT_NEEDED = 'httpClient.needed';

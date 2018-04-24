@@ -13,9 +13,6 @@ import { NewElementComponent } from './new-element.component';
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
 import { Workspace } from '../../common/workspace';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/throw';
 import { Conflict } from '../../service/persistence/conflict';
 
 describe('NewElementComponent', () => {
@@ -173,7 +170,6 @@ describe('NewElementComponent', () => {
     // given
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_CREATED, callback);
-    // when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.of('some/path'));
 
     // when
     component.onEnter();
@@ -192,9 +188,6 @@ describe('NewElementComponent', () => {
   }));
 
   it('signals an error when createDocument failed', async(() => {
-    // given
-    // when(persistenceService.createResource(anyString(), anyString())).thenReturn(Observable.throw('failed'));
-
     // when
     component.onEnter();
 

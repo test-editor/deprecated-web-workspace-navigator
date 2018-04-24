@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TestExecutionService, TestExecutionState, DefaultTestExecutionService } from './test.execution.service';
 import { TestExecutionServiceConfig } from './test.execution.service.config';
-import { Observable } from 'rxjs/Observable';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { Injector } from '@angular/core';
 import { inject } from '@angular/core/testing';
