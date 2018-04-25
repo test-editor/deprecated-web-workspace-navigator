@@ -7,8 +7,10 @@
 [npm-url]: https://www.npmjs.com/package/@testeditor/workspace-navigator
 [travis-image]: https://travis-ci.org/test-editor/web-workspace-navigator.svg?branch=master
 [travis-url]: https://travis-ci.org/test-editor/web-workspace-navigator
+[![License](http://img.shields.io/badge/license-EPL-blue.svg?style=flat)](https://www.eclipse.org/legal/epl-v10.html)
 
 Angular component and Dropwizard service for workspace handling and navigation.
+
 
 ## Usage
 
