@@ -47,6 +47,7 @@ deploy:
   api_key:
     secure: pR4+ZcnGEq+JxK7aSy1xPOt5A3AdHROBUC8hjliH+tcHxqe92b7gzmtszNAEq122DnwA3+QdvGtQ01Gtq3up9HmAgdb4cPJlUgsWtjj5DtshwGXlO3qCvSzRqo7SS6eE08qAvzPRlLh0/w699TsHcpTqHuY1A/kRsV0gzxqpbRxY0Z1TabuM97hXdIaYyyWyNtZoQ79j6K5dUFGTBd0TFSzgl1T5LMmUFO3tmnSSGIQn+N+O1wenzEt+CusgAVeIqUM59HYxX9ZKQdwdYtxvNY1k1DsK1q0qEj8QjcUtueitWP8+4hTMVa8TPxyilYjzD/tdTebU/QDhZvQtQxeRUw0XN/+3rYCvJSaGVHZ6uT9tryqyYXUCd+OIfW9vihTRys6jx4yllb8skniHp6SC9uTLLz1SIK4uUz5W6r9SXZqXUU9X40I9byWWbdXfOolFT9JBOBPuMfUCyoiRBofbuGcnrEFwYzfuID3QU/Qc6JvZZHtb721c/t07DM5/1eIYj/Z9Kii/lusgEIat5U0KBH0PAYWH9sd4sd5JPVAu8q23B5xjE+HfCtzXbDY9IRgbrETcUnGXRrVSliY+fYhmk6fp68sx4T15kn88Dmk2V7MwMLW4LIxRKMLpYkeCKVepkTxbKwcLfMUTpcJAaypUWqHsTpW6xB1t0wf6VRcFzCo=
   on:
+    condition: "$FIREFOX_VERSION = latest"
     tags: true
     repo: test-editor/web-workspace-navigator
     node: "6"
