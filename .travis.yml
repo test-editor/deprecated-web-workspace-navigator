@@ -43,10 +43,11 @@ after_success:
 deploy:
   skip_cleanup: true # stay in working dir (dist/)
   provider: npm
-  email: franz.becker@itemis.de
+  email: service.eng@akquinet.de
   api_key:
-    secure: mZEbFq2eeVDqhAIDbRH2QxiHCThXxna8cvaRJtPeRkFTaC6noKllI+4flSUiGFK58eZ5fkLOzEmI1tXiRQo7taYLd44/9sZSGQEURb8N7hCHCZrfxIE4+ZEia9BcyV+anEZ3mzHQ/W4HLV62E21hNRIHU6TWzwgL+ro1dg9PZzF6lEPzLBcjKHkJ60JDzPGNB/1eWjqUC/Pz+U6PfG70gGS1TEL7xi8Cj0EHP12JjkrnprT759FmVgcLQEZQOgPiyVBAveK5haCmihDRgQVPPsWBopCAgxqfXvm9x7yJXw/usY5QG4Z7V1rlrZqgCKn5L28X+BskPZ0ycTEBgvMSrs754BqIioTOgeZBmmSWOvSjseen6UmhlY1Fw3lqKeB09W8HYWtSIL/2DPVI88/QycvMDWPk5ji3NpJp/LX/8xtkH8bEhffvIlll5xBX10vNHde4qyfw5+6g3xNZ8SBn5LUyOjDyMs2DnZ3IjC8v42xhpx67nhfHtM5yf+HlmpEBb0GgRFO4r92vgUItYj7/bLGxKqXkqLhODxiumQCt96+RmV7BZ2ZoYWlEKVD/D9R5yPjhsmcMKEeAtgGrN+L+ZGtPs8A/g/o8nAoiUh8F0dMCVWSAf4o3MLgT/wNoDVLL/kJJEyVNvDYNlEWrPTxJ3iJ7OK3Cos96UdRVZYjMha8=
+    secure: pR4+ZcnGEq+JxK7aSy1xPOt5A3AdHROBUC8hjliH+tcHxqe92b7gzmtszNAEq122DnwA3+QdvGtQ01Gtq3up9HmAgdb4cPJlUgsWtjj5DtshwGXlO3qCvSzRqo7SS6eE08qAvzPRlLh0/w699TsHcpTqHuY1A/kRsV0gzxqpbRxY0Z1TabuM97hXdIaYyyWyNtZoQ79j6K5dUFGTBd0TFSzgl1T5LMmUFO3tmnSSGIQn+N+O1wenzEt+CusgAVeIqUM59HYxX9ZKQdwdYtxvNY1k1DsK1q0qEj8QjcUtueitWP8+4hTMVa8TPxyilYjzD/tdTebU/QDhZvQtQxeRUw0XN/+3rYCvJSaGVHZ6uT9tryqyYXUCd+OIfW9vihTRys6jx4yllb8skniHp6SC9uTLLz1SIK4uUz5W6r9SXZqXUU9X40I9byWWbdXfOolFT9JBOBPuMfUCyoiRBofbuGcnrEFwYzfuID3QU/Qc6JvZZHtb721c/t07DM5/1eIYj/Z9Kii/lusgEIat5U0KBH0PAYWH9sd4sd5JPVAu8q23B5xjE+HfCtzXbDY9IRgbrETcUnGXRrVSliY+fYhmk6fp68sx4T15kn88Dmk2V7MwMLW4LIxRKMLpYkeCKVepkTxbKwcLfMUTpcJAaypUWqHsTpW6xB1t0wf6VRcFzCo=
   on:
+    condition: "$FIREFOX_VERSION = latest"
     tags: true
     repo: test-editor/web-workspace-navigator
     node: "6"
