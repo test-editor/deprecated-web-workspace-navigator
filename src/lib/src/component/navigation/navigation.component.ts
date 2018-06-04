@@ -53,10 +53,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   retrieveWorkspaceRoot(onResponse?: (root: WorkspaceElement) => void): void {
+    this.retrieveWorkspaceRootVia(null, onResponse);
+  }
+
+  private retrieveWorkspaceRootVia(payload: any, onResponse?: (root: WorkspaceElement) => void): void {
     if (onResponse != null) {
       this.workspaceReloadResponse = onResponse;
     }
-    this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, null);
+    this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, payload);
   }
 
   private defaultWorkspaceReloadResponse(root: WorkspaceElement) {
@@ -152,7 +156,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.retrieveWorkspaceRoot();
+    this.retrieveWorkspaceRootVia({ rebuild: true });
   }
 
   run(): void {
@@ -173,14 +177,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   showNotification(notification: string, path: string): void {
-    this.notification = notification.replace("\${}", this.workspace.nameWithoutFileExtension(path));
+    this.notification = notification.replace('\${}', this.workspace.nameWithoutFileExtension(path));
         setTimeout(() => {
           this.notification = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
   }
 
-  showErrorMessage(errorMessage: string, path: string) : void {
-    this.errorMessage = errorMessage.replace("\${}", this.workspace.nameWithoutFileExtension(path));
+  showErrorMessage(errorMessage: string, path: string): void {
+    this.errorMessage = errorMessage.replace('\${}', this.workspace.nameWithoutFileExtension(path));
         setTimeout(() => {
           this.errorMessage = null;
         }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
