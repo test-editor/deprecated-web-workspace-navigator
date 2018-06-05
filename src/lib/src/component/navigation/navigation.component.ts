@@ -30,6 +30,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   workspace: Workspace;
   errorMessage: string;
   notification: string;
+  public refreshClassValue  = '';
 
   private workspaceReloadResponse = (root: WorkspaceElement) => this.defaultWorkspaceReloadResponse(root);
 
@@ -60,6 +61,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
     if (onResponse != null) {
       this.workspaceReloadResponse = onResponse;
     }
+    if (payload) {
+      // this notification will be hidden as soon as workspace reload response was received (see subscription)
+      this.notification = 'Rebuilding and reloading index ...';
+      this.refreshClassValue = 'fa-spin'
+    }
     this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, payload);
   }
 
@@ -83,6 +89,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
       this.workspaceReloadResponse(root);
       this.workspaceReloadResponse = (root_) => this.defaultWorkspaceReloadResponse(root_);
+      this.refreshClassValue = '';
+      this.hideNotification();
     }));
     this.subscriptions.push(this.messagingService.subscribe(events.EDITOR_ACTIVE, element => {
       this.workspace.setActive(element.path);
@@ -176,11 +184,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.showErrorMessage(payload.message, payload.path);
   }
 
+  hideNotification(): void {
+    this.notification = null;
+  }
+
   showNotification(notification: string, path: string): void {
     this.notification = notification.replace('\${}', this.workspace.nameWithoutFileExtension(path));
-        setTimeout(() => {
-          this.notification = null;
-        }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
+    setTimeout(() => { this.hideNotification(); }, NavigationComponent.NOTIFICATION_TIMEOUT_MILLIS);
   }
 
   showErrorMessage(errorMessage: string, path: string): void {

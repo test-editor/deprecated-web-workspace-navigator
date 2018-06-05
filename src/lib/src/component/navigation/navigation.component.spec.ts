@@ -824,4 +824,33 @@ describe('NavigationComponent', () => {
       expect(component.workspace.getMarkers(root.path)).toEqual(rootMarkers);
     });
   }));
+
+  it('will remove notification and stop spinning refresh icon if workspace reload finished', fakeAsync(() => {
+    // given
+    component.refreshClassValue = 'fa-spin';
+    component.notification = 'some message';
+
+    // when
+    messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, null);
+    tick();
+
+    // then
+    expect(component.refreshClassValue).toEqual('');
+    expect(component.notification).toBeNull();
+  }));
+
+  it('will notify refresh and spin refresh icon if workspace refresh is called', fakeAsync(() => {
+    // given
+    component.refreshClassValue = '';
+    component.notification = null;
+
+    // when
+    component.refresh();
+    tick();
+
+    // then
+    expect(component.refreshClassValue).toEqual('fa-spin');
+    expect(component.notification).not.toBeNull();
+  }));
+
 });
