@@ -164,7 +164,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.retrieveWorkspaceRootVia({ rebuild: true });
+    if (!this.refreshRunning()) {
+      this.retrieveWorkspaceRootVia({ rebuild: true });
+    }
   }
 
   run(): void {
@@ -258,6 +260,10 @@ export class NavigationComponent implements OnInit, OnDestroy {
         path: elementInfo.path
       });
     }
+  }
+
+  refreshRunning(): boolean {
+    return this.refreshClassValue !== '';
   }
 
 }
