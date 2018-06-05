@@ -106,7 +106,7 @@ describe('NavigationComponent', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       expect(component.errorMessage).toBeTruthy();
-      let alert = fixture.debugElement.query(By.css("#errorMessage"));
+      let alert = fixture.debugElement.query(By.css('#errorMessage'));
       expect(alert).toBeTruthy();
       expect(alert.nativeElement.innerText).toEqual(component.errorMessage);
     });
@@ -254,8 +254,8 @@ describe('NavigationComponent', () => {
   it('collapses all when icon is clicked', () => {
     // given
     setupWorkspace(component, messagingService, fixture);
-    const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
-    let subfolderPath = root.childPaths[0];
+    const rootPath = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
+    let subfolderPath = rootPath.childPaths[0];
     component.getWorkspace().setExpanded(subfolderPath, true);
     fixture.detectChanges();
     let collapseAllIcon = sidenav.query(By.css('#collapse-all'));
@@ -274,8 +274,8 @@ describe('NavigationComponent', () => {
 
     let refreshIcon = sidenav.query(By.css('#refresh'));
     let newFile: WorkspaceElement = {
-      name: "newFile.tcl",
-      path: "newFile.tcl",
+      name: 'newFile.tcl',
+      path: 'newFile.tcl',
       type: ElementType.File,
       children: []
     };
@@ -295,8 +295,8 @@ describe('NavigationComponent', () => {
   it('can reveal new folder', () => {
     // given
     setupWorkspace(component, messagingService, fixture);
-    const root = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
-    const subfolderPath = root.childPaths[0];
+    const rootPath = component.getWorkspace().getElementInfo(component.getWorkspace().getRootPath());
+    const subfolderPath = rootPath.childPaths[0];
     const newFolder = component.getWorkspace().getElementInfo(subfolderPath).childPaths[0];
 
     // when
@@ -368,7 +368,8 @@ describe('NavigationComponent', () => {
     expect(testExecCallback).toHaveBeenCalledWith(tclFile.path);
   }));
 
-  it('publishes test execution request for currently active test file when "run" button is clicked and no file is selected', fakeAsync(() => {
+  it('publishes test execution request for currently active test file when "run" button is clicked and no file is selected',
+     fakeAsync(() => {
     // given
     setupWorkspace(component, messagingService, fixture);
     component.getWorkspace().setSelected(null);
@@ -837,20 +838,44 @@ describe('NavigationComponent', () => {
     // then
     expect(component.refreshClassValue).toEqual('');
     expect(component.notification).toBeNull();
+    expect(component.refreshRunning()).toBeFalsy();
   }));
 
   it('will notify refresh and spin refresh icon if workspace refresh is called', fakeAsync(() => {
     // given
+    let workspaceReloadRequestReceived = false;
     component.refreshClassValue = '';
     component.notification = null;
+    messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
+      workspaceReloadRequestReceived = true;
+    });
 
     // when
     component.refresh();
     tick();
 
     // then
+    expect(workspaceReloadRequestReceived).toBeTruthy();
+    expect(component.refreshRunning()).toBeTruthy();
     expect(component.refreshClassValue).toEqual('fa-spin');
     expect(component.notification).not.toBeNull();
   }));
+
+  it('will not refresh, if refresh is running', fakeAsync(() => {
+    // given
+    component.refreshClassValue = 'some'; // will result in component.refreshRunning() to be true
+    messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
+      fail('workspace reload request should never be put onto the message bus!');
+    });
+
+    // when
+    component.refresh();
+    tick();
+
+    // then
+    expect(component.refreshRunning()).toBeTruthy();
+    expect(component.refreshClassValue).toEqual('some');
+  }));
+
 
 });
