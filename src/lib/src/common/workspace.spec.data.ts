@@ -3,7 +3,6 @@ import { ElementType } from './element-type';
 import { Workspace } from './workspace';
 import { PersistenceService } from '../../src/service/persistence/persistence.service';
 import { mock, instance, when } from 'ts-mockito/lib/ts-mockito';
-import { TestExecutionService } from '../../src/service/execution/test.execution.service';
 
 export const firstChild: WorkspaceElement = {
   name: 'firstChild',

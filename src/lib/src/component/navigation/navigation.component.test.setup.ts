@@ -7,7 +7,6 @@ import { ElementType } from '../../common/element-type';
 import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { TestExecutionService, TestExecutionState } from '../../service/execution/test.execution.service';
 import { ElementState } from '../../common/element-state';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MessagingService } from '@testeditor/messaging-service';
@@ -92,8 +91,15 @@ export const root: WorkspaceElement = {
   children: [subfolder]
 };
 
-export const responseBeforeTermination = { path: tclFile.path, status: TestExecutionState.Running };
-const responseAfterTermination = { path: tclFile.path, status: TestExecutionState.LastRunSuccessful };
+/**
+export enum TestExecutionState {
+  Idle = 0,
+  LastRunSuccessful = 1,
+  LastRunFailed = 2,
+  Running = 3
+} */
+export const responseBeforeTermination = { path: tclFile.path, status: 3 };
+const responseAfterTermination = { path: tclFile.path, status: 1 };
 
 export function mockedPersistenceService() {
   const persistenceService = mock(PersistenceService);
