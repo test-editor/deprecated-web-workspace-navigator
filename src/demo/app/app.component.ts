@@ -37,9 +37,9 @@ export class AppComponent {
       this.close(element.path);
     });
     this.messagingService.subscribe(events.WORKSPACE_RELOAD_REQUEST, () => {
-      this.persistenceService.listFiles().then((root: WorkspaceElement) => {
+      this.persistenceService.listFiles(((root: WorkspaceElement) => {
         this.messagingService.publish(events.WORKSPACE_RELOAD_RESPONSE, root);
-      });
+      }));
     });
   }
 

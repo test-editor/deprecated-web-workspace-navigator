@@ -60,8 +60,8 @@ export class PersistenceServiceMock {
 
   constructor(private http: HttpClient) {}
 
-  listFiles(): Promise<WorkspaceElement> {
-    return Promise.resolve(this.data);
+  listFiles(onResponse: (workspaceElement: WorkspaceElement) => void, onError?: (error: any) => void) {
+    onResponse(this.data);
   }
 
   createDocument(path: string, type: string): Promise<string> {
