@@ -57,6 +57,10 @@ export class TreeViewerComponent {
     return field.condition(this.elementInfo);
   }
 
+  onKeyUp(event: KeyboardEvent) {
+    event.key
+  }
+
   onDoubleClick() {
     if (this.isFolder()) {
       this.workspace.toggleExpanded(this.elementPath);
@@ -140,6 +144,19 @@ export class TreeViewerComponent {
 
   isUnknown(): boolean {
     return !(this.isFile() || this.isFolder());
+  }
+
+  shouldShowRenameElement(): boolean {
+    if (this.workspace.hasRenameElementRequest()) {
+      let renameElement = this.workspace.getRenameElement();
+      if (renameElement) {
+        return renameElement.path === this.elementPath;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   shouldShowNewElement(): boolean {

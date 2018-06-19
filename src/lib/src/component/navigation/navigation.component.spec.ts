@@ -34,6 +34,7 @@ import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MarkerObserver } from '../../common/markers/marker.observer';
 import { WorkspaceObserver } from '../../common/markers/workspace.observer';
+import { RenameElementComponent } from '../tree-viewer/rename-element.component';
 
 describe('NavigationComponent', () => {
 
@@ -52,6 +53,7 @@ describe('NavigationComponent', () => {
       declarations: [
         NavigationComponent,
         TreeViewerComponent,
+        RenameElementComponent,
         NewElementComponent,
         IndicatorBoxComponent
       ],

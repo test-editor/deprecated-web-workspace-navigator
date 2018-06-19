@@ -1,4 +1,4 @@
-import { WorkspaceElement, LinkedWorkspaceElement } from './workspace-element';
+import { WorkspaceElement, LinkedWorkspaceElement, WorkspaceElementInfo } from './workspace-element';
 import { Injectable } from '@angular/core';
 import { PersistenceService } from '../service/persistence/persistence.service';
 import { ElementType } from './element-type';
@@ -318,6 +318,38 @@ export class Workspace {
       return this.uiState.newElementRequest.selectedElement;
     } else {
       return null;
+    }
+  }
+
+  hasRenameElementRequest(): boolean {
+    return this.uiState.renameElementRequest != null;
+  }
+
+  getRenameElement(): WorkspaceElementInfo {
+    if (this.hasRenameElementRequest()) {
+      return this.uiState.renameElementRequest.selectedElement;
+    } else {
+      return null;
+    }
+  }
+
+  removeRenameElementRequest(): void {
+    this.uiState.renameElementRequest = null;
+  }
+
+  renameElement(element: WorkspaceElementInfo) {
+    let selectedElement = this.uiState.selectedElement;
+    if (selectedElement && (element.path === selectedElement.path)) {
+      console.log('request running');
+      console.log(selectedElement);
+      this.uiState.renameElementRequest = {
+        selectedElement: selectedElement
+      }
+    } else {
+      console.log('WARNING: tried to rename');
+      console.log(selectedElement);
+      console.log('which differs from');
+      console.log(element);
     }
   }
 

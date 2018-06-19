@@ -7,4 +7,5 @@ export class KeyActions {
   static readonly NAVIGATE_PREVIOUS = 'ArrowUp';
   static readonly NAVIGATE_NEXT = 'ArrowDown';
   static readonly OPEN_FILE = 'Enter';
+  static readonly RENAME_FILE = 'F2';
 }

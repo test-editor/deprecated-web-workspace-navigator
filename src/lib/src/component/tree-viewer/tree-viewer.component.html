@@ -1,24 +1,29 @@
 <div class="tree-view" *ngIf="elementInfo">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
+    <div class="tree-view-item-key" (keyup)="onKeyUp($event)" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
-        'active': elementInfo.path === workspace.getActive(),
-        'dirty': workspace.isDirty(elementInfo.path),
-        'header': level == 0,
-        'selected': workspace.isSelected(elementInfo.path)
+      'active': elementInfo.path === workspace.getActive(),
+      'dirty': workspace.isDirty(elementInfo.path),
+      'header': level == 0,
+      'selected': workspace.isSelected(elementInfo.path)
       }">
 
       <div class="tree-view-element">
         <span class="icon-type fa" [ngClass]="{
-        'fa-question': isUnknown(),
-        'fa-folder': isEmptyFolder(),
-        'fa-chevron-down': isFolderExpanded(),
-        'fa-chevron-right': isFolderFolded(),
-        'fa-file': isFile(),
-        'fa-image': isImage()
-      }" (click)="onIconClick()">
+          'fa-question': isUnknown(),
+          'fa-folder': isEmptyFolder(),
+          'fa-chevron-down': isFolderExpanded(),
+          'fa-chevron-right': isFolderFolded(),
+          'fa-file': isFile(),
+          'fa-image': isImage()
+          }" (click)="onIconClick()">
         </span>
-        <span title="{{elementInfo.name}}">{{elementInfo.name}}</span>
+        <div *ngIf="shouldShowRenameElement()">
+          <nav-rename-element [workspace]="workspace"></nav-rename-element>
+        </div>
+        <div *ngIf="!shouldShowRenameElement()">
+          <span title="{{elementInfo.name}}">{{elementInfo.name}}</span>
+        </div>
       </div>
 
       <div class="indicator-boxes">

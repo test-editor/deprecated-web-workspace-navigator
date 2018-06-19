@@ -249,6 +249,14 @@ export class NavigationComponent implements OnInit, OnDestroy {
         break;
       }
       case KeyActions.OPEN_FILE: this.openFile(elementPath); break;
+      case KeyActions.RENAME_FILE: this.renameFile(elementPath); break;
+    }
+  }
+
+  private renameFile(elementPath: string): void {
+    const elementInfo = this.getWorkspace().getElementInfo(elementPath);
+    if (elementInfo !== null) {
+      this.workspace.renameElement(elementInfo);
     }
   }
 

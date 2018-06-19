@@ -1,0 +1,12 @@
+<div class="navRenameElement">
+  <input #renameInput
+    (keyup)="onKeyup($event)"
+    (keyup.enter)="onEnter()"
+    (keyup.escape)="remove()"
+    (blur)="remove()"
+    [ngClass]="{
+      'input-error': errorMessage
+    }"
+  />
+  <div [hidden]="!errorMessage" class="alert alert-danger">{{errorMessage}}</div>
+</div>
