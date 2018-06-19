@@ -75,10 +75,10 @@ describe('NavigationComponent', () => {
     fixture = TestBed.createComponent(NavigationComponent);
     component = fixture.componentInstance;
     messagingService = TestBed.get(MessagingService);
-    sidenav = fixture.debugElement.query(By.css('.sidenav'));
     tclFile.state = ElementState.Idle;
     mockWorkspaceReloadRequestOnce(messagingService, tclFile);
     fixture.detectChanges();
+    sidenav = fixture.debugElement.query(By.css('.sidenav'));
   });
 
   it('should be created', async(() => {
