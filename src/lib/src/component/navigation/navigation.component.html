@@ -1,16 +1,16 @@
-<div class="sidenav noselect">
-  <div *ngIf="workspace.initialized">
-    <div class="icon-menu">
-      <div class="icons-left">
-        <button id="new-file" class="icon fa fa-file" (click)="newElement('file')" title="create new file"></button>
-        <button id="new-folder" class="icon fa fa-folder" (click)="newElement('folder')" title="create new folder"></button>
-        <button id="run" class="icon fa fa-play" (click)="run()" [disabled]="!selectionIsExecutable()" title="execute test"></button>
-      </div>
-      <div class="icons-right">
-        <button id="refresh" [className]="'icon fa fa-refresh '+refreshClassValue" [disabled]="refreshRunning()" aria-hidden="true" (click)="refresh()" title="refresh workspace"></button>
-        <button id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()" title="collapse all"></button>
-      </div>
+<div *ngIf="workspace.initialized" class="sidenav noselect">
+  <div class="icon-menu">
+    <div class="icons-left">
+      <button id="new-file" class="icon fa fa-file" (click)="newElement('file')" title="create new file"></button>
+      <button id="new-folder" class="icon fa fa-folder" (click)="newElement('folder')" title="create new folder"></button>
+      <button id="run" class="icon fa fa-play" (click)="run()" [disabled]="!selectionIsExecutable()" title="execute test"></button>
     </div>
+    <div class="icons-right">
+      <button id="refresh" [className]="'icon fa fa-refresh '+refreshClassValue" [disabled]="refreshRunning()" aria-hidden="true" (click)="refresh()" title="refresh workspace"></button>
+      <button id="collapse-all" class="icon fa fa-minus-square-o" aria-hidden="true" (click)="collapseAll()" title="collapse all"></button>
+    </div>
+  </div>
+  <div class="workspace-tree">
     <nav-tree-viewer tabindex="0" [elementPath]="workspace.getRootPath()" [workspace]="workspace" (keyup)="onKeyUp($event)"></nav-tree-viewer>
   </div>
   <div *ngIf="errorMessage" id="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
