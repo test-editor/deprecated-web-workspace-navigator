@@ -249,7 +249,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         break;
       }
       case KeyActions.OPEN_FILE:
-        if (!this.workspace.hasRenameElementRequest) {
+        if (!this.workspace.hasRenameElementRequest()) {
           this.openFile(elementPath);
         }
         break;
