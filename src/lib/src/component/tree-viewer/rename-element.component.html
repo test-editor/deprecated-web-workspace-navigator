@@ -7,6 +7,7 @@
     [ngClass]="{
       'input-error': errorMessage
     }"
+    value="{{originalName}}"
   />
   <div [hidden]="!errorMessage" class="alert alert-danger">{{errorMessage}}</div>
 </div>

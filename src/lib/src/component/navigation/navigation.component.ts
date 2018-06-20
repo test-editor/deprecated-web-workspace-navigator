@@ -248,8 +248,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
         break;
       }
-      case KeyActions.OPEN_FILE: this.openFile(elementPath); break;
+      case KeyActions.OPEN_FILE:
+        if (!this.workspace.hasRenameElementRequest) {
+          this.openFile(elementPath);
+        }
+        break;
       case KeyActions.RENAME_FILE: this.renameFile(elementPath); break;
+      default: // ignore other keyevents
     }
   }
 

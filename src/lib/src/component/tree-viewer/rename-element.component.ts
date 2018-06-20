@@ -18,6 +18,7 @@ export class RenameElementComponent implements AfterViewInit {
 
   @ViewChild('renameInput') input: ElementRef;
   @Input() workspace: Workspace;
+  @Input() originalName: string;
 
   errorMessage: string;
 
@@ -68,6 +69,7 @@ export class RenameElementComponent implements AfterViewInit {
         resultPath = result;
       }
       this.messagingService.publish(events.NAVIGATION_RENAMED, { newPath: resultPath, oldPath: oldPath });
+      this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, null);
     }, () => this.errorMessage = 'Error while renaming element!');
   }
 

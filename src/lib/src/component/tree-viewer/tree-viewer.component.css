@@ -32,6 +32,14 @@
   white-space: nowrap;
 }
 
+.tree-view-element-text::selection {
+  background: transparent;
+}
+
+.tree-view-element::selection {
+  background: transparent;
+}
+
 .tree-view-item-key:not(.selected) {
   color: #CCCCCC;
 }

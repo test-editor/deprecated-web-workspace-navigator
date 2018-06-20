@@ -1,6 +1,6 @@
 <div class="tree-view" *ngIf="elementInfo">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" (keyup)="onKeyUp($event)" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
+    <div class="tree-view-item-key" onBlur="console.log('lost focus');" (keyup)="onKeyUp($event)" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
       'active': elementInfo.path === workspace.getActive(),
       'dirty': workspace.isDirty(elementInfo.path),
@@ -18,12 +18,10 @@
           'fa-image': isImage()
           }" (click)="onIconClick()">
         </span>
-        <div *ngIf="shouldShowRenameElement()">
-          <nav-rename-element [workspace]="workspace"></nav-rename-element>
-        </div>
-        <div *ngIf="!shouldShowRenameElement()">
-          <span title="{{elementInfo.name}}">{{elementInfo.name}}</span>
-        </div>
+        <span *ngIf="shouldShowRenameElement()">
+          <nav-rename-element [workspace]="workspace" [originalName]="elementInfo.name"></nav-rename-element>
+        </span>
+        <span class="tree-view-element-text" *ngIf="!shouldShowRenameElement()" title="{{elementInfo.name}}">{{elementInfo.name}}</span>
       </div>
 
       <div class="indicator-boxes">

@@ -1,3 +1,7 @@
+.navRenameElement {
+  display: inline;
+}
+
 input {
   background-color: rgb(60, 60, 60);
   border: 1px solid #094771;
