@@ -11,7 +11,7 @@
     </div>
   </div>
   <div class="workspace-tree">
-    <nav-tree-viewer tabindex="0" [elementPath]="workspace.getRootPath()" [workspace]="workspace" (keyup)="onKeyUp($event)"></nav-tree-viewer>
+    <nav-tree-viewer tabindex="0" [elementPath]="workspace.getRootPath()" [workspace]="workspace" (keyup)="onKeyUp($event)" (keydown)="onKeyDown($event)"></nav-tree-viewer>
   </div>
   <div *ngIf="errorMessage" id="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <div *ngIf="notification" id="notification" class="alert alert-info">{{notification}}</div>

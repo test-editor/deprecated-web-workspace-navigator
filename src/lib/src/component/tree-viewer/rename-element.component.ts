@@ -32,8 +32,9 @@ export class RenameElementComponent implements AfterViewInit {
     this.input.nativeElement.focus();
   }
 
-  onKeyup(event: any): void {
+  onKeyup(event: KeyboardEvent): void {
     this.validate();
+    event.stopPropagation();
   }
 
   validate(): boolean {
