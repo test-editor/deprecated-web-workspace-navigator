@@ -69,10 +69,6 @@ export class TreeViewerComponent {
     return field.condition(this.elementInfo);
   }
 
-  onKeyUp(event: KeyboardEvent) {
-    // event.key
-  }
-
   onDoubleClick() {
     if (this.isFolder()) {
       this.workspace.toggleExpanded(this.elementPath);
