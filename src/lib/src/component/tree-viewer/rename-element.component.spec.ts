@@ -1,6 +1,6 @@
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { async, TestBed, ComponentFixture } from '@angular/core/testing';
+import { async, TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { capture, anyFunction, mock, instance, verify, when, anyString } from 'ts-mockito';
 import { MessagingService } from '@testeditor/messaging-service';
 import { testBedSetup } from './tree-viewer.component.spec';
@@ -55,6 +55,15 @@ describe('RenameElementComponent', () => {
    */
   function isVisible(element: DebugElement): boolean {
     return element.nativeElement.offsetWidth > 0 && element.nativeElement.offsetHeight > 0;
+  }
+
+  /**
+   * prepare tree and selection to know 'Dummy' and start renameElement
+   */
+  function selectDummyAndStartRenameOnIt(): void {
+    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
+    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
+    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
   }
 
   it('focuses on the input after view initialized', () => {
@@ -113,10 +122,8 @@ describe('RenameElementComponent', () => {
 
   it('calls renameDocument with the proper path when enter is pressed', () => {
     // given
+    selectDummyAndStartRenameOnIt();
     input.nativeElement.value = 'rename.txt';
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
 
     // when
     input.triggerEventHandler('keyup.enter', {});
@@ -125,11 +132,9 @@ describe('RenameElementComponent', () => {
     verify(persistenceService.renameResource('some/path/rename.txt', 'some/path/dummy.txt', anyFunction(), anyFunction())).once();
   });
 
-  it('removes itself and emits navigation.renamed event when renameDocument returns', async(() => {
+  it('removes itself and emits navigation.renamed event when renameDocument returns', fakeAsync(() => {
     // given
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
+    selectDummyAndStartRenameOnIt();
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_RENAMED, callback);
     component.input.nativeElement.value = 'rename.txt'
@@ -141,20 +146,18 @@ describe('RenameElementComponent', () => {
     const [path, typeString, onSuccess, onError] = capture(persistenceService.renameResource).last();
     onSuccess('some/path/rename.txt')
 
+    tick();
+
     // then
-    fixture.whenStable().then(() => {
-      expect(callback).toHaveBeenCalledTimes(1);
-      let expectedPayload = jasmine.objectContaining({ newPath: 'some/path/rename.txt', oldPath: 'some/path/dummy.txt' });
-      expect(callback).toHaveBeenCalledWith(expectedPayload);
-      expect(component.workspace.hasRenameElementRequest()).toBeFalsy();
-    });
+    expect(callback).toHaveBeenCalledTimes(1);
+    let expectedPayload = jasmine.objectContaining({ newPath: 'some/path/rename.txt', oldPath: 'some/path/dummy.txt' });
+    expect(callback).toHaveBeenCalledWith(expectedPayload);
+    expect(component.workspace.hasRenameElementRequest()).toBeFalsy();
   }));
 
-  it('signals an error when renameDocument failed', async(() => {
+  it('signals an error when renameDocument failed', fakeAsync(() => {
     // given
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
+    selectDummyAndStartRenameOnIt();
 
     // when
     component.onEnter();
@@ -163,19 +166,15 @@ describe('RenameElementComponent', () => {
     const [path, typeString, onSuccess, onError] = capture(persistenceService.renameResource).last();
     onError('failed');
 
+    tick();
+
     // then
-    fixture.whenStable().then(() => {
-      fixture.whenStable().then(() => {
-        expect(component.errorMessage).toBeTruthy();
-      });
-    });
+    expect(component.errorMessage).toBeTruthy();
   }));
 
-  it('displays error and refreshes workspace when renameDocument returns with a conflict', async(() => {
+  it('displays error and refreshes workspace when renameDocument returns with a conflict', fakeAsync(() => {
     // given
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
+    selectDummyAndStartRenameOnIt();
     const conflict = new Conflict(`The file 'something-new.txt' already exists.`)
     let callback = jasmine.createSpy('callback');
     messagingService.subscribe(events.NAVIGATION_RENAMED, callback);
@@ -188,22 +187,20 @@ describe('RenameElementComponent', () => {
     const [name, path, onResponse, onError] = capture(persistenceService.renameResource).last();
     onResponse(conflict);
 
+    tick();
+
     // then
-    fixture.whenStable().then(() => {
-      expect(callback).toHaveBeenCalledTimes(1);
-      let expectedPayload = jasmine.objectContaining({ newPath: 'some/path/dummy.txt', oldPath: 'some/path/dummy.txt' });
-      expect(callback).toHaveBeenCalledWith(expectedPayload);
-      expect(component.errorMessage).toEqual(conflict.message);
-      expect(component.input.nativeElement.value).toEqual('');
-    });
+    expect(callback).toHaveBeenCalledTimes(1);
+    let expectedPayload = jasmine.objectContaining({ newPath: 'some/path/dummy.txt', oldPath: 'some/path/dummy.txt' });
+    expect(callback).toHaveBeenCalledWith(expectedPayload);
+    expect(component.errorMessage).toEqual(conflict.message);
+    expect(component.input.nativeElement.value).toEqual('');
   }));
 
   it('validation for valid input does not show error message', () => {
     // given
+    selectDummyAndStartRenameOnIt();
     input.nativeElement.value = 'valid.txt';
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
 
     // when
     input.triggerEventHandler('keyup.enter', {});
@@ -215,10 +212,8 @@ describe('RenameElementComponent', () => {
 
   it('validation for invalid input shows error message', () => {
     // given
+    selectDummyAndStartRenameOnIt();
     input.nativeElement.value = '../invalid.txt';
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
 
     // when
     input.triggerEventHandler('keyup.enter', {});
@@ -232,10 +227,8 @@ describe('RenameElementComponent', () => {
 
   it('does not call anything on invalid input when enter is pressed', () => {
     // given
+    selectDummyAndStartRenameOnIt();
     input.nativeElement.value = '../invalid.txt';
-    component.workspace.reload(renameRequestWithDummySelected.selectedElement);
-    component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
 
     // when
     input.triggerEventHandler('keyup.enter', {});
