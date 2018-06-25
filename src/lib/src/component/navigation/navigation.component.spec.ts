@@ -83,6 +83,10 @@ describe('NavigationComponent', () => {
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
   });
 
+  function constructKeyEventWithKey(key: string): any {
+    return { key: key, stopPropagation: () => {}, preventDefault: () => {}};
+  }
+
   it('should be created', async(() => {
       expect(component).toBeTruthy();
   }));
@@ -579,7 +583,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.EXPAND_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -595,7 +599,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.EXPAND_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -611,7 +615,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.COLLAPSE_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -627,7 +631,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.COLLAPSE_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -641,7 +645,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(succeedingSiblingOfTclFile.path);
@@ -655,7 +659,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('newFolder');
@@ -668,7 +672,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
@@ -682,7 +686,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(lastElement.path);
@@ -695,7 +699,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
@@ -709,7 +713,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('subfolder');
@@ -723,7 +727,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual('subfolder/newFolder');
@@ -738,7 +742,8 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
+
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(firstElement);
@@ -754,7 +759,7 @@ describe('NavigationComponent', () => {
     messagingService.subscribe(events.NAVIGATION_OPEN, callback);
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.OPEN_FILE})
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.OPEN_FILE));
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);
