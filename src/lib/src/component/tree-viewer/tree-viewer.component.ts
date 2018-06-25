@@ -53,7 +53,7 @@ export class TreeViewerComponent {
   onClick() {
     if (this.workspace.getSelected() && this.workspace.getSelected() === this.elementPath && this.clickedDelayed) {
       this.clickedDelayed = false;
-      this.workspace.renameElement(this.elementInfo);
+      this.workspace.renameSelectedElement();
     } else {
       this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
       setTimeout(() => {

@@ -267,15 +267,15 @@ export class NavigationComponent implements OnInit, OnDestroy {
           this.openFile(elementPath);
         }
         break;
-      case KeyActions.RENAME_FILE: this.renameFile(elementPath); break;
+      case KeyActions.RENAME_FILE: this.renameSelectedFile(); break;
       default: // ignore other keyevents
     }
   }
 
-  private renameFile(elementPath: string): void {
-    const elementInfo = this.getWorkspace().getElementInfo(elementPath);
-    if (elementInfo !== null) {
-      this.workspace.renameElement(elementInfo);
+  private renameSelectedFile(): void {
+    const elementPath = this.getWorkspace().getSelected();
+    if (elementPath !== null) {
+      this.workspace.renameSelectedElement();
     }
   }
 

@@ -337,17 +337,14 @@ export class Workspace {
     this.uiState.renameElementRequest = null;
   }
 
-  renameElement(element: WorkspaceElementInfo) {
+  renameSelectedElement(): void {
     let selectedElement = this.uiState.selectedElement;
-    if (selectedElement && (element.path === selectedElement.path)) {
+    if (selectedElement) {
       this.uiState.renameElementRequest = {
         selectedElement: selectedElement
       }
     } else {
-      console.log('WARNING (internal inconsistency): tried to rename');
-      console.log(selectedElement);
-      console.log('which differs from');
-      console.log(element);
+      console.log('there is no selected element to rename');
     }
   }
 

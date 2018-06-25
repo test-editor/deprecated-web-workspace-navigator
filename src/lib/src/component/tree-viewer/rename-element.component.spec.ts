@@ -63,7 +63,7 @@ describe('RenameElementComponent', () => {
   function selectDummyAndStartRenameOnIt(): void {
     component.workspace.reload(renameRequestWithDummySelected.selectedElement);
     component.workspace.setSelected(renameRequestWithDummySelected.selectedElement.path);
-    component.workspace.renameElement(renameRequestWithDummySelected.selectedElement);
+    component.workspace.renameSelectedElement();
   }
 
   it('focuses on the input after view initialized', () => {
