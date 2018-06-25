@@ -33,7 +33,6 @@ export class RenameElementComponent implements AfterViewInit {
   }
 
   onKeyup(event: any): void {
-    console.log('key up on rename');
     this.validate();
   }
 
@@ -41,18 +40,15 @@ export class RenameElementComponent implements AfterViewInit {
     let newName: string = this.input.nativeElement.value;
     let isValid = this.pathValidator.isValid(newName);
     this.errorMessage = isValid ? null : this.pathValidator.getMessage(newName);
-    console.log('validated rename ' + isValid);
     return isValid;
   }
 
   onEnter(): void {
-    console.log('enter on rename');
     if (this.validate()) {
       let newName = this.input.nativeElement.value;
       let oldElement = this.workspace.getRenameElement();
       const pathElements = oldElement.path.split('/')
       let newPath = pathElements.slice(0, pathElements.length - 1).join('/') + '/' + newName;
-      console.log('sending rename request ' + newPath + ' <- ' + oldElement.path);
       this.sendRenameRequest(newPath, oldElement.path);
     }
   }

@@ -340,13 +340,11 @@ export class Workspace {
   renameElement(element: WorkspaceElementInfo) {
     let selectedElement = this.uiState.selectedElement;
     if (selectedElement && (element.path === selectedElement.path)) {
-      console.log('request running');
-      console.log(selectedElement);
       this.uiState.renameElementRequest = {
         selectedElement: selectedElement
       }
     } else {
-      console.log('WARNING: tried to rename');
+      console.log('WARNING (internal inconsistency): tried to rename');
       console.log(selectedElement);
       console.log('which differs from');
       console.log(element);

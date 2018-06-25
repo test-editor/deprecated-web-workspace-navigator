@@ -1,6 +1,6 @@
 <div class="tree-view" *ngIf="elementInfo">
   <div class="tree-view-item">
-    <div class="tree-view-item-key" onBlur="console.log('lost focus');" (keyup)="onKeyUp($event)" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
+    <div class="tree-view-item-key" (keyup)="onKeyUp($event)" (click)="onClick()" (dblclick)="onDoubleClick()" [style.padding-left]="level * 12 + 'px'"
       [ngClass]="{
       'active': elementInfo.path === workspace.getActive(),
       'dirty': workspace.isDirty(elementInfo.path),
