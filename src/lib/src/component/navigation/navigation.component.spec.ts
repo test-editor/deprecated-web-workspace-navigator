@@ -22,7 +22,7 @@ import { ElementState } from '../../common/element-state';
 import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService,
   HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile,
   lastElement, responseBeforeTermination,
-  subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce }
+  subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce, renamedSubfolder }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
@@ -163,6 +163,25 @@ describe('NavigationComponent', () => {
     // then
     expect(component.getWorkspace().isDirty(examplePath)).toBeFalsy();
     });
+  }));
+
+  it('updates the UI state when an "navigation.renamed" event is received', fakeAsync(() => {
+    // given
+    mockWorkspaceReloadRequestOnce(messagingService, renamedSubfolder);
+    component.getWorkspace().reload(subfolder);
+    component.getWorkspace().setDirty(subfolder.path, true);
+    component.getWorkspace().setExpanded(subfolder.path, true);
+    component.getWorkspace().setSelected(subfolder.path);
+
+    // when
+    messagingService.publish(events.NAVIGATION_RENAMED, { oldPath: subfolder.path, newPath: renamedSubfolder.path });
+
+    // then
+    expect(component.getWorkspace().isDirty(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isDirty(renamedSubfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(renamedSubfolder.path)).toBeTruthy();
+    expect(component.getWorkspace().getSelected()).toEqual(renamedSubfolder.path);
   }));
 
   it('updates the UI state when an "navigation.deleted" event is received', async(() => {

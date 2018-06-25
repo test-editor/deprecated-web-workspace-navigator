@@ -66,6 +66,24 @@ export const lastElement: WorkspaceElement = {
   children: []
 };
 
+export const renamedSubfolder: WorkspaceElement = {
+  name: 'renamedSubfolder',
+  path: 'renamedSubfolder',
+  type: ElementType.Folder,
+  children: [
+    {
+      name: 'newFolder',
+      path: 'subfolder/newFolder',
+      type: ElementType.Folder,
+      children: []
+    },
+    nonExecutableFile,
+    tclFile,
+    succeedingSiblingOfTclFile,
+    lastElement
+  ]
+}
+
 export const subfolder: WorkspaceElement = {
   name: 'subfolder',
   path: 'subfolder',

@@ -86,6 +86,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   subscribeToEvents(): void {
+    this.subscriptions.push(this.messagingService.subscribe(events.NAVIGATION_RENAMED, (paths) => {
+      const wasSelectedElement = this.workspace.getSelected() && this.workspace.getSelected() === paths.oldPath;
+      const wasExpanded = this.workspace.isExpanded(paths.oldPath);
+      this.workspace.setDirty(paths.oldPath, false); // TODO: should not work on dirty files! UI needs to make sure that this won't happen
+      this.workspace.setExpanded(paths.oldPath, false);
+      this.retrieveWorkspaceRoot((root) => {
+        this.defaultWorkspaceReloadResponse(root);
+        if (wasSelectedElement) {
+          this.workspace.setSelected(paths.newPath);
+        }
+        this.workspace.setExpanded(paths.newPath, wasExpanded);
+        this.changeDetectorRef.detectChanges();
+      });
+    }));
     this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
       this.workspaceReloadResponse(root);
       this.workspaceReloadResponse = (root_) => this.defaultWorkspaceReloadResponse(root_);

@@ -37,10 +37,16 @@ export class RenameElementComponent implements AfterViewInit {
   }
 
   validate(): boolean {
-    let newName: string = this.input.nativeElement.value;
-    let isValid = this.pathValidator.isValid(newName);
-    this.errorMessage = isValid ? null : this.pathValidator.getMessage(newName);
-    return isValid;
+    let isDirty = this.workspace.isDirty(this.workspace.getRenameElement().path);
+    if (isDirty) {
+      this.errorMessage = 'cannot rename dirty files';
+      return !isDirty
+    } else {
+      let newName: string = this.input.nativeElement.value;
+      let isValid = this.pathValidator.isValid(newName);
+      this.errorMessage = isValid ? null : this.pathValidator.getMessage(newName);
+      return isValid;
+    }
   }
 
   onEnter(): void {
@@ -65,7 +71,6 @@ export class RenameElementComponent implements AfterViewInit {
         resultPath = result;
       }
       this.messagingService.publish(events.NAVIGATION_RENAMED, { newPath: resultPath, oldPath: oldPath });
-      this.messagingService.publish(events.WORKSPACE_RELOAD_REQUEST, null);
     }, () => this.errorMessage = 'Error while renaming element!');
   }
 

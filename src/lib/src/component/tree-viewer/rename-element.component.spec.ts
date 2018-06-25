@@ -120,6 +120,18 @@ describe('RenameElementComponent', () => {
     expect(input.classes['input-error']).toBeTruthy();
   });
 
+  it('produces error message when renaming dirty files', () => {
+    // given
+    selectDummyAndStartRenameOnIt();
+    component.workspace.setDirty(component.workspace.getRenameElement().path, true);
+
+    // when
+    component.validate();
+
+    // then
+    expect(component.errorMessage).toEqual('cannot rename dirty files');
+  });
+
   it('calls renameDocument with the proper path when enter is pressed', () => {
     // given
     selectDummyAndStartRenameOnIt();
