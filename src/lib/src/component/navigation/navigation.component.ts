@@ -86,6 +86,20 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   subscribeToEvents(): void {
+    this.subscriptions.push(this.messagingService.subscribe(events.NAVIGATION_RENAMED, (paths) => {
+      const wasSelectedElement = this.workspace.getSelected() && this.workspace.getSelected() === paths.oldPath;
+      const wasExpanded = this.workspace.isExpanded(paths.oldPath);
+      this.workspace.setDirty(paths.oldPath, false); // TODO: should not work on dirty files! UI needs to make sure that this won't happen
+      this.workspace.setExpanded(paths.oldPath, false);
+      this.retrieveWorkspaceRoot((root) => {
+        this.defaultWorkspaceReloadResponse(root);
+        if (wasSelectedElement) {
+          this.workspace.setSelected(paths.newPath);
+        }
+        this.workspace.setExpanded(paths.newPath, wasExpanded);
+        this.changeDetectorRef.detectChanges();
+      });
+    }));
     this.subscriptions.push(this.messagingService.subscribe(events.WORKSPACE_RELOAD_RESPONSE, (root) => {
       this.workspaceReloadResponse(root);
       this.workspaceReloadResponse = (root_) => this.defaultWorkspaceReloadResponse(root_);
@@ -232,23 +246,58 @@ export class NavigationComponent implements OnInit, OnDestroy {
     }
   }
 
+  onKeyDown(event: KeyboardEvent) {
+    switch (event.key) {
+      case KeyActions.NAVIGATE_PREVIOUS:
+      case KeyActions.NAVIGATE_NEXT:
+        event.preventDefault(); // TODO: make sure to not scroll out of visible range
+        break;
+      default: // do nothing
+    }
+  }
+
   onKeyUp(event: KeyboardEvent) {
     console.log('KeyUp event received:\n' + event);
     let elementPath = this.workspace.getSelected();
     switch (event.key) {
-      case KeyActions.EXPAND_NODE: this.workspace.setExpanded(elementPath, true); break;
-      case KeyActions.COLLAPSE_NODE: this.workspace.setExpanded(elementPath, false); break;
-      case KeyActions.NAVIGATE_NEXT: {
+      case KeyActions.EXPAND_NODE:
+        event.stopPropagation();
+        this.workspace.setExpanded(elementPath, true);
+        break;
+      case KeyActions.COLLAPSE_NODE:
+        event.stopPropagation();
+        this.workspace.setExpanded(elementPath, false);
+        break;
+      case KeyActions.NAVIGATE_NEXT:
+        event.stopPropagation();
+        event.preventDefault();
         this.workspace.selectSuccessor();
         this.changeDetectorRef.detectChanges();
         break;
-      }
-      case KeyActions.NAVIGATE_PREVIOUS: {
+      case KeyActions.NAVIGATE_PREVIOUS:
+        event.stopPropagation();
+        event.preventDefault();
         this.workspace.selectPredecessor();
         this.changeDetectorRef.detectChanges();
         break;
-      }
-      case KeyActions.OPEN_FILE: this.openFile(elementPath); break;
+      case KeyActions.OPEN_FILE:
+        if (!this.workspace.hasRenameElementRequest()) {
+          event.stopPropagation();
+          this.openFile(elementPath);
+        }
+        break;
+      case KeyActions.RENAME_FILE:
+        event.stopPropagation();
+        this.renameSelectedFile();
+        break;
+      default: // ignore other keyevents
+    }
+  }
+
+  private renameSelectedFile(): void {
+    const elementPath = this.getWorkspace().getSelected();
+    if (elementPath !== null) {
+      this.workspace.renameSelectedElement();
     }
   }
 

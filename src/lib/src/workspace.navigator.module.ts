@@ -14,6 +14,7 @@ import { WindowService } from './service/browserObjectModel/window.service';
 import { DefaultWindowService } from './service/browserObjectModel/default.window.service';
 import { IndicatorBoxComponent } from './component/tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from './common/markers/field';
+import { RenameElementComponent } from './component/tree-viewer/rename-element.component';
 
 @NgModule({
   imports: [
@@ -24,6 +25,7 @@ import { IndicatorFieldSetup } from './common/markers/field';
     NavigationComponent,
     TreeViewerComponent,
     NewElementComponent,
+    RenameElementComponent,
     IndicatorBoxComponent
   ],
   exports: [

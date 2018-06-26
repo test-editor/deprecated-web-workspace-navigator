@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
@@ -29,6 +29,7 @@ export class TreeViewerComponent {
 
   confirmDelete = false;
   errorMessage: string;
+  clickedDelayed = false;
 
   private subscriptions: Subscription[] = [];
 
@@ -50,7 +51,18 @@ export class TreeViewerComponent {
   }
 
   onClick() {
-    this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
+    if (this.workspace.getSelected() && this.workspace.getSelected() === this.elementPath && this.clickedDelayed) {
+      this.clickedDelayed = false;
+      this.workspace.renameSelectedElement();
+    } else {
+      this.messagingService.publish(events.NAVIGATION_SELECT, this.elementInfo);
+      setTimeout(() => {
+        this.clickedDelayed = true;
+        setTimeout(() => {
+          this.clickedDelayed = false;
+        }, 1000);
+      }, 500);
+    }
   }
 
   private shouldFieldBeShown(field: Field): boolean {
@@ -140,6 +152,19 @@ export class TreeViewerComponent {
 
   isUnknown(): boolean {
     return !(this.isFile() || this.isFolder());
+  }
+
+  shouldShowRenameElement(): boolean {
+    if (this.workspace.hasRenameElementRequest()) {
+      let renameElement = this.workspace.getRenameElement();
+      if (renameElement) {
+        return renameElement.path === this.elementPath;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   shouldShowNewElement(): boolean {

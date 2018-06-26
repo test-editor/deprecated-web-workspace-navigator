@@ -20,6 +20,7 @@ import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
 import { IndicatorBoxComponent } from './indicator.box.component';
 import { Conflict } from '../../service/persistence/conflict';
+import { RenameElementComponent } from './rename-element.component';
 
 export function testBedSetup(providers?: any[]): void {
   TestBed.configureTestingModule({
@@ -29,6 +30,7 @@ export function testBedSetup(providers?: any[]): void {
     ],
     declarations: [
       TreeViewerComponent,
+      RenameElementComponent,
       NewElementComponent,
       IndicatorBoxComponent
     ],

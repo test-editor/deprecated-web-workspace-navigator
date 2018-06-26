@@ -30,6 +30,20 @@ export class PersistenceService {
     this.httpClientExecute( httpClient => httpClient.get<WorkspaceElement>(this.listFilesUrl).toPromise(), onResponse, onError);
   }
 
+  renameResource(newPath: string, oldPath: string, onResponse: (some: Conflict | string) => void, onError?: (error: any) => void): void {
+    this.httpClientExecute(
+      httpClient => httpClient.put(this.getRenameURL(oldPath), newPath, { observe: 'response', responseType: 'text'}).toPromise(),
+      (response) => {
+        onResponse(response.body);
+      }, (response) => {
+      if (response.status === HTTP_STATUS_CONFLICT) {
+        onResponse(new Conflict(response.error));
+      } else {
+        onError(new Error(response.error));
+      }
+      });
+  }
+
   deleteResource(path: string, onResponse: (some: Conflict | string) => void, onError?: (error: any) => void): void {
     this.httpClientExecute(
       httpClient => httpClient.delete(this.getURL(path), { observe: 'response', responseType: 'text'}).toPromise(),
@@ -46,7 +60,8 @@ export class PersistenceService {
 
   createResource(path: string, type: string, onResponse: (some: Conflict | string) => void, onError?: (error: any) => void): void {
     this.httpClientExecute(
-      httpClient => httpClient.post(this.getURL(path), '', { observe: 'response', responseType: 'text', params: { type: type } }).toPromise(),
+      httpClient => httpClient.post(this.getURL(path), '', { observe: 'response', responseType: 'text', params: { type: type } })
+        .toPromise(),
       (response) => {
         onResponse(response.body);
       }, (response) => {
@@ -60,6 +75,10 @@ export class PersistenceService {
 
   getBinaryResource(path: string, onResponse: (blob: Blob) => void, onError?: (error: any) => void): void {
     this.httpClientExecute( httpClient => httpClient.get(this.getURL(path), { responseType: 'blob' }).toPromise(), onResponse, onError);
+  }
+
+  private getRenameURL(path: string): string {
+    return this.getURL(path) + '?rename';
   }
 
   private getURL(path: string): string {

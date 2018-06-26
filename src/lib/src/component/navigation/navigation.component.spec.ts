@@ -22,7 +22,7 @@ import { ElementState } from '../../common/element-state';
 import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService,
   HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile,
   lastElement, responseBeforeTermination,
-  subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce }
+  subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce, renamedSubfolder }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
@@ -34,6 +34,7 @@ import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from '../../common/markers/field';
 import { MarkerObserver } from '../../common/markers/marker.observer';
 import { WorkspaceObserver } from '../../common/markers/workspace.observer';
+import { RenameElementComponent } from '../tree-viewer/rename-element.component';
 
 describe('NavigationComponent', () => {
 
@@ -52,6 +53,7 @@ describe('NavigationComponent', () => {
       declarations: [
         NavigationComponent,
         TreeViewerComponent,
+        RenameElementComponent,
         NewElementComponent,
         IndicatorBoxComponent
       ],
@@ -80,6 +82,10 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
     sidenav = fixture.debugElement.query(By.css('.sidenav'));
   });
+
+  function constructKeyEventWithKey(key: string): any {
+    return { key: key, stopPropagation: () => {}, preventDefault: () => {}};
+  }
 
   it('should be created', async(() => {
       expect(component).toBeTruthy();
@@ -161,6 +167,25 @@ describe('NavigationComponent', () => {
     // then
     expect(component.getWorkspace().isDirty(examplePath)).toBeFalsy();
     });
+  }));
+
+  it('updates the UI state when an "navigation.renamed" event is received', fakeAsync(() => {
+    // given
+    mockWorkspaceReloadRequestOnce(messagingService, renamedSubfolder);
+    component.getWorkspace().reload(subfolder);
+    component.getWorkspace().setDirty(subfolder.path, true);
+    component.getWorkspace().setExpanded(subfolder.path, true);
+    component.getWorkspace().setSelected(subfolder.path);
+
+    // when
+    messagingService.publish(events.NAVIGATION_RENAMED, { oldPath: subfolder.path, newPath: renamedSubfolder.path });
+
+    // then
+    expect(component.getWorkspace().isDirty(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(subfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isDirty(renamedSubfolder.path)).toBeFalsy();
+    expect(component.getWorkspace().isExpanded(renamedSubfolder.path)).toBeTruthy();
+    expect(component.getWorkspace().getSelected()).toEqual(renamedSubfolder.path);
   }));
 
   it('updates the UI state when an "navigation.deleted" event is received', async(() => {
@@ -558,7 +583,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.EXPAND_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -574,7 +599,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.EXPAND_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.EXPAND_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -590,7 +615,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.COLLAPSE_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -606,7 +631,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.COLLAPSE_NODE});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.COLLAPSE_NODE));
 
     // then
     let expandedState = component.getWorkspace().isExpanded(element.path);
@@ -620,7 +645,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(succeedingSiblingOfTclFile.path);
@@ -634,7 +659,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('newFolder');
@@ -647,7 +672,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
@@ -661,7 +686,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_NEXT});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_NEXT));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(lastElement.path);
@@ -674,7 +699,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(nonExecutableFile.path);
@@ -688,7 +713,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getElementInfo(component.getWorkspace().getSelected()).name).toEqual('subfolder');
@@ -702,7 +727,7 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual('subfolder/newFolder');
@@ -717,7 +742,8 @@ describe('NavigationComponent', () => {
     fixture.detectChanges();
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.NAVIGATE_PREVIOUS});
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.NAVIGATE_PREVIOUS));
+
 
     // then
     expect(component.getWorkspace().getSelected()).toEqual(firstElement);
@@ -733,7 +759,7 @@ describe('NavigationComponent', () => {
     messagingService.subscribe(events.NAVIGATION_OPEN, callback);
 
     // when
-    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', { key: KeyActions.OPEN_FILE})
+    sidenav.query(By.css('nav-tree-viewer')).triggerEventHandler('keyup', constructKeyEventWithKey(KeyActions.OPEN_FILE));
 
     // then
     expect(callback).toHaveBeenCalledTimes(1);

@@ -4,7 +4,6 @@
   z-index: 1;
   background-color: #252525;
   resize: horizontal;
-  user-select: none;
   position: relative;
 }
 
@@ -14,6 +13,9 @@
   height: calc(100% - 34px); /* -34 px occupied by the icon button bar! */
 }
 
+
+/* currently unused, since it causes focus loss of selected workspace navigator
+   in addition it prevents selecting new open tabs in chromium and chrom */
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */

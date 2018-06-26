@@ -6,6 +6,7 @@ export class UiState {
   selectedElement: WorkspaceElement = null;
 
   newElementRequest: { selectedElement: WorkspaceElement, type: string };
+  renameElementRequest: { selectedElement: WorkspaceElement };
 
   private expandedElements: boolean[] = [];
   private dirtyElements: boolean[] = [];
