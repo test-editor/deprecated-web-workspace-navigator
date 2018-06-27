@@ -47,15 +47,15 @@
   dependencies:
     tslib "^1.7.1"
 
-"@testeditor/messaging-service@1.4.0":
+"@testeditor/messaging-service@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@testeditor/messaging-service/-/messaging-service-1.4.0.tgz#a6ea5de45b1b59c8f0ecdb5af99b2899fb17d3e7"
 
 "@testeditor/workspace-navigator@file:../dist":
-  version "0.26.0"
+  version "0.28.0"
 
 "@testeditor@file:../dist":
-  version "0.26.0"
+  version "0.28.0"
 
 "@types/estree@0.0.38":
   version "0.0.38"
