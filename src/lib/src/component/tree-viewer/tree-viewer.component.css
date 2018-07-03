@@ -32,11 +32,10 @@
   white-space: nowrap;
 }
 
-.tree-view-element-text::selection {
-  background: transparent;
-}
-
-.tree-view-element::selection {
+.tree-view-element-text::selection,
+.tree-view-element::selection,
+.tree-view-element-text::-moz-selection,
+.tree-view-element::-moz-selection {
   background: transparent;
 }
 
