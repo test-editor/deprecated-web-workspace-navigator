@@ -5,7 +5,7 @@ import { ElementType } from '../../common/element-type';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import * as events from '../event-types';
 import { UiState } from '../ui-state';
-import { WindowService } from '../../service/browserObjectModel/window.service';
+import { WindowService } from '@testeditor/testeditor-commons';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { LinkedWorkspaceElement } from '../../common/workspace-element';

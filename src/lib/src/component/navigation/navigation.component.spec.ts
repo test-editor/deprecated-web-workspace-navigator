@@ -4,31 +4,24 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
-import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito';
+import { instance } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
-import { PersistenceServiceConfig } from '../../service/persistence/persistence.service.config';
 import { NewElementComponent } from '../tree-viewer/new-element.component';
 import { TreeViewerComponent } from '../tree-viewer/tree-viewer.component';
 import { NavigationComponent } from './navigation.component';
-import { Workspace } from '../../common/workspace';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { ElementType } from '../../common/element-type';
-import { testBedSetup } from '../tree-viewer/tree-viewer.component.spec';
-import { UiState } from '../ui-state';
 
 import * as events from '../event-types';
 import { ElementState } from '../../common/element-state';
 import { nonExecutableFile, tclFile, setupWorkspace, mockedPersistenceService,
-  HTTP_STATUS_CREATED, HTTP_STATUS_ERROR, succeedingSiblingOfTclFile,
-  lastElement, responseBeforeTermination,
-  subfolder, root, testEditorIndicatorFieldSetup, mockWorkspaceReloadRequestOnce, renamedSubfolder }
+  succeedingSiblingOfTclFile, lastElement, subfolder, root, testEditorIndicatorFieldSetup,
+  mockWorkspaceReloadRequestOnce, renamedSubfolder }
   from './navigation.component.test.setup';
 import { flush } from '@angular/core/testing';
 import { KeyActions } from '../../common/key.actions';
-import { WindowService } from '../../service/browserObjectModel/window.service';
-import { discardPeriodicTasks } from '@angular/core/testing';
-import { flushMicrotasks } from '@angular/core/testing';
+import { WindowService } from '@testeditor/testeditor-commons';
 import { PathValidator } from '../tree-viewer/path-validator';
 import { IndicatorBoxComponent } from '../tree-viewer/indicator.box.component';
 import { IndicatorFieldSetup } from '../../common/markers/field';

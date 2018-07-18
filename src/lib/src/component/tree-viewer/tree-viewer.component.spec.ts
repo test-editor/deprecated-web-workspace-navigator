@@ -13,8 +13,7 @@ import { WorkspaceElement } from '../../common/workspace-element';
 
 import { UiState } from '../ui-state';
 import * as events from '../event-types';
-import { WindowService } from '../../service/browserObjectModel/window.service';
-import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
+import { WindowService, DefaultWindowService } from '@testeditor/testeditor-commons';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
