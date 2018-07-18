@@ -33,7 +33,6 @@ export class TreeViewerComponent {
 
   constructor(
     private messagingService: MessagingService,
-    private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
     private windowReference: WindowService,
     fieldSetup: IndicatorFieldSetup) {
