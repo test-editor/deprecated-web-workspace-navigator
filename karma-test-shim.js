@@ -67,6 +67,7 @@ System.config({
 
     // Other dependencies
     '@testeditor/messaging-service': 'npm:@testeditor/messaging-service/bundles/messaging-service.umd.js',
+    '@testeditor/testeditor-commons': 'npm:@testeditor/testeditor-commons/bundles/testeditor-testeditor-commons.umd.js',
     'ts-mockito': 'npm:ts-mockito/lib/ts-mockito.js',
     'lodash': 'npm:lodash/lodash.js',
     'tslib': 'npm:tslib/tslib.js', // @angular/common/http depends on this lib
