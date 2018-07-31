@@ -36,6 +36,7 @@
     "@angular/platform-browser-dynamic": "5.2.10",
     "@testeditor": "file:../dist",
     "@testeditor/messaging-service": "^1.4.0",
+    "@testeditor/testeditor-commons": "~0.1.4",
     "@testeditor/workspace-navigator": "file:../dist",
     "bootstrap": "4.1.0",
     "core-js": "2.5.5",
