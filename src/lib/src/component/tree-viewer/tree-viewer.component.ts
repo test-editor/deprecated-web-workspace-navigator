@@ -4,9 +4,7 @@ import { MessagingService } from '@testeditor/messaging-service';
 import { ElementType } from '../../common/element-type';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import * as events from '../event-types';
-import { UiState } from '../ui-state';
-import { WindowService } from '../../service/browserObjectModel/window.service';
-import { ElementState } from '../../common/element-state';
+import { WindowService } from '@testeditor/testeditor-commons';
 import { Workspace } from '../../common/workspace';
 import { LinkedWorkspaceElement } from '../../common/workspace-element';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
@@ -35,7 +33,6 @@ export class TreeViewerComponent {
 
   constructor(
     private messagingService: MessagingService,
-    private changeDetectorRef: ChangeDetectorRef,
     private persistenceService: PersistenceService,
     private windowReference: WindowService,
     fieldSetup: IndicatorFieldSetup) {

@@ -1,8 +1,8 @@
-import { async, ComponentFixture, TestBed, inject, fakeAsync, tick, flush } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { anyFunction, mock, instance, verify, when, anyString, anything, deepEqual, strictEqual, capture } from 'ts-mockito';
+import { anyFunction, mock, instance, verify, when, anyString, capture } from 'ts-mockito';
 
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
 
@@ -11,10 +11,8 @@ import { NewElementComponent } from './new-element.component';
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { WorkspaceElement } from '../../common/workspace-element';
 
-import { UiState } from '../ui-state';
 import * as events from '../event-types';
-import { WindowService } from '../../service/browserObjectModel/window.service';
-import { DefaultWindowService } from '../../service/browserObjectModel/default.window.service';
+import { WindowService, DefaultWindowService } from '@testeditor/testeditor-commons';
 import { ElementState } from '../../common/element-state';
 import { Workspace } from '../../common/workspace';
 import { Field, IndicatorFieldSetup } from '../../common/markers/field';
