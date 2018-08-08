@@ -40,6 +40,9 @@ script:
 # deployment
 after_success:
   - yarn run packagr
+before_deploy:
+- touch .npmignore
+- cd dist/
 deploy:
   skip_cleanup: true
   provider: npm
