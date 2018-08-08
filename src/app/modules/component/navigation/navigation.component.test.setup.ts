@@ -1,10 +1,9 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture } from '@angular/core/testing';
 import { NavigationComponent } from './navigation.component';
-import { Workspace } from '../../common/workspace';
 import { WorkspaceElement } from '../../common/workspace-element';
 import { ElementType } from '../../common/element-type';
 
-import { mock, when, anyOfClass, instance, verify, resetCalls } from 'ts-mockito/lib/ts-mockito';
+import { mock } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { ElementState } from '../../common/element-state';

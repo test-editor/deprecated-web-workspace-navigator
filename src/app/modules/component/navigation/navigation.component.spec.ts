@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { By } from '@angular/platform-browser';
 import { MessagingModule, MessagingService } from '@testeditor/messaging-service';
-import { instance } from 'ts-mockito/lib/ts-mockito';
+import { instance } from 'ts-mockito';
 
 import { PersistenceService } from '../../service/persistence/persistence.service';
 import { NewElementComponent } from '../tree-viewer/new-element.component';
