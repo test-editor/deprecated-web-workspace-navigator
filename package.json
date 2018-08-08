@@ -1,6 +1,6 @@
 {
   "name": "@testeditor/workspace-navigator",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "description": "Angular component for workspace handling and navigation.",
   "license": "MIT",
   "keywords": [
