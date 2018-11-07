@@ -1,4 +1,8 @@
-# web-workspace-navigator
+# DEPRECATED web-workspace-navigator
+
+:warning: **WARNING** This project is deprecated because the Test-Editor Team decided to replace it with an alternative providing a less technical view of the workspace, geared more towards the needs of testers, in October 2018 :warning:
+
+The new navigator repository for the project :star:Test-Editor-Web:star: can be found under [web-test-navigator](https://github.com/test-editor/web-test-navigator) 
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
